@@ -1,0 +1,23 @@
+{
+ "content": null, 
+ "creation": "2018-03-06 11:26:11.897710", 
+ "docstatus": 0, 
+ "doctype": "Page", 
+ "idx": 0, 
+ "modified": "2018-03-06 11:26:34.624042", 
+ "modified_by": "Administrator", 
+ "module": "Revelare", 
+ "name": "sales-analytics-2", 
+ "owner": "Administrator", 
+ "page_name": "Sales Analytics 2", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }
+ ], 
+ "script": null, 
+ "standard": "Yes", 
+ "style": null, 
+ "system_page": 0, 
+ "title": "Sales Analytics 2.0"
+}

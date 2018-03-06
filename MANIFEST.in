@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include revelare *.css
+recursive-include revelare *.csv
+recursive-include revelare *.html
+recursive-include revelare *.ico
+recursive-include revelare *.js
+recursive-include revelare *.json
+recursive-include revelare *.md
+recursive-include revelare *.png
+recursive-include revelare *.py
+recursive-include revelare *.svg
+recursive-include revelare *.txt
+recursive-exclude revelare *.pyc
