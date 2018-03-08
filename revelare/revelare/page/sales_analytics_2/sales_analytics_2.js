@@ -1,3 +1,5 @@
+// Cuando carga, carga la pagina sales-analitycs-2 que a su vez recibe una funcion con parametro
+// wrapper, esto quiere decri que podra hacer varias cosas al mismo tiempo
 frappe.pages['sales-analytics-2'].on_page_load = function(wrapper) {
     var page = frappe.ui.make_app_page({
         parent: wrapper,
@@ -9,11 +11,10 @@ frappe.pages['sales-analytics-2'].on_page_load = function(wrapper) {
     frappe.breadcrumbs.add("Revelare")
 }
 
-
 erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
     init: function(wrapper) {
         this._super({
-            title: __("Sales Analytics 2"),
+            title: __("Sales Analytics 2.0"),
             parent: $(wrapper).find('.layout-main'),
             page: wrapper.page,
             doctypes: ["Item", "Item Group", "Customer", "Customer Group", "Company", "Territory",
@@ -53,7 +54,8 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             },
             "Item": {
                 label: __("Item"),
-                show: false,
+                show: true,
+                // parent_field: "parent_item_group",
                 item_key: "item_code",
                 formatter: function(item) {
                     return item.name;
