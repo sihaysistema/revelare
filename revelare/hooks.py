@@ -5,7 +5,7 @@ from . import __version__ as app_version
 app_name = "revelare"
 app_title = "Revelare"
 app_publisher = "SHS"
-app_description = "Aplicacion de Estadistica"
+app_description = "Forecast with advanced reporting"
 app_icon = "octicon octicon-graph"
 app_color = "#1C2833"
 app_email = "m.monroyc22@gmail.com"

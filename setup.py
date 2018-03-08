@@ -15,7 +15,7 @@ requirements = parse_requirements("requirements.txt", session="")
 setup(
 	name='revelare',
 	version=version,
-	description='Aplicacion de Estadistica',
+	description='Forecast with advanced reporting',
 	author='SHS',
 	author_email='m.monroyc22@gmail.com',
 	packages=find_packages(),
