@@ -1,6 +1,6 @@
 ## Revelare
 
-Aplicacion de Estadistica
+Forecast with advanced reporting
 
 #### License
 
