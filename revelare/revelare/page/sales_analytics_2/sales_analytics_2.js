@@ -95,6 +95,20 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 field: "total",
                 plot: false,
                 formatter: this.currency_formatter
+            },
+			// Agregando columna de UOM:
+			// Name:  El nombre a mostrar en la columna del informe
+			// ? ID:  Asumimos que es el identificador del objeto FIXME
+			// Field: El campo que se desea mostrar 
+			// Plot: Si se muestra o no en la gráfica
+			// Width: El ancho en pixelas de la columna.
+			// Formatter: Formater es el formato a mostrarse en la pantalla.
+            {
+                id: "UOM2",
+                name: "UOM",
+                field: "stock_uom",
+                plot: false,
+                formatter: this.currency_formatter
             }
         ];
 
