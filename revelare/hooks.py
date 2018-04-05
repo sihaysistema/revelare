@@ -10,6 +10,7 @@ app_icon = "octicon octicon-graph"
 app_color = "#1C2833"
 app_email = "m.monroyc22@gmail.com"
 app_license = "GNU General Public License (v3)"
+fixtures = ["Custom Field"]
 
 # Includes in <head>
 # ------------------
