@@ -119,9 +119,10 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             fieldtype: "Select",
             fieldname: "tree_type",
             label: __("Tree Type"),
-            options: ["Customer Group", "Customer",
-                "Item Group", "Item", "Territory"
-            ],
+            //options: ["Customer Group", "Customer",
+            //    "Item Group", "Item", "Territory"
+            //],
+        	options: ["Item Group", "Item", "Customer Group", "Customer", "Territory"],
             filter: function(val, item, opts, me) {
                 return me.apply_zero_filter(val, item, opts, me);
             }
