@@ -1,0 +1,5 @@
+{
+    "revelare/js/revelar.min.js": [
+        "public/js/revelar.js"
+    ]
+}

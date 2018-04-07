@@ -17,7 +17,7 @@ fixtures = ["Custom Field"]
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/revelare/css/revelare.css"
-# app_include_js = "/assets/revelare/js/revelare.js"
+app_include_js = "/assets/revelare/js/revelar.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/revelare/css/revelare.css"
