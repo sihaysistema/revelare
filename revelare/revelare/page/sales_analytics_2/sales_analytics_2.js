@@ -1,6 +1,6 @@
 // Cuando carga, carga la pagina sales-analitycs-2 que a su vez recibe una funcion con parametro
 // wrapper, esto quiere decri que podra hacer varias cosas al mismo tiempo
-frappe.pages['sales-analytics-2'].on_page_load = function(wrapper) {
+frappe.pages['sales-analytics-2'].on_page_load = function (wrapper) {
     var page = frappe.ui.make_app_page({
         parent: wrapper,
         title: 'Sales Analytics 2.0',
@@ -12,7 +12,8 @@ frappe.pages['sales-analytics-2'].on_page_load = function(wrapper) {
 }
 
 erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
-    init: function(wrapper) {
+    init: function (wrapper) {
+        // Super Constructor
         this._super({
             title: __("Sales Analytics 2.0"),
             parent: $(wrapper).find('.layout-main'),
@@ -22,7 +23,9 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 "Sales Order", "Sales Order Item[Sales Analytics]",
                 "Delivery Note", "Delivery Note Item[Sales Analytics]"
             ],
-            tree_grid: { show: true }
+            tree_grid: {
+                show: true
+            }
         });
 
         this.tree_grids = {
@@ -31,7 +34,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 show: true,
                 item_key: "customer",
                 parent_field: "parent_customer_group",
-                formatter: function(item) {
+                formatter: function (item) {
                     return item.customer_name ? item.customer_name + " (" + item.name + ")" : item.name;
                 }
             },
@@ -39,7 +42,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 label: __("Customer"),
                 show: false,
                 item_key: "customer",
-                formatter: function(item) {
+                formatter: function (item) {
                     return item.customer_name ? item.customer_name + " (" + item.name + ")" : item.name;
                 }
             },
@@ -48,7 +51,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 show: true,
                 parent_field: "parent_item_group",
                 item_key: "item_code",
-                formatter: function(item) {
+                formatter: function (item) {
                     return item.name;
                 }
             },
@@ -57,8 +60,9 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 show: true,
                 // parent_field: "parent_item_group",
                 item_key: "item_code",
-                formatter: function(item) {
+                formatter: function (item) {
                     return item.name;
+                    // return item.stock_uom // Muestra la unidad de medida default
                 }
             },
             "Territory": {
@@ -66,13 +70,14 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 show: true,
                 item_key: "customer",
                 parent_field: "parent_territory",
-                formatter: function(item) {
+                formatter: function (item) {
                     return item.customer_name ? item.customer_name + " (" + item.name + ")" : item.name;
                 }
             }
         }
     },
-    setup_columns: function() {
+    // Configuracion Columnas
+    setup_columns: function () {
         this.tree_grid = this.tree_grids[this.tree_type];
 
         var std_columns = [{
@@ -96,19 +101,20 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 plot: false,
                 formatter: this.currency_formatter
             },
-			// Agregando columna de UOM:
-			// Name:  El nombre a mostrar en la columna del informe
-			// ? ID:  Asumimos que es el identificador del objeto FIXME
-			// Field: El campo que se desea mostrar 
-			// Plot: Si se muestra o no en la gráfica
-			// Width: El ancho en pixelas de la columna.
-			// Formatter: Formater es el formato a mostrarse en la pantalla.
+            // Agregando columna de UOM:
+            // Name:  El nombre a mostrar en la columna del informe
+            // ? ID:  Asumimos que es el identificador del objeto FIXME
+            // Field: El campo que se desea mostrar 
+            // Plot: Si se muestra o no en la gráfica
+            // Width: El ancho en pixelas de la columna.
+            // Formatter: Formater es el formato a mostrarse en la pantalla.
             {
                 id: "UOM2",
                 name: "UOM",
                 field: "stock_uom",
+                width: 100,
                 plot: false,
-                formatter: this.currency_formatter
+                formatter: this.select // formatters.js public/js // muestra la unidad de medida default para cada item
             }
         ];
 
@@ -122,8 +128,8 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             //options: ["Customer Group", "Customer",
             //    "Item Group", "Item", "Territory"
             //],
-        	options: ["Item Group", "Item", "Customer Group", "Customer", "Territory"],
-            filter: function(val, item, opts, me) {
+            options: ["Item Group", "Item", "Customer Group", "Customer", "Territory"],
+            filter: function (val, item, opts, me) {
                 return me.apply_zero_filter(val, item, opts, me);
             }
         },
@@ -139,11 +145,29 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             fieldtype: "Select",
             fieldname: "value_or_qty",
             label: __("Value or Qty"),
-            options: [{ label: __("Value"), value: "Value" }, { label: __("Quantity"), value: "Quantity" }]
+            options: [{
+                label: __("Value"),
+                value: "Value"
+            }, {
+                label: __("Quantity"),
+                value: "Quantity"
+            }]
         },
-        { fieldtype: "Date", fieldname: "from_date", label: __("From Date") },
-        { fieldtype: "Label", fieldname: "to", label: __("To") },
-        { fieldtype: "Date", fieldname: "to_date", label: __("To Date") },
+        {
+            fieldtype: "Date",
+            fieldname: "from_date",
+            label: __("From Date")
+        },
+        {
+            fieldtype: "Label",
+            fieldname: "to",
+            label: __("To")
+        },
+        {
+            fieldtype: "Date",
+            fieldname: "to_date",
+            label: __("To Date")
+        },
         {
             fieldtype: "Select",
             fieldname: "company",
@@ -155,26 +179,44 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             fieldtype: "Select",
             label: __("Range"),
             fieldname: "range",
-            options: [{ label: __("Daily"), value: "Daily" }, { label: __("Weekly"), value: "Weekly" },
-                { label: __("Monthly"), value: "Monthly" }, { label: __("Quarterly"), value: "Quarterly" },
-                { label: __("Yearly"), value: "Yearly" }
+            options: [{
+                    label: __("Daily"),
+                    value: "Daily"
+                }, {
+                    label: __("Weekly"),
+                    value: "Weekly"
+                },
+                {
+                    label: __("Monthly"),
+                    value: "Monthly"
+                }, {
+                    label: __("Quarterly"),
+                    value: "Quarterly"
+                },
+                {
+                    label: __("Yearly"),
+                    value: "Yearly"
+                }
             ]
         }
     ],
-    setup_filters: function() {
+    // Configurando Filtros
+    setup_filters: function () {
         var me = this;
         this._super();
 
         this.trigger_refresh_on_change(["value_or_qty", "tree_type", "based_on", "company"]);
 
-        this.show_zero_check()
+        this.show_zero_check();
         this.setup_chart_check();
     },
-    init_filter_values: function() {
+    // inicializando Filtros
+    init_filter_values: function () {
         this._super();
         this.filter_inputs.range.val('Monthly');
     },
-    prepare_data: function() {
+    // Preparando Data
+    prepare_data: function () {
         var me = this;
         if (!this.tl) {
             // add 'Not Set' Customer & Item
@@ -216,7 +258,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             me.item_by_name = {};
             me.data = [];
 
-            $.each(items, function(i, v) {
+            $.each(items, function (i, v) {
                 var d = copy_dict(v);
 
                 me.data.push(d);
@@ -231,7 +273,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
 
         } else {
             // otherwise, only reset values
-            $.each(this.data, function(i, d) {
+            $.each(this.data, function (i, d) {
                 me.reset_item_values(d);
             });
         }
@@ -245,13 +287,13 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         }
 
     },
-    prepare_balances: function() {
+    prepare_balances: function () {
         var me = this;
         var from_date = frappe.datetime.str_to_obj(this.from_date);
         var to_date = frappe.datetime.str_to_obj(this.to_date);
         var is_val = this.value_or_qty == 'Value';
 
-        $.each(this.tl[this.based_on], function(i, tl) {
+        $.each(this.tl[this.based_on], function (i, tl) {
             if (me.is_default('company') ? true : tl.company === me.company) {
                 var posting_date = frappe.datetime.str_to_obj(tl.posting_date);
                 if (posting_date >= from_date && posting_date <= to_date) {
@@ -264,15 +306,15 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             }
         });
     },
-    update_groups: function() {
+    update_groups: function () {
         var me = this;
 
-        $.each(this.data, function(i, item) {
+        $.each(this.data, function (i, item) {
             var parent = me.parent_map[item.name];
             while (parent) {
                 var parent_group = me.item_by_name[parent];
 
-                $.each(me.columns, function(c, col) {
+                $.each(me.columns, function (c, col) {
                     if (col.formatter == me.currency_formatter) {
                         parent_group[col.field] =
                             flt(parent_group[col.field]) +
@@ -283,19 +325,21 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             }
         });
     },
-    set_totals: function(sort) {
+    set_totals: function (sort) {
         var me = this;
         var checked = false;
-        $.each(this.data, function(i, d) {
+        $.each(this.data, function (i, d) {
             d.total = 0.0;
-            $.each(me.columns, function(i, col) {
+            $.each(me.columns, function (i, col) {
                 if (col.formatter == me.currency_formatter && !col.hidden && col.field != "total")
                     d.total += d[col.field];
                 if (d.checked) checked = true;
             })
         });
 
-        if (sort) this.data = this.data.sort(function(a, b) { return a.total < b.total; });
+        if (sort) this.data = this.data.sort(function (a, b) {
+            return a.total < b.total;
+        });
 
         if (!this.checked) {
             this.data[0].checked = true;
