@@ -7,13 +7,15 @@ frappe.pages['sales-analytics-2'].on_page_load = function (wrapper) {
         single_column: true
     });
 
+    // wrapper permite llamar multiples funciones
     new erpnext.SalesAnalytics2(wrapper);
-    frappe.breadcrumbs.add("Revelare")
+    frappe.breadcrumbs.add("Revelare");
 }
 
+// La vista para Sales Analitycs2 hereda de TreeGridReport :TODO
 erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
     init: function (wrapper) {
-        // Super Constructor
+        // Super Constructor: Aca se asignan las propiedades iniciales.
         this._super({
             title: __("Sales Analytics 2.0"),
             parent: $(wrapper).find('.layout-main'),
@@ -58,7 +60,6 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             "Item": {
                 label: __("Item"),
                 show: true,
-                // parent_field: "parent_item_group",
                 item_key: "item_code",
                 formatter: function (item) {
                     return item.name;
@@ -121,6 +122,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         this.make_date_range_columns();
         this.columns = std_columns.concat(this.columns);
     },
+    // Especificacion de filtros
     filters: [{
             fieldtype: "Select",
             fieldname: "tree_type",
@@ -202,9 +204,10 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
     ],
     // Configurando Filtros
     setup_filters: function () {
-        var me = this;
-        this._super();
+        var me = this; // Forma clasica para hacer refencia al contexto del scope actual
+        this._super(); // SuperConstructor
 
+        // Actualiza los datos cuando ocurren los trigger dentro del array
         this.trigger_refresh_on_change(["value_or_qty", "tree_type", "based_on", "company"]);
 
         this.show_zero_check();
@@ -216,6 +219,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         this.filter_inputs.range.val('Monthly');
     },
     // Preparando Data
+    // TODO:
     prepare_data: function () {
         var me = this;
         if (!this.tl) {
@@ -240,9 +244,11 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         }
 
         if (!this.data || me.item_type != me.tree_type) {
+
             if (me.tree_type == 'Customer') {
                 var items = frappe.report_dump.data["Customer"];
             }
+
             if (me.tree_type == 'Customer Group') {
                 var items = this.prepare_tree("Customer", "Customer Group");
             } else if (me.tree_type == "Item Group") {
@@ -279,6 +285,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         }
 
         this.prepare_balances();
+
         if (me.tree_grid.show) {
             this.set_totals(false);
             this.update_groups();
@@ -287,6 +294,8 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         }
 
     },
+    // Preparar Balances
+    // TODO:
     prepare_balances: function () {
         var me = this;
         var from_date = frappe.datetime.str_to_obj(this.from_date);
@@ -306,6 +315,8 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             }
         });
     },
+    // Actualizar Grupos
+    // TODO:
     update_groups: function () {
         var me = this;
 
@@ -325,16 +336,21 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             }
         });
     },
+    // Totalizar
+    // TODO:
     set_totals: function (sort) {
         var me = this;
         var checked = false;
+
         $.each(this.data, function (i, d) {
             d.total = 0.0;
+
             $.each(me.columns, function (i, col) {
                 if (col.formatter == me.currency_formatter && !col.hidden && col.field != "total")
                     d.total += d[col.field];
                 if (d.checked) checked = true;
             })
+
         });
 
         if (sort) this.data = this.data.sort(function (a, b) {
