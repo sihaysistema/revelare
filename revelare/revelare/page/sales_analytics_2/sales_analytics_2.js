@@ -309,7 +309,8 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                     var item = me.item_by_name[tl[me.tree_grid.item_key]] ||
                         me.item_by_name['Not Set'];
                     if (item) {
-                        item[me.column_map[tl.posting_date].field] += (is_val ? tl.base_net_amount : tl.qty);
+                        // FIXME: REALIZAR AQUI OPERACIONES MATEMATICAS
+                        item[me.column_map[tl.posting_date].field] += (is_val ? tl.base_net_amount : tl.qty * 10); // FIXME: OPERACIONES DE PRUEBA
                     }
                 }
             }
@@ -362,3 +363,17 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         }
     }
 });
+
+// ES6 METHODS NO FUNCIONAN :(
+// let clicke = document.getElementsByClassName("btn btn-primary btn-sm primary-action");
+// clicke.addEventListener("click", () => console.log('MARIO'));
+
+// $(".btn btn-primary btn-sm primary-action").change(function () {
+//     alert("Handler for .change() called.");
+// });
+
+// $("#btn").click(function () {
+//     console.log('Mario')
+// });
+
+// TODO: FEATURES REPORT BUILDER!!
