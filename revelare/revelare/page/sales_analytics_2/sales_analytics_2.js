@@ -1,5 +1,6 @@
 // Cuando carga, carga la pagina sales-analitycs-2 que a su vez recibe una funcion con parametro
 // wrapper, esto quiere decri que podra hacer varias cosas al mismo tiempo
+
 frappe.pages['sales-analytics-2'].on_page_load = function (wrapper) {
     var page = frappe.ui.make_app_page({
         parent: wrapper,
@@ -12,7 +13,7 @@ frappe.pages['sales-analytics-2'].on_page_load = function (wrapper) {
     frappe.breadcrumbs.add("Revelare");
 }
 
-// La vista para Sales Analitycs2 hereda de TreeGridReport :TODO
+// La vista para Sales Analitycs2 hereda de TreeGridReport : TODO
 erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
     init: function (wrapper) {
         // Super Constructor: Aca se asignan las propiedades iniciales.
@@ -82,41 +83,41 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         this.tree_grid = this.tree_grids[this.tree_type];
 
         var std_columns = [{
-                id: "check",
-                name: "Plot",
-                field: "check",
-                width: 30,
-                formatter: this.check_formatter
-            },
-            {
-                id: "name",
-                name: this.tree_grid.label,
-                field: "name",
-                width: 300,
-                formatter: this.tree_formatter
-            },
-            {
-                id: "total",
-                name: "Total",
-                field: "total",
-                plot: false,
-                formatter: this.currency_formatter
-            },
-            // Agregando columna de UOM:
-            // Name:  El nombre a mostrar en la columna del informe
-            // ? ID:  Asumimos que es el identificador del objeto FIXME
-            // Field: El campo que se desea mostrar 
-            // Plot: Si se muestra o no en la gráfica
-            // Width: El ancho en pixelas de la columna.
-            // Formatter: Formater es el formato a mostrarse en la pantalla.
-            {
-                id: "UOM2",
-                name: "UOM",
-                field: "stock_uom",
-                width: 100,
-                plot: false,
-                formatter: this.select // formatters.js public/js // muestra la unidad de medida default para cada item
-            }
+            id: "check",
+            name: "Plot",
+            field: "check",
+            width: 30,
+            formatter: this.check_formatter
+        },
+        {
+            id: "name",
+            name: this.tree_grid.label,
+            field: "name",
+            width: 300,
+            formatter: this.tree_formatter
+        },
+        {
+            id: "total",
+            name: "Total",
+            field: "total",
+            plot: false,
+            formatter: this.currency_formatter
+        },
+        // Agregando columna de UOM:
+        // Name:  El nombre a mostrar en la columna del informe
+        // ? ID:  Asumimos que es el identificador del objeto FIXME
+        // Field: El campo que se desea mostrar 
+        // Plot: Si se muestra o no en la gráfica
+        // Width: El ancho en pixelas de la columna.
+        // Formatter: Formater es el formato a mostrarse en la pantalla.
+        {
+            id: "UOM2",
+            name: "UOM",
+            field: "stock_uom",
+            width: 100,
+            plot: false,
+            formatter: this.select // formatters.js public/js // muestra la unidad de medida default para cada item
+        }
         ];
 
         this.make_date_range_columns();
@@ -124,83 +125,83 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
     },
     // Especificacion de filtros
     filters: [{
-            fieldtype: "Select",
-            fieldname: "tree_type",
-            label: __("Tree Type"),
-            //options: ["Customer Group", "Customer",
-            //    "Item Group", "Item", "Territory"
-            //],
-            options: ["Item Group", "Item", "Customer Group", "Customer", "Territory"],
-            filter: function (val, item, opts, me) {
-                return me.apply_zero_filter(val, item, opts, me);
-            }
-        },
-        {
-            fieldtype: "Select",
-            fieldname: "based_on",
-            label: __("Based On"),
-            options: ["Sales Invoice",
-                "Sales Order", "Delivery Note"
-            ]
-        },
-        {
-            fieldtype: "Select",
-            fieldname: "value_or_qty",
-            label: __("Value or Qty"),
-            options: [{
-                label: __("Value"),
-                value: "Value"
-            }, {
-                label: __("Quantity"),
-                value: "Quantity"
-            }]
-        },
-        {
-            fieldtype: "Date",
-            fieldname: "from_date",
-            label: __("From Date")
-        },
-        {
-            fieldtype: "Label",
-            fieldname: "to",
-            label: __("To")
-        },
-        {
-            fieldtype: "Date",
-            fieldname: "to_date",
-            label: __("To Date")
-        },
-        {
-            fieldtype: "Select",
-            fieldname: "company",
-            label: __("Company"),
-            link: "Company",
-            default_value: __("Select Company...")
-        },
-        {
-            fieldtype: "Select",
-            label: __("Range"),
-            fieldname: "range",
-            options: [{
-                    label: __("Daily"),
-                    value: "Daily"
-                }, {
-                    label: __("Weekly"),
-                    value: "Weekly"
-                },
-                {
-                    label: __("Monthly"),
-                    value: "Monthly"
-                }, {
-                    label: __("Quarterly"),
-                    value: "Quarterly"
-                },
-                {
-                    label: __("Yearly"),
-                    value: "Yearly"
-                }
-            ]
+        fieldtype: "Select",
+        fieldname: "tree_type",
+        label: __("Tree Type"),
+        //options: ["Customer Group", "Customer",
+        //    "Item Group", "Item", "Territory"
+        //],
+        options: ["Item Group", "Item", "Customer Group", "Customer", "Territory"],
+        filter: function (val, item, opts, me) {
+            return me.apply_zero_filter(val, item, opts, me);
         }
+    },
+    {
+        fieldtype: "Select",
+        fieldname: "based_on",
+        label: __("Based On"),
+        options: ["Sales Invoice",
+            "Sales Order", "Delivery Note"
+        ]
+    },
+    {
+        fieldtype: "Select",
+        fieldname: "value_or_qty",
+        label: __("Value or Qty"),
+        options: [{
+            label: __("Value"),
+            value: "Value"
+        }, {
+            label: __("Quantity"),
+            value: "Quantity"
+        }]
+    },
+    {
+        fieldtype: "Date",
+        fieldname: "from_date",
+        label: __("From Date")
+    },
+    {
+        fieldtype: "Label",
+        fieldname: "to",
+        label: __("To")
+    },
+    {
+        fieldtype: "Date",
+        fieldname: "to_date",
+        label: __("To Date")
+    },
+    {
+        fieldtype: "Select",
+        fieldname: "company",
+        label: __("Company"),
+        link: "Company",
+        default_value: __("Select Company...")
+    },
+    {
+        fieldtype: "Select",
+        label: __("Range"),
+        fieldname: "range",
+        options: [{
+            label: __("Daily"),
+            value: "Daily"
+        }, {
+            label: __("Weekly"),
+            value: "Weekly"
+        },
+        {
+            label: __("Monthly"),
+            value: "Monthly"
+        }, {
+            label: __("Quarterly"),
+            value: "Quarterly"
+        },
+        {
+            label: __("Yearly"),
+            value: "Yearly"
+        }
+        ]
+    }
     ],
     // Configurando Filtros
     setup_filters: function () {
@@ -210,7 +211,10 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         // Actualiza los datos cuando ocurren los trigger dentro del array
         this.trigger_refresh_on_change(["value_or_qty", "tree_type", "based_on", "company"]);
 
+        // Mostrar los ceros
         this.show_zero_check();
+
+        // Configurar check grafica
         this.setup_chart_check();
     },
     // inicializando Filtros
@@ -225,6 +229,8 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         if (!this.tl) {
             // add 'Not Set' Customer & Item
             // (Customer / Item are not mandatory!!)
+
+            // TODO: Que hace report_dump?
             frappe.report_dump.data["Customer"].push({
                 name: "Not Set",
                 parent_customer_group: "All Customer Groups",
@@ -269,9 +275,11 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
 
                 me.data.push(d);
                 me.item_by_name[d.name] = d;
+
                 if (d[me.tree_grid.parent_field]) {
                     me.parent_map[d.name] = d[me.tree_grid.parent_field];
                 }
+
                 me.reset_item_values(d);
             });
 
@@ -286,7 +294,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
 
         this.prepare_balances();
 
-        if (me.tree_grid.show) {
+        if (me.tree_grid.show) { // TODO: probar llamar funcion
             this.set_totals(false);
             this.update_groups();
         } else {
@@ -297,21 +305,35 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
     // Preparar Balances
     // TODO:
     prepare_balances: function () {
-        var me = this;
+        var me = this; // Hace referencia a this en el contexto actual (scope)
+        // Tomando los datos de fecha inicial
         var from_date = frappe.datetime.str_to_obj(this.from_date);
+        // Tomando los datos de fecha final
         var to_date = frappe.datetime.str_to_obj(this.to_date);
+        // Aca se guarda el estado si es valor o cantidad, pero como default se le asigna como "value" ¿?
         var is_val = this.value_or_qty == 'Value';
 
-        $.each(this.tl[this.based_on], function (i, tl) {
+        // Recorriendo los campos y realizando operaciones. Se ejecuta cada vez que se utiliza el trigger/evento 
+        // based_on
+
+        // tl = layout ¿?
+        $.each(this.tl[this.based_on], function (i, tl) { // TODO: LLAMAR FUNCIONES AQUI, PROBAR?
+
+            // Debe ser la compañia default
             if (me.is_default('company') ? true : tl.company === me.company) {
+
+                // Agrega las columnas por fechas
                 var posting_date = frappe.datetime.str_to_obj(tl.posting_date);
+                // Permite estar en el rango de las fechas seleccionadas
                 if (posting_date >= from_date && posting_date <= to_date) {
-                    var item = me.item_by_name[tl[me.tree_grid.item_key]] ||
-                        me.item_by_name['Not Set'];
+
+                    var item = me.item_by_name[tl[me.tree_grid.item_key]] || me.item_by_name['Not Set'];
+
                     if (item) {
                         // FIXME: REALIZAR AQUI OPERACIONES MATEMATICAS
                         item[me.column_map[tl.posting_date].field] += (is_val ? tl.base_net_amount : tl.qty * 10); // FIXME: OPERACIONES DE PRUEBA
                     }
+
                 }
             }
         });
@@ -328,9 +350,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
 
                 $.each(me.columns, function (c, col) {
                     if (col.formatter == me.currency_formatter) {
-                        parent_group[col.field] =
-                            flt(parent_group[col.field]) +
-                            flt(item[col.field]);
+                        parent_group[col.field] = flt(parent_group[col.field]) + flt(item[col.field]);
                     }
                 });
                 parent = me.parent_map[parent];
@@ -350,7 +370,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 if (col.formatter == me.currency_formatter && !col.hidden && col.field != "total")
                     d.total += d[col.field];
                 if (d.checked) checked = true;
-            })
+            });
 
         });
 
@@ -377,3 +397,9 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
 // });
 
 // TODO: FEATURES REPORT BUILDER!!
+
+// ENCONTRAR UN TRIGGER QUE PARA CUANDO CARGUE EL REPORT, PARA ASI BUSCAR Y LLAMAR LA UNIDAD DE MEDIDA
+// DEFAULT: CUANDO EL BOTON ACTUALIZAR SE ACCIONE,
+// refresh: No funciona!!
+// on_load: No Funciona!!
+//  ¿?
