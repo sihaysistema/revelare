@@ -12,6 +12,19 @@ frappe.pages['sales-analytics-2'].on_page_load = function (wrapper) {
     frappe.breadcrumbs.add("Revelare");
 }
 
+const obtenerData = function (datoItem) {
+    frappe.call({
+        method: "revelare.get_data.mostrarData",
+        args: {
+            datoFront: datoItem
+        },
+        // El callback recibe como parametro el dato retornado por script python del lado del servidor
+        callback: function (data) {
+            console.log(data.message)
+        }
+    });
+}
+
 // La vista para Sales Analitycs2 hereda de TreeGridReport :TODO
 erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
     init: function (wrapper) {
@@ -306,11 +319,15 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             if (me.is_default('company') ? true : tl.company === me.company) {
                 var posting_date = frappe.datetime.str_to_obj(tl.posting_date);
                 if (posting_date >= from_date && posting_date <= to_date) {
-                    var item = me.item_by_name[tl[me.tree_grid.item_key]] ||
-                        me.item_by_name['Not Set'];
+                    var item = me.item_by_name[tl[me.tree_grid.item_key]] || me.item_by_name['Not Set'];
+
+                    console.log(obtenerData(tl.item_code))
+
                     if (item) {
                         // FIXME: REALIZAR AQUI OPERACIONES MATEMATICAS
-                        item[me.column_map[tl.posting_date].field] += (is_val ? tl.base_net_amount : tl.qty * 10); // FIXME: OPERACIONES DE PRUEBA
+                        item[me.column_map[tl.posting_date].field] += (is_val ? tl.base_net_amount : tl.qty); // FIXME: OPERACIONES DE PRUEBA
+                        // console.log(item[me.column_map[tl.posting_date].field])
+
                     }
                 }
             }
@@ -363,17 +380,5 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         }
     }
 });
-
-// ES6 METHODS NO FUNCIONAN :(
-// let clicke = document.getElementsByClassName("btn btn-primary btn-sm primary-action");
-// clicke.addEventListener("click", () => console.log('MARIO'));
-
-// $(".btn btn-primary btn-sm primary-action").change(function () {
-//     alert("Handler for .change() called.");
-// });
-
-// $("#btn").click(function () {
-//     console.log('Mario')
-// });
 
 // TODO: FEATURES REPORT BUILDER!!
