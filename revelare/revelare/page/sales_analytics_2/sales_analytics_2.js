@@ -13,14 +13,19 @@ frappe.pages['sales-analytics-2'].on_page_load = function (wrapper) {
 }
 
 const obtenerData = function (datoItem) {
+
     frappe.call({
-        method: "revelare.get_data.mostrarData",
+        method: "revelare.revelare.page.sales_analytics_2.sales_analytics_2.obtenerDatosItem",
         args: {
-            datoFront: datoItem
+            codigoItem: datoItem
         },
         // El callback recibe como parametro el dato retornado por script python del lado del servidor
         callback: function (data) {
             console.log(data.message)
+            // frappe.meta.get_docfield('Sales Analytics 2', 'UOM2', cur_frm.doc.name).options = r.message;
+            // // en-US # Updates the current form field 'serie' with the previously obtained data
+            // // es-GT # Actualiza el campo 'serie' del formulario actual, con la data obtenida anteriormente
+            // cur_frm.refresh_field('UOM2');
         }
     });
 }
@@ -31,7 +36,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         // Super Constructor: Aca se asignan las propiedades iniciales.
         this._super({
             title: __("Sales Analytics 2.0"),
-            parent: $(wrapper).find('.layout-main'),
+            parent: $(wrapper).find('.layout-main'), // Es una clase CSS PUBLIC/CSS
             page: wrapper.page,
             doctypes: ["Item", "Item Group", "Customer", "Customer Group", "Company", "Territory",
                 "Fiscal Year", "Sales Invoice", "Sales Invoice Item",
@@ -156,14 +161,16 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 "Sales Order", "Delivery Note"
             ]
         },
+        // Confiuracion para dejar cantidad como default y unico filtros
         {
             fieldtype: "Select",
             fieldname: "value_or_qty",
             label: __("Value or Qty"),
             options: [{
-                label: __("Value"),
-                value: "Value"
-            }, {
+                // {
+                //     label: __("Value"),
+                //     value: "Value"
+                // }, 
                 label: __("Quantity"),
                 value: "Quantity"
             }]
@@ -314,6 +321,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         var from_date = frappe.datetime.str_to_obj(this.from_date);
         var to_date = frappe.datetime.str_to_obj(this.to_date);
         var is_val = this.value_or_qty == 'Value';
+        let arrayDatos = [];
 
         $.each(this.tl[this.based_on], function (i, tl) {
             if (me.is_default('company') ? true : tl.company === me.company) {
@@ -321,12 +329,19 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 if (posting_date >= from_date && posting_date <= to_date) {
                     var item = me.item_by_name[tl[me.tree_grid.item_key]] || me.item_by_name['Not Set'];
 
-                    console.log(obtenerData(tl.item_code))
+                    // if (arrayDatos.includes(tl.item_code)) {
+                    //     console.log('Elemento ya incluido en array');
+                    // } else {
+                    //     arrayDatos.push(tl.item_code);
+                    //     console.log(arrayDatos)
+                    // }
 
                     if (item) {
                         // FIXME: REALIZAR AQUI OPERACIONES MATEMATICAS
                         item[me.column_map[tl.posting_date].field] += (is_val ? tl.base_net_amount : tl.qty); // FIXME: OPERACIONES DE PRUEBA
                         // console.log(item[me.column_map[tl.posting_date].field])
+                        // console.log(item[me.column_map[tl.posting_date].field])
+                        console.log(obtenerData(tl.item_code))
 
                     }
                 }
