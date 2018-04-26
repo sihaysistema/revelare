@@ -31,6 +31,7 @@ const obtenerData = function (datoItem) {
 }
 
 // La vista para Sales Analitycs2 hereda de TreeGridReport :TODO
+// Eso sale de el folder publico de js de Frappe, alli esta grid_report.js y las funciones que se llaman desde aqui.
 erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
     init: function (wrapper) {
         // Super Constructor: Aca se asignan las propiedades iniciales.
