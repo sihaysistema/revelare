@@ -30,8 +30,12 @@ const obtenerData = function (datoItem) {
     });
 }
 
+// $(nn).on('click', '.active.selected', function () {
+//     console.log('yeah')
+// })
+
+
 // La vista para Sales Analitycs2 hereda de TreeGridReport :TODO
-// Eso sale de el folder publico de js de Frappe, alli esta grid_report.js y las funciones que se llaman desde aqui.
 erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
     init: function (wrapper) {
         // Super Constructor: Aca se asignan las propiedades iniciales.
@@ -330,6 +334,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 if (posting_date >= from_date && posting_date <= to_date) {
                     var item = me.item_by_name[tl[me.tree_grid.item_key]] || me.item_by_name['Not Set'];
 
+                    // FIXME: Hacer que en una sola peticion se mande un paquete con toda la informacion que se necesite.
                     // if (arrayDatos.includes(tl.item_code)) {
                     //     console.log('Elemento ya incluido en array');
                     // } else {
@@ -340,14 +345,42 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                     if (item) {
                         // FIXME: REALIZAR AQUI OPERACIONES MATEMATICAS
                         item[me.column_map[tl.posting_date].field] += (is_val ? tl.base_net_amount : tl.qty); // FIXME: OPERACIONES DE PRUEBA
-                        // console.log(item[me.column_map[tl.posting_date].field])
-                        // console.log(item[me.column_map[tl.posting_date].field])
-                        console.log(obtenerData(tl.item_code))
 
+                        // TODO: Descomente la siguiente linea para ver response y request de datos para cada ITEM
+                        // console.log(obtenerData(tl.item_code));
                     }
                 }
             }
         });
+
+        let nn = document.getElementsByClassName("slick-cell l3 r3 active selected");
+
+        $("div").dblclick(function () {
+            $(nn).html(`
+            <style>
+            .miEstilo {
+                position: center;
+                min-width: 90px;
+            }
+            </style>
+        <select class="miEstilo" name="cosa">
+            <option value="0"></option>
+            <option value="1">UOM1</option>
+            <option value="2">UOM2</option>
+            <option value="3">UOM3</option>
+            <option value="4">UOM4</option>
+        </select>
+            `);
+        });
+
+        // $(".slick-cell.l3.r3.active.selected").click(function () {
+        //     alert('Hizo primer click');
+        // });
+        // $(document).ready(function () {
+        //     $("div.slick-cell.l3.r3.active.selected").click(function () {
+        //         alert('YEAH')
+        //     });
+        // });
     },
     // Actualizar Grupos
     // TODO:
@@ -382,7 +415,9 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             $.each(me.columns, function (i, col) {
                 if (col.formatter == me.currency_formatter && !col.hidden && col.field != "total")
                     d.total += d[col.field];
-                if (d.checked) checked = true;
+                if (d.checked) {
+                    checked = true;
+                };
             })
 
         });
@@ -398,3 +433,15 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
 });
 
 // TODO: FEATURES REPORT BUILDER!!
+let verificacion = function () {
+
+    let nn = document.getElementsByClassName("slick-cell l3 r3");
+
+    for (let i = 0; i < nn.length; i++) {
+        nn[i].addEventListener('click', function () {
+            console.log('EXITO')
+        }, false);
+    }
+    console.log(nn)
+
+}
