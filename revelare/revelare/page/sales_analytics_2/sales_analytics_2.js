@@ -353,26 +353,31 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             }
         });
 
-        let nn = document.getElementsByClassName("slick-cell l3 r3 active selected");
+        // NOTA: TOMAR EN CUENTA EL FUNCIONAMIENTO CUANDO SE EJECUTE EL FILTRO DE CLIENTE, CATEGORIA CLIENTE, TERRITORIO
+        // obtiene un htmlcollection
+        let classUOMItem = document.getElementsByClassName("slick-cell l3 r3 active selected");
 
+        // cuando se haga un doble click sobre la columna UOM y sobre un elemento en especifico
+        // ejecuta una funcion anonima y en ella se agrega un HTML simple para crear un dropdown
+        // este HTML se sobreescribe en el DOM donde la clase sea "slick-cell l3 r3 active selected"
         $("div").dblclick(function () {
-            $(nn).html(`
+            $(classUOMItem).html(`
             <style>
             .miEstilo {
                 position: center;
                 min-width: 90px;
             }
             </style>
-        <select class="miEstilo" name="cosa">
-            <option value="0"></option>
-            <option value="1">UOM1</option>
-            <option value="2">UOM2</option>
-            <option value="3">UOM3</option>
-            <option value="4">UOM4</option>
-        </select>
+            <select class="miEstilo" name="cosa">
+                <option value="0"></option>
+                <option value="1">UOM1</option>
+                <option value="2">UOM2</option>
+                <option value="3">UOM3</option>
+                <option value="4">UOM4</option>
+            </select>
             `);
         });
-
+        // OPCIONES?
         // $(".slick-cell.l3.r3.active.selected").click(function () {
         //     alert('Hizo primer click');
         // });
@@ -432,16 +437,15 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
     }
 });
 
-// TODO: FEATURES REPORT BUILDER!!
-let verificacion = function () {
+// let verificacion = function () {
 
-    let nn = document.getElementsByClassName("slick-cell l3 r3");
+//     let nn = document.getElementsByClassName("slick-cell l3 r3");
 
-    for (let i = 0; i < nn.length; i++) {
-        nn[i].addEventListener('click', function () {
-            console.log('EXITO')
-        }, false);
-    }
-    console.log(nn)
+//     for (let i = 0; i < nn.length; i++) {
+//         nn[i].addEventListener('click', function () {
+//             console.log('EXITO')
+//         }, false);
+//     }
+//     console.log(nn)
 
-}
+// }

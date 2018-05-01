@@ -9,8 +9,9 @@ sys.setdefaultencoding('utf-8')
 @frappe.whitelist()
 def obtenerDatosItem(codigoItem):
     """Funcion para obtener los datos necesarios desde la tabla UOM Conversion Detail e Item"""
-    # El if verifica la existencia del dato solicitado, en caso no exista
-    # devuelve el mensaje 'No existe'
+    # El if verifica la existencia del dato solicitado, para que sea valido, debe existir y
+    # tener un check con la unidad de medidad default en caso no exista
+    # devuelve la unidad de medida default del item
     if frappe.db.exists('UOM Conversion Detail', {'parent': codigoItem, 'revelare_default_uom_sales_analytics_2': 1}):
         datosItem = frappe.db.get_values('UOM Conversion Detail',
                                          filters={'parent': codigoItem, 'revelare_default_uom_sales_analytics_2': 1},
