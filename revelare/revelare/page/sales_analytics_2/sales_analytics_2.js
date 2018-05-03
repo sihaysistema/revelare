@@ -136,7 +136,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 id: "UOM2",
                 name: "UOM",
                 field: "stock_uom",
-                width: 100,
+                width: 105,
                 plot: false,
                 formatter: this.select // formatters.js public/js // muestra la unidad de medida default para cada item
             }
@@ -356,7 +356,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         // NOTA: TOMAR EN CUENTA EL FUNCIONAMIENTO CUANDO SE EJECUTE EL FILTRO DE CLIENTE, CATEGORIA CLIENTE, TERRITORIO
         // obtiene un htmlcollection
         let classUOMItem = document.getElementsByClassName("slick-cell l3 r3 active selected");
-
+        let opt_1 = [' ', 'Disco Duro', 'Memoria Ram', 'GPU'];
         // cuando se haga un doble click sobre la columna UOM y sobre un elemento en especifico
         // ejecuta una funcion anonima y en ella se agrega un HTML simple para crear un dropdown
         // este HTML se sobreescribe en el DOM donde la clase sea "slick-cell l3 r3 active selected"
@@ -366,17 +366,52 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             .miEstilo {
                 position: center;
                 min-width: 90px;
+                border: 0;
             }
             </style>
-            <select class="miEstilo" name="cosa">
-                <option value="0"></option>
-                <option value="1">UOM1</option>
-                <option value="2">UOM2</option>
-                <option value="3">UOM3</option>
-                <option value="4">UOM4</option>
-            </select>
+
+            <form name="formulario1" action="#">
+                <select class="miEstilo" id="cosa" name="opt">
+                    <option value="0"> </option>
+                    <option value="1">w</option>
+                </select>
+            </form>
             `);
+
+            $(".miEstilo").click(function () {
+                // let valr = document.getElementById("cosa").value;
+                // console.log(valr)
+
+                // // Se calcula el numero de cosas
+                // let numUOM = opt_1.length;
+                // document.formulario1.opt.length = numUOM;
+                // // Para cada opcion del array lo pongo en el selector
+                // for (let i = 0; i < numUOM; i++) {
+                //     document.formulario1.opt.options[i].value = opt_1[i];
+                //     document.formulario1.opt.options[i].text = opt_1[i];
+                // }
+                // console.log(document.getElementsByClassName("ui-widget-content slick-row odd active"));
+
+                // Array.from(filaItems).forEach(function (filaItem) {
+                //     console.log(filaItem.textContent)
+                // });
+
+                // let fila2Items = document.getElementsByClassName("ui-widget-content slick-row even active"); // retuna htmlcollections
+                let filaItems = document.querySelector('.ui-widget-content.slick-row.active div.slick-cell.l1.r1');
+                console.log(filaItems.textContent)
+                // console.log(fila2Items)
+                // Array.from(filaItems).forEach(function (fila) {
+                //     console.log(fila.textContent)
+                // });
+            });
         });
+
+        // function cambioUOM() {
+        //     let = document.getElementById("cosa").value;
+        //     // document.getElementById("demo").innerHTML = "You selected: " + x;
+        //     console.log(x)
+        // }
+
         // OPCIONES?
         // $(".slick-cell.l3.r3.active.selected").click(function () {
         //     alert('Hizo primer click');
