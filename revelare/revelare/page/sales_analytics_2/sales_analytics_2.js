@@ -1,39 +1,33 @@
 // Cuando carga, carga la pagina sales-analitycs-2 que a su vez recibe una funcion con parametro
 // wrapper, esto quiere decri que podra hacer varias cosas al mismo tiempo
-frappe.pages['sales-analytics-2'].on_page_load = function (wrapper) {
+frappe.pages["sales-analytics-2"].on_page_load = function (wrapper) {
     var page = frappe.ui.make_app_page({
         parent: wrapper,
-        title: 'Sales Analytics 2.0',
+        title: "Sales Analytics 2.0",
         single_column: true
     });
 
     // wrapper permite llamar multiples funciones
     new erpnext.SalesAnalytics2(wrapper);
     frappe.breadcrumbs.add("Revelare");
-}
+};
 
-const obtenerData = function (datoItem) {
-
+let obtenerData = function (codItemUOM) {
     frappe.call({
         method: "revelare.revelare.page.sales_analytics_2.sales_analytics_2.obtenerDatosItem",
         args: {
-            codigoItem: datoItem
+            codigoItem: codItemUOM
         },
         // El callback recibe como parametro el dato retornado por script python del lado del servidor
         callback: function (data) {
             console.log(data.message)
-            // frappe.meta.get_docfield('Sales Analytics 2', 'UOM2', cur_frm.doc.name).options = r.message;
-            // // en-US # Updates the current form field 'serie' with the previously obtained data
-            // // es-GT # Actualiza el campo 'serie' del formulario actual, con la data obtenida anteriormente
-            // cur_frm.refresh_field('UOM2');
         }
     });
-}
+};
 
 // $(nn).on('click', '.active.selected', function () {
 //     console.log('yeah')
 // })
-
 
 // La vista para Sales Analitycs2 hereda de TreeGridReport :TODO
 erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
@@ -41,12 +35,22 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         // Super Constructor: Aca se asignan las propiedades iniciales.
         this._super({
             title: __("Sales Analytics 2.0"),
-            parent: $(wrapper).find('.layout-main'), // Es una clase CSS PUBLIC/CSS
+            parent: $(wrapper).find(".layout-main"), // Es una clase CSS PUBLIC/CSS
             page: wrapper.page,
-            doctypes: ["Item", "Item Group", "Customer", "Customer Group", "Company", "Territory",
-                "Fiscal Year", "Sales Invoice", "Sales Invoice Item",
-                "Sales Order", "Sales Order Item[Sales Analytics]",
-                "Delivery Note", "Delivery Note Item[Sales Analytics]"
+            doctypes: [
+                "Item",
+                "Item Group",
+                "Customer",
+                "Customer Group",
+                "Company",
+                "Territory",
+                "Fiscal Year",
+                "Sales Invoice",
+                "Sales Invoice Item",
+                "Sales Order",
+                "Sales Order Item[Sales Analytics]",
+                "Delivery Note",
+                "Delivery Note Item[Sales Analytics]"
             ],
             tree_grid: {
                 show: true
@@ -60,15 +64,19 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 item_key: "customer",
                 parent_field: "parent_customer_group",
                 formatter: function (item) {
-                    return item.customer_name ? item.customer_name + " (" + item.name + ")" : item.name;
+                    return item.customer_name ?
+                        item.customer_name + " (" + item.name + ")" :
+                        item.name;
                 }
             },
-            "Customer": {
+            Customer: {
                 label: __("Customer"),
                 show: false,
                 item_key: "customer",
                 formatter: function (item) {
-                    return item.customer_name ? item.customer_name + " (" + item.name + ")" : item.name;
+                    return item.customer_name ?
+                        item.customer_name + " (" + item.name + ")" :
+                        item.name;
                 }
             },
             "Item Group": {
@@ -80,7 +88,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                     return item.name;
                 }
             },
-            "Item": {
+            Item: {
                 label: __("Item"),
                 show: true,
                 item_key: "item_code",
@@ -89,16 +97,18 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                     // return item.stock_uom // Muestra la unidad de medida default
                 }
             },
-            "Territory": {
+            Territory: {
                 label: __("Territory / Customer"),
                 show: true,
                 item_key: "customer",
                 parent_field: "parent_territory",
                 formatter: function (item) {
-                    return item.customer_name ? item.customer_name + " (" + item.name + ")" : item.name;
+                    return item.customer_name ?
+                        item.customer_name + " (" + item.name + ")" :
+                        item.name;
                 }
             }
-        }
+        };
     },
     // Configuracion Columnas
     setup_columns: function () {
@@ -128,7 +138,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             // Agregando columna de UOM:
             // Name:  El nombre a mostrar en la columna del informe
             // ? ID:  Asumimos que es el identificador del objeto FIXME
-            // Field: El campo que se desea mostrar 
+            // Field: El campo que se desea mostrar
             // Plot: Si se muestra o no en la gráfica
             // Width: El ancho en pixelas de la columna.
             // Formatter: Formater es el formato a mostrarse en la pantalla.
@@ -153,7 +163,13 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             //options: ["Customer Group", "Customer",
             //    "Item Group", "Item", "Territory"
             //],
-            options: ["Item Group", "Item", "Customer Group", "Customer", "Territory"],
+            options: [
+                "Item Group",
+                "Item",
+                "Customer Group",
+                "Customer",
+                "Territory"
+            ],
             filter: function (val, item, opts, me) {
                 return me.apply_zero_filter(val, item, opts, me);
             }
@@ -162,9 +178,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             fieldtype: "Select",
             fieldname: "based_on",
             label: __("Based On"),
-            options: ["Sales Invoice",
-                "Sales Order", "Delivery Note"
-            ]
+            options: ["Sales Invoice", "Sales Order", "Delivery Note"]
         },
         // Confiuracion para dejar cantidad como default y unico filtros
         {
@@ -175,7 +189,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 // {
                 //     label: __("Value"),
                 //     value: "Value"
-                // }, 
+                // },
                 label: __("Quantity"),
                 value: "Quantity"
             }]
@@ -209,14 +223,16 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             options: [{
                     label: __("Daily"),
                     value: "Daily"
-                }, {
+                },
+                {
                     label: __("Weekly"),
                     value: "Weekly"
                 },
                 {
                     label: __("Monthly"),
                     value: "Monthly"
-                }, {
+                },
+                {
                     label: __("Quarterly"),
                     value: "Quarterly"
                 },
@@ -233,7 +249,12 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         this._super(); // SuperConstructor
 
         // Actualiza los datos cuando ocurren los trigger dentro del array
-        this.trigger_refresh_on_change(["value_or_qty", "tree_type", "based_on", "company"]);
+        this.trigger_refresh_on_change([
+            "value_or_qty",
+            "tree_type",
+            "based_on",
+            "company"
+        ]);
 
         this.show_zero_check();
         this.setup_chart_check();
@@ -241,7 +262,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
     // inicializando Filtros
     init_filter_values: function () {
         this._super();
-        this.filter_inputs.range.val('Monthly');
+        this.filter_inputs.range.val("Monthly");
     },
     // Preparando Data
     // TODO:
@@ -254,13 +275,13 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 name: "Not Set",
                 parent_customer_group: "All Customer Groups",
                 parent_territory: "All Territories",
-                id: "Not Set",
+                id: "Not Set"
             });
 
             frappe.report_dump.data["Item"].push({
                 name: "Not Set",
                 parent_item_group: "All Item Groups",
-                id: "Not Set",
+                id: "Not Set"
             });
         }
 
@@ -269,12 +290,11 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         }
 
         if (!this.data || me.item_type != me.tree_type) {
-
-            if (me.tree_type == 'Customer') {
+            if (me.tree_type == "Customer") {
                 var items = frappe.report_dump.data["Customer"];
             }
 
-            if (me.tree_type == 'Customer Group') {
+            if (me.tree_type == "Customer Group") {
                 var items = this.prepare_tree("Customer", "Customer Group");
             } else if (me.tree_type == "Item Group") {
                 var items = this.prepare_tree("Item", "Item Group");
@@ -284,7 +304,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 var items = this.prepare_tree("Customer", "Territory");
             }
 
-            me.item_type = me.tree_type
+            me.item_type = me.tree_type;
             me.parent_map = {};
             me.item_by_name = {};
             me.data = [];
@@ -301,7 +321,6 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             });
 
             this.set_indent();
-
         } else {
             // otherwise, only reset values
             $.each(this.data, function (i, d) {
@@ -317,7 +336,6 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         } else {
             this.set_totals(true);
         }
-
     },
     // Preparar Balances
     // TODO:
@@ -325,14 +343,16 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
         var me = this;
         var from_date = frappe.datetime.str_to_obj(this.from_date);
         var to_date = frappe.datetime.str_to_obj(this.to_date);
-        var is_val = this.value_or_qty == 'Value';
+        var is_val = this.value_or_qty == "Value";
         let arrayDatos = [];
 
         $.each(this.tl[this.based_on], function (i, tl) {
-            if (me.is_default('company') ? true : tl.company === me.company) {
+            if (me.is_default("company") ? true : tl.company === me.company) {
                 var posting_date = frappe.datetime.str_to_obj(tl.posting_date);
                 if (posting_date >= from_date && posting_date <= to_date) {
-                    var item = me.item_by_name[tl[me.tree_grid.item_key]] || me.item_by_name['Not Set'];
+                    var item =
+                        me.item_by_name[tl[me.tree_grid.item_key]] ||
+                        me.item_by_name["Not Set"];
 
                     // FIXME: Hacer que en una sola peticion se mande un paquete con toda la informacion que se necesite.
                     // if (arrayDatos.includes(tl.item_code)) {
@@ -344,7 +364,9 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
 
                     if (item) {
                         // FIXME: REALIZAR AQUI OPERACIONES MATEMATICAS
-                        item[me.column_map[tl.posting_date].field] += (is_val ? tl.base_net_amount : tl.qty); // FIXME: OPERACIONES DE PRUEBA
+                        item[me.column_map[tl.posting_date].field] += is_val ?
+                            tl.base_net_amount :
+                            tl.qty; // FIXME: OPERACIONES DE PRUEBA
 
                         // TODO: Descomente la siguiente linea para ver response y request de datos para cada ITEM
                         // console.log(obtenerData(tl.item_code));
@@ -353,15 +375,34 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             }
         });
 
-        // NOTA: TOMAR EN CUENTA EL FUNCIONAMIENTO CUANDO SE EJECUTE EL FILTRO DE CLIENTE, CATEGORIA CLIENTE, TERRITORIO
-        // obtiene un htmlcollection
-        let classUOMItem = document.getElementsByClassName("slick-cell l3 r3 active selected");
-        let opt_1 = [' ', 'Disco Duro', 'Memoria Ram', 'GPU'];
-        // cuando se haga un doble click sobre la columna UOM y sobre un elemento en especifico
-        // ejecuta una funcion anonima y en ella se agrega un HTML simple para crear un dropdown
-        // este HTML se sobreescribe en el DOM donde la clase sea "slick-cell l3 r3 active selected"
-        $("div").dblclick(function () {
-            $(classUOMItem).html(`
+        let miEvento = document.querySelector('div');
+
+        // let seleccionItem = document.querySelector('.slick-cell.l3.r3.active.selected');
+
+        // Detecta cada click que se hace sobre un div
+        miEvento.addEventListener('dblclick', function (e) {
+
+            // FORMA 1: JAVASCRIPT PURO
+            // document.querySelector('.slick-cell.l3.r3.active.selected').innerHTML = `
+            // <style>
+            // .miEstilo {
+            //     position: center;
+            //     min-width: 90px;
+            //     border: 0;
+            // }
+            // </style>
+
+            // <form name="formulario1" action="#">
+            //     <select class="miEstilo" id="cosa" name="opt">
+            //         <option value="0">${"Hola"}</option>
+            //     </select>
+            // </form>
+            // `;
+
+            // FORMA 2: CON JQUERY
+            // Cuando se realiza un click sobre la columna UOM donde la clase sea "slick-cell l3 r3 active selected"
+            // se agrega el HTML que construye el dropdown
+            $(document.getElementsByClassName("slick-cell l3 r3 active selected")).html(`
             <style>
             .miEstilo {
                 position: center;
@@ -372,55 +413,33 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
 
             <form name="formulario1" action="#">
                 <select class="miEstilo" id="cosa" name="opt">
-                    <option value="0"> </option>
-                    <option value="1">w</option>
+                    <option value="0">${"hola"} </option>
+                    <option value="0">${"hola"} </option>
                 </select>
             </form>
             `);
 
+            // Agrega el evento click sobre el dropdown. Cuando se realiza un click sobre el dropdown
+            // este selecciona el texto que pertenece al codigo de item de la fila, con el codigo de item en una 
+            // variable se llama a la funcion obtenerData que se encarga de traer los datos de la base de datos
+            // relacionado a ese codigo de producto.
+            // Forma 1: Javascript Puro
+            // var eventoDropdown = document.querySelector('#cosa');
+            // eventoDropdown.addEventListener('click', function (e) { }
+
+            // Forma 2: Jquery
             $(".miEstilo").click(function () {
-                // let valr = document.getElementById("cosa").value;
-                // console.log(valr)
 
-                // // Se calcula el numero de cosas
-                // let numUOM = opt_1.length;
-                // document.formulario1.opt.length = numUOM;
-                // // Para cada opcion del array lo pongo en el selector
-                // for (let i = 0; i < numUOM; i++) {
-                //     document.formulario1.opt.options[i].value = opt_1[i];
-                //     document.formulario1.opt.options[i].text = opt_1[i];
-                // }
-                // console.log(document.getElementsByClassName("ui-widget-content slick-row odd active"));
-
-                // Array.from(filaItems).forEach(function (filaItem) {
-                //     console.log(filaItem.textContent)
-                // });
-
-                // let fila2Items = document.getElementsByClassName("ui-widget-content slick-row even active"); // retuna htmlcollections
                 let filaItems = document.querySelector('.ui-widget-content.slick-row.active div.slick-cell.l1.r1');
-                console.log(filaItems.textContent)
-                // console.log(fila2Items)
-                // Array.from(filaItems).forEach(function (fila) {
-                //     console.log(fila.textContent)
-                // });
+                // trim() sirve para quitar los espacios en blanco del string
+                let codigoUOM = ((filaItems.textContent).trim());
+                console.log(codigoUOM);
+
+                obtenerData(codigoUOM);
+
             });
         });
 
-        // function cambioUOM() {
-        //     let = document.getElementById("cosa").value;
-        //     // document.getElementById("demo").innerHTML = "You selected: " + x;
-        //     console.log(x)
-        // }
-
-        // OPCIONES?
-        // $(".slick-cell.l3.r3.active.selected").click(function () {
-        //     alert('Hizo primer click');
-        // });
-        // $(document).ready(function () {
-        //     $("div.slick-cell.l3.r3.active.selected").click(function () {
-        //         alert('YEAH')
-        //     });
-        // });
     },
     // Actualizar Grupos
     // TODO:
@@ -435,8 +454,7 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
                 $.each(me.columns, function (c, col) {
                     if (col.formatter == me.currency_formatter) {
                         parent_group[col.field] =
-                            flt(parent_group[col.field]) +
-                            flt(item[col.field]);
+                            flt(parent_group[col.field]) + flt(item[col.field]);
                     }
                 });
                 parent = me.parent_map[parent];
@@ -453,18 +471,22 @@ erpnext.SalesAnalytics2 = frappe.views.TreeGridReport.extend({
             d.total = 0.0;
 
             $.each(me.columns, function (i, col) {
-                if (col.formatter == me.currency_formatter && !col.hidden && col.field != "total")
+                if (
+                    col.formatter == me.currency_formatter &&
+                    !col.hidden &&
+                    col.field != "total"
+                )
                     d.total += d[col.field];
                 if (d.checked) {
                     checked = true;
-                };
-            })
-
+                }
+            });
         });
 
-        if (sort) this.data = this.data.sort(function (a, b) {
-            return a.total < b.total;
-        });
+        if (sort)
+            this.data = this.data.sort(function (a, b) {
+                return a.total < b.total;
+            });
 
         if (!this.checked) {
             this.data[0].checked = true;

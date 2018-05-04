@@ -12,15 +12,17 @@ def obtenerDatosItem(codigoItem):
     # El if verifica la existencia del dato solicitado, para que sea valido, debe existir y
     # tener un check con la unidad de medidad default en caso no exista
     # devuelve la unidad de medida default del item
-    if frappe.db.exists('UOM Conversion Detail', {'parent': codigoItem, 'revelare_default_uom_sales_analytics_2': 1}):
+    claveItem = str(codigoItem)
+
+    if frappe.db.exists('UOM Conversion Detail', {'parent': claveItem, 'revelare_default_uom_sales_analytics_2': 1}):
         datosItem = frappe.db.get_values('UOM Conversion Detail',
-                                         filters={'parent': codigoItem, 'revelare_default_uom_sales_analytics_2': 1},
+                                         filters={'parent': claveItem, 'revelare_default_uom_sales_analytics_2': 1},
                                          fieldname=['conversion_factor', 'uom'],
                                          as_dict=1)
         return datosItem
     else:
         datosDefaultItem = frappe.db.get_values('Item',
-                                                filters={'item_code': codigoItem},
+                                                filters={'item_code': claveItem},
                                                 fieldname=['stock_uom'],
                                                 as_dict=1)
         return datosDefaultItem
