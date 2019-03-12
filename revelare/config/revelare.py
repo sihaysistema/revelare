@@ -5,6 +5,16 @@ from frappe import _
 def get_data():
 	return [
 		{
+			"label": _("Cash Flow"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Budgeted Cash Flow",
+					"description": _("Entries budgeted cash flow.")
+				}
+			]
+		},
+		{
 			"label": _("Setup"),
 			"icon": "fa fa-cog",
 			"items": [
@@ -12,7 +22,7 @@ def get_data():
 					"type": "doctype",
 					"name": "Configuration",
 					"description": _("General Configuration to Revelare.")
-				},
+				}
 			]
 		},
 		{
@@ -24,7 +34,7 @@ def get_data():
 					"name": "sales-analytics-2",
 					"label": _("Sales Analytics 2"),
 					"icon": "fa fa-bar-chart",
-				},
+				}
 			]
 		},
 	]
