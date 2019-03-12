@@ -41,7 +41,7 @@ frappe.ui.form.on('UOM Conversion Detail', {
         // estemos trabajando, esto para obtener datos exactos.
         frm.doc.uoms.forEach((uom_row_i, index_i) => {
             if (uom_row_i.name == cdn) {
-                (uom_row_i.revelare_default_uom_sales_analytics_2) ? frm.enable_save(): console.log('unckecked');
+                (uom_row_i.revelare_default_uom_sales_analytics_2) ? frm.enable_save() : console.log('unckecked');
                 // FORMA 2! RECOMENDADA ES5 > :)
                 // Unicamente va permitir que exista un elemento seleccionado
                 frm.doc.uoms.forEach((uom_row, indice) => {
@@ -58,4 +58,8 @@ frappe.ui.form.on('UOM Conversion Detail', {
             }
         });
     }
+});
+
+frappe.ui.form.on('Sales Invoice', {
+
 });

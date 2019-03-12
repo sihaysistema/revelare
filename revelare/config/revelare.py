@@ -11,6 +11,12 @@ def get_data():
 					"type": "doctype",
 					"name": "Budgeted Cash Flow",
 					"description": _("Entries budgeted cash flow.")
+				},
+				{
+					"type": "report",
+					"name": "Budgeted Cash Flow Report",
+					"doctype": "Revelare",
+					"is_query_report": True
 				}
 			]
 		},
