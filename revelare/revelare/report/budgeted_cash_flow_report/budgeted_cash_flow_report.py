@@ -6,10 +6,11 @@ import frappe
 
 def execute(filters=None):
 	columns, data = [{
-	"fieldname": "budgeted_cash",
-	"label": ("Budgeted Cash"),
-	"fieldtype": "Link",
-	"options": "Budgeted Cash Flow",
-	"width": 300
+		"fieldname": "party",
+		"label": ("Party"),
+		"fieldtype": "Data",
+		"options": "Budgeted Cash Flow",
+		"width": 300
 	}], []
+	# [1, 2, 3, 4, 4, 5, 6, 7, 8, 9]
 	return columns, data

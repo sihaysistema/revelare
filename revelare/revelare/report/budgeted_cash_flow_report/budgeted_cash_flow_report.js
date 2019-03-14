@@ -1,8 +1,6 @@
 // Copyright (c) 2016, SHS and contributors
 // For license information, please see license.txt
 /* eslint-disable */
-frappe.require("assets/erpnext/js/financial_statements.js");
-
 
 frappe.query_reports["Budgeted Cash Flow Report"] = {
 	"filters": [
