@@ -17,6 +17,12 @@ def get_data():
 					"name": "Budgeted Cash Flow Report",
 					"doctype": "Revelare",
 					"is_query_report": True
+				},
+				{
+					"type": "page",
+					"name": "budgeted-cash-flow",
+					"label": _("Budgeted Cash Flow Analytics"),
+					"icon": "fa fa-bar-chart",
 				}
 			]
 		},

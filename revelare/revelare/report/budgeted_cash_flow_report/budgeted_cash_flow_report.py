@@ -5,5 +5,11 @@ from __future__ import unicode_literals
 import frappe
 
 def execute(filters=None):
-	columns, data = [], []
+	columns, data = [{
+	"fieldname": "budgeted_cash",
+	"label": ("Budgeted Cash"),
+	"fieldtype": "Link",
+	"options": "Budgeted Cash Flow",
+	"width": 300
+	}], []
 	return columns, data
