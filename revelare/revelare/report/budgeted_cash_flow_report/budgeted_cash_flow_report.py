@@ -22,5 +22,5 @@ def execute(filters=None):
 		filters.periodicity, company=filters.company)
 
 	columns = get_columns(filters.periodicity, period_list, filters.accumulated_values, company=filters.company)
-	data = []
+	data = 12
 	return columns, data
