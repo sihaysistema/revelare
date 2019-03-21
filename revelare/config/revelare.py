@@ -23,6 +23,13 @@ def get_data():
 					"name": "budgeted-cash-flow",
 					"label": _("Budgeted Cash Flow Analytics"),
 					"icon": "fa fa-bar-chart",
+				},
+				{
+					"type": "doctype",
+					"label": _("Category Cash Flow Group"),
+					"name": "Category Cash Flow Group",
+					"link": "Tree/Category Cash Flow Group",
+					"description": _("Manage Categories Group Tree."),
 				}
 			]
 		},
