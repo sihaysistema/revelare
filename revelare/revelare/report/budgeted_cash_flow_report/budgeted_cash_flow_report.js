@@ -5,6 +5,12 @@
 frappe.query_reports["Budgeted Cash Flow Report"] = {
 	"filters": [
 		{
+			"fieldname": "accumulated_values",
+			"label": __("Accumulated Values"),
+			"fieldtype": "Check",
+			"default": 1
+		},
+		{
 			"fieldname": "company",
 			"label": __("Company"),
 			"fieldtype": "Link",
@@ -33,7 +39,6 @@ frappe.query_reports["Budgeted Cash Flow Report"] = {
 			"label": __("Periodicity"),
 			"fieldtype": "Select",
 			"options": [
-				{ "value": "Weekly", "label": __("Weekly") },
 				{ "value": "Monthly", "label": __("Monthly") },
 				{ "value": "Quarterly", "label": __("Quarterly") },
 				{ "value": "Half-Yearly", "label": __("Half-Yearly") },
@@ -41,6 +46,16 @@ frappe.query_reports["Budgeted Cash Flow Report"] = {
 			],
 			"default": "Monthly",
 			"reqd": 1
+		},
+		// Note:
+		// If you are modifying this array such that the presentation_currency object
+		// is no longer the last object, please make adjustments in cash_flow.js
+		// accordingly.
+		{
+			"fieldname": "presentation_currency",
+			"label": __("Currency"),
+			"fieldtype": "Select",
+			"options": erpnext.get_presentation_currency_list()
 		}
 	]
 }
