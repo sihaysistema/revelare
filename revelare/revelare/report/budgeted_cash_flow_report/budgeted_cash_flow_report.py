@@ -8,15 +8,6 @@ from frappe.utils import flt, cint
 from erpnext.accounts.report.financial_statements import (get_period_list, get_data)
 
 def execute(filters=None):
-	# columns, data = [{
-	# 	"fieldname": "party",
-	# 	"label": _("Party"),
-	# 	"fieldtype": "Data",
-	# 	"options": "Budgeted Cash Flow",
-	# 	"width": 300
-	# }], [['A']]
-	# # [1, 2, 3, 4, 4, 5, 6, 7, 8, 9]
-	# return columns, data
 
 	period_list = get_period_list(filters.from_fiscal_year, filters.to_fiscal_year, filters.periodicity, company=filters.company)
 
@@ -74,14 +65,10 @@ def execute(filters=None):
 	]
 
 	# chart = get_chart_data(filters, columns, asset, liability, equity)
-	# frappe.msgprint(_(str(columns)))
-	# frappe.msgprint(_(str(get_data_cash_flow(filters.company))))
 
 	datos_registro = get_data_cash_flow(filters.company)
 	data.extend(prepare_data(datos_registro, period_list, 'GTQ'))
 
-	# frappe.msgprint(_(str(period_list)))
-	# frappe.msgprint(_(str(data)))
 	return columns, data
 
 
