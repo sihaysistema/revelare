@@ -17,12 +17,12 @@ def execute(filters=None):
 	data = [{
 		"total": 0,
 		"currency": "GTQ",
-		"party_cash_flow": "Saldo Inicial",
+		"party_cash_flow": "<b>Saldo Inicial</b>",
 		# "dec_2019": 39.0,
 	},
 	{
 		"currency": "GTQ",
-		"party_cash_flow": "INGRESOS",
+		"party_cash_flow": "<b>INGRESOS</b>",
 	}
 	# {
 	# 	"year_end_date": "2019-12-31",
@@ -64,34 +64,32 @@ def execute(filters=None):
 	# }
 	]
 
-	# chart = get_chart_data(filters, columns, asset, liability, equity)
-
 	datos_registro = get_data_cash_flow(filters.company)
-	data.extend(prepare_data(datos_registro, period_list, 'GTQ'))
+	data_preparada = prepare_data(datos_registro, period_list, 'GTQ')
+	add_total_row(data_preparada, period_list, 'GTQ')
+	data.extend(data_preparada)
 
-	return columns, data
+	chart = get_chart_data(filters, columns, datos_registro)
+
+	return columns, data, chart
 
 
-def get_chart_data(filters, columns, asset, liability, equity):
+def get_chart_data(filters, columns, datos_registro):
 	labels = [d.get("label") for d in columns[2:]]
 
 	asset_data, liability_data, equity_data = [], [], []
 
-	for p in columns[2:]:
-		if asset:
-			asset_data.append(asset[-2].get(p.get("fieldname")))
-		if liability:
-			liability_data.append(liability[-2].get(p.get("fieldname")))
-		if equity:
-			equity_data.append(equity[-2].get(p.get("fieldname")))
+	# for p in columns[2:]:
+	# 	asset_data.append()
+
 
 	datasets = []
-	if asset_data:
-		datasets.append({'name':'Assets', 'values': asset_data})
-	if liability_data:
-		datasets.append({'name':'Liabilities', 'values': liability_data})
-	if equity_data:
-		datasets.append({'name':'Equity', 'values': equity_data})
+	# if asset_data:
+	datasets.append({'name':'Assets', 'values': ['A', 'B', 'C', 'D']})
+	# if liability_data:
+	# 	datasets.append({'name':'Liabilities', 'values': liability_data})
+	# if equity_data:
+	# 	datasets.append({'name':'Equity', 'values': equity_data})
 
 	chart = {
 		"data": {
@@ -188,3 +186,26 @@ def get_data_cash_flow(company):
 												'due_date'], as_dict=1)
 
 	return data_cash_flow
+
+
+def add_total_row(out, period_list, company_currency):
+	total_row = {
+		"party_cash_flow": "'" + _("<b>Total</b>") + "'",
+		"currency": company_currency
+	}
+
+	for row in out:
+		for period in period_list:
+			total_row.setdefault(period.key, 0.0)
+			total_row[period.key] += row.get(period.key, 0.0)
+			row[period.key] = row.get(period.key, 0.0)
+
+		total_row.setdefault("total", 0.0)
+		total_row["total"] += flt(row["total"])
+		row["total"] = ""
+
+	if "total" in total_row:
+		out.append(total_row)
+
+		# blank row after Total
+		out.append({})
