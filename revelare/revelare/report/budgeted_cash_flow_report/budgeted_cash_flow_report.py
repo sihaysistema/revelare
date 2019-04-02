@@ -78,10 +78,9 @@ def execute(filters=None):
 	# frappe.msgprint(_(str(get_data_cash_flow(filters.company))))
 
 	datos_registro = get_data_cash_flow(filters.company)
-
-	# frappe.msgprint(_(str(prepare_data(datos_registro, period_list, 'GTQ'))))
 	data.extend(prepare_data(datos_registro, period_list, 'GTQ'))
 
+	# frappe.msgprint(_(str(period_list)))
 	# frappe.msgprint(_(str(data)))
 	return columns, data
 
@@ -169,7 +168,7 @@ def prepare_data(reg_chash_flow, period_list, company_currency):
 		total = 0
 		row = frappe._dict({
 			"party_cash_flow": _(d.party),
-			"indent": flt(0),
+			"indent": flt(1),
 			"year_start_date": year_start_date,
 			"year_end_date": year_end_date,
 			"currency": company_currency,
@@ -180,14 +179,13 @@ def prepare_data(reg_chash_flow, period_list, company_currency):
 		for period in period_list:
 			if d.get(period.key):
 				# change sign based on Debit or Credit, since calculation is done using (debit - credit)
-				d[period.key] *= +1
+				d[period.key] *= -1
 
-			row[period.key] = flt(d.get(period.key, 0.0), 3)
-
-			if abs(row[period.key]) >= 0.005:
-				# ignore zero values
-				has_value = True
-				total += flt(row[period.key])
+			if d.posting_date <= period.to_date:
+				row[period.key] = flt(d.paid_amount)
+				# frappe.msgprint(_(str(row[period.key])))
+			else:
+				row[period.key] = 0
 
 		row["has_value"] = has_value
 		row["total"] = total
@@ -199,7 +197,7 @@ def prepare_data(reg_chash_flow, period_list, company_currency):
 def get_data_cash_flow(company):
 	data_cash_flow = frappe.db.get_values('Budgeted Cash Flow',
 										filters={'company': company, 'status_payment': 'Unpaid'},
-										fieldname=['name', 'party', 'paid_amount'],
-										as_dict=1)
+										fieldname=['name', 'party', 'paid_amount', 'posting_date',
+												'due_date'], as_dict=1)
 
 	return data_cash_flow
