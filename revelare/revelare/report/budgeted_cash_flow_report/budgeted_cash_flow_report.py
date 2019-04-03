@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt, cint
-from erpnext.accounts.report.financial_statements import (get_period_list, get_data)
+from erpnext.accounts.report.financial_statements import get_period_list
 
 def execute(filters=None):
 
@@ -14,6 +14,8 @@ def execute(filters=None):
 	# currency = filters.presentation_currency or frappe.get_cached_value('Company',  filters.company,  "default_currency")
 
 	columns = get_columns(filters.periodicity, period_list, filters.accumulated_values, company=filters.company)
+
+	# Datos iniciales para mostrar Saldo Inicial e Ingresos
 	data = [{
 		"total": 0,
 		"currency": "GTQ",
@@ -23,53 +25,26 @@ def execute(filters=None):
 	{
 		"currency": "GTQ",
 		"party_cash_flow": "<b>INGRESOS</b>",
-	}
-	# {
-	# 	"year_end_date": "2019-12-31",
-	# 	"parent_account": "",
-	# 	"dec_2019": 39.0,
-	# 	"account_type": "",
-	# 	"year_start_date": "2019-01-01",
-	# 	"has_value": True,
-	# 	"is_group": 1,
-	# 	"party_cash_flow": "1000 - UTILIZACI\xd3N DE FONDOS (ACTIVOS) - S",
-	# 	"currency": "GTQ",
-	# 	"total": "",
-	# 	"indent": 0.0,
-	# 	"include_in_gross": 0,
-	# 	"account_name": "1000 - UTILIZACI\xd3N DE FONDOS (ACTIVOS)",
-	# 	"opening_balance": 0.0
-	# },
-	# {
-	# 	"year_end_date": "2019-12-31",
-	# 	"parent_account": "1300 - Cuentas por cobrar - S",
-	# 	"dec_2019": 39.0,
-	# 	"account_type": "Receivable",
-	# 	"year_start_date": "2019-01-01",
-	# 	"has_value": True,
-	# 	"is_group": 0,
-	# 	"party_cash_flow": "1310 - DEUDORES VARIOS - S",
-	# 	"currency": "GTQ",
-	# 	"total": 39.0,
-	# 	"indent": 1.0,
-	# 	"include_in_gross": 0,
-	# 	"account_name": "1310 - DEUDORES VARIOS",
-	# 	"opening_balance": 0.0
-	# },
-	# {
-	# 	"total": 39.0,
-	# 	"currency": "GTQ",
-	# 	"party_cash_flow": "Total Ingresos",
-	# 	"dec_2019": 39.0
-	# }
-	]
+	}]
 
-	datos_registro = get_data_cash_flow(filters.company)
-	data_preparada = prepare_data(datos_registro, period_list, 'GTQ')
+	# Datos para seccion que describe los Gastos
+	gastos = [{
+		"currency": "GTQ",
+		"party_cash_flow": "<b>GASTOS</b>",
+	}]
+
+	no_cobrado = get_data_cash_flow_unpaid(filters.company)
+	data_preparada = prepare_data(no_cobrado, period_list, 'GTQ')
 	add_total_row(data_preparada, period_list, 'GTQ')
 	data.extend(data_preparada)
+	data.extend(gastos)
 
-	chart = get_chart_data(filters, columns, datos_registro)
+	cobrado = get_data_cash_flow_paid(filters.company)
+	data_preparada_cobrado = prepare_data(cobrado, period_list, 'GTQ')
+	add_total_row(data_preparada_cobrado, period_list, 'GTQ')
+	data.extend(data_preparada_cobrado)
+
+	chart = get_chart_data(filters, columns, no_cobrado)
 
 	return columns, data, chart
 
@@ -179,9 +154,18 @@ def prepare_data(reg_chash_flow, period_list, company_currency):
 	return data
 
 
-def get_data_cash_flow(company):
+def get_data_cash_flow_unpaid(company):
 	data_cash_flow = frappe.db.get_values('Budgeted Cash Flow',
 										filters={'company': company, 'status_payment': 'Unpaid'},
+										fieldname=['name', 'party', 'paid_amount', 'posting_date',
+												'due_date'], as_dict=1)
+
+	return data_cash_flow
+
+
+def get_data_cash_flow_paid(company):
+	data_cash_flow = frappe.db.get_values('Budgeted Cash Flow',
+										filters={'company': company, 'status_payment': 'Paid'},
 										fieldname=['name', 'party', 'paid_amount', 'posting_date',
 												'due_date'], as_dict=1)
 
