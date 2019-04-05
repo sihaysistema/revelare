@@ -1,0 +1,49 @@
+<h2 class="text-center">{%= __("Delivery Note By Item") %}</h2>
+<h5 class="text-center">
+	{%= frappe.datetime.str_to_user(filters.from_date) %}
+	{%= __("to") %}
+	{%= frappe.datetime.str_to_user(filters.to_date) %}
+</h5>
+
+<hr>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th class="text-center" style="width: 12%">{%= __("Identificador") %}</th>
+            <th class="text-center" style="width: 15%">{%= __("Fecha") %}</th>
+            <th class="text-center" style="width: 25%">{%= __("Cliente") %}</th>
+            <th class="text-center" style="width: 15%">{%= __("Codigo del Producto") %}</th>
+            <th class="text-center" style="width: 15%">{%= __("Cantidad") %}</th>
+            <th class="text-center" style="width: 18%">{%= __("Tarifa de la lista de precios") %}</th>
+            <th class="text-center" style="width: 18%">{%= __("UOM") %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for(var i=0, l=data.length; i<l; i++) { %}
+            <tr>
+                <td>
+                {%=  data[i].identificador %}
+                </td>
+                <td>
+                {%=  data[i].posting_date %}
+                </td>
+                <td>
+                {%=  data[i].cliente %}
+                </td>
+                <td>
+                {%=  data[i].codigo_producto %}
+                </td>
+                <td>
+                {%=  data[i].cantidad %}
+                </td>
+                <td>
+                {%=  data[i].tarifa_lista %}
+                </td>
+                <td>
+                {%=  data[i].uom %}
+                </td>
+            </tr>
+        {% } %}
+    </tbody>
+</table>
+<p class="text-right text-muted">Printed On {%= frappe.datetime.str_to_user(frappe.datetime.get_datetime_as_string()) %}</p>
