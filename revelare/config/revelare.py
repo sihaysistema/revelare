@@ -56,4 +56,16 @@ def get_data():
 				}
 			]
 		},
+		{
+			"label": _("Reportes GASECO"),
+			"icon": "fa fa-table",
+			"items": [
+				{
+					"type": "report",
+					"name": "Delivery Note By Item",
+					"doctype": "Revelare",
+					"is_query_report": True
+				}
+			]
+		},
 	]
