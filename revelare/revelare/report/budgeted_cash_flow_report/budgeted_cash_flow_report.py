@@ -26,7 +26,7 @@ def execute(filters=None):
 
 def get_columns(filters):
 	columns = [{
-		"fieldname": "party_cash_flow",
+		"fieldname": "name",
 		"label": _("Party Cash Flow"),
 		"fieldtype": "Link",
 		"options": "Budgeted Cash Flow",
@@ -101,16 +101,20 @@ def get_data(filters):
 	ranges = get_period_date_ranges(filters)
 
 	for item_data in item_details:
-		row = {
-			"party_cash_flow": _(item_data.party),
-			"indent": flt(1),
-			# "year_start_date": year_start_date,
-			# "year_end_date": year_end_date,
-			"currency": 'GTQ',
-			"is_group": 0,
-			# "opening_balance": d.get("opening_balance", 0.0) * (1 if balance_must_be=="Debit" else -1),
-			"total": item_data.paid_amount,
-		}
+		# row = {
+		# 	"party_cash_flow": _(item_data.party),
+		# 	# "indent": flt(1),
+		# 	# # "year_start_date": year_start_date,
+		# 	# # "year_end_date": year_end_date,
+		# 	# "currency": 'GTQ',
+		# 	# "is_group": 0,
+		# 	# "opening_balance": d.get("opening_balance", 0.0) * (1 if balance_must_be=="Debit" else -1),
+		# 	"total": item_data.paid_amount,
+		# }
+
+		row = frappe._dict({
+			"name": _(item_data.party)
+		})
 
 		total = 0
 		for dummy, end_date in ranges:
@@ -123,7 +127,9 @@ def get_data(filters):
 				row[scrub(period)] = amount
 				total += amount
 			else:
-				row[scrub(period)] = 0
+				amount = 0.00
+				row[scrub(period)] = amount
+				total += amount
 
 		row["total"] = total
 		data.append(row)
@@ -139,7 +145,7 @@ def get_data(filters):
 	return data
 
 def get_chart_data(columns):
-	labels = [d.get("label") for d in columns[5:]]
+	labels = [d.get("label") for d in columns[1:]]
 	chart = {
 		"data": {
 			'labels': labels,

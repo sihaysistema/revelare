@@ -37,7 +37,7 @@ frappe.query_reports["Budgeted Cash Flow Report"] = {
 				{ "value": "Quarterly", "label": __("Quarterly") },
 				{ "value": "Yearly", "label": __("Yearly") }
 			],
-			default: "Weekly",
+			default: "Monthly",
 			reqd: 1
 		}
 	],
@@ -50,7 +50,7 @@ frappe.query_reports["Budgeted Cash Flow Report"] = {
 			events: {
 				onCheckRow: function (data) {
 					row_name = data[2].content;
-					row_values = data.slice(7).map(function (column) {
+					row_values = data.slice(3).map(function (column) {
 						return column.content;
 					})
 					entry = {
