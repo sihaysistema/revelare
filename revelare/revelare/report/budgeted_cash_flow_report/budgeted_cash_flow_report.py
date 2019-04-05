@@ -17,12 +17,29 @@ from six import iteritems
 def execute(filters=None):
 	filters = frappe._dict(filters or {})
 	columns = get_columns(filters)
-	data = get_data(filters)
-	# data = [{}]
-	# frappe.msgprint(_((filters.from_date)))
+
+	data = [{
+		"total": 0,
+		"name": "<b>Saldo Inicial</b>"
+	},
+	{
+		"name": "<b>INGRESOS</b>"
+	}]
+
+	prepare_data = get_data(filters)
+	data.extend(prepare_data)
+	
+	total_oper = add_total_row(prepare_data, filters)
+	data.extend(total_oper)
+
 	chart = get_chart_data(columns)
 
+	# frappe.msgprint(_(str(json.dumps(prepare_data))))
+	# with open('test.json', 'w') as f:
+	# 	f.write(str(json.dumps(total_oper)))
+
 	return columns, data, None, chart
+	# return columns, data
 
 def get_columns(filters):
 	columns = [{
@@ -91,7 +108,6 @@ def get_period(posting_date, filters):
 	return period
 
 def get_data(filters):
-	formato_fecha = "%Y-%m-%d"
 	data = []
 	# items = get_items(filters)
 	# sle = get_stock_ledger_entries(filters, items)
@@ -101,19 +117,10 @@ def get_data(filters):
 	ranges = get_period_date_ranges(filters)
 
 	for item_data in item_details:
-		# row = {
-		# 	"party_cash_flow": _(item_data.party),
-		# 	# "indent": flt(1),
-		# 	# # "year_start_date": year_start_date,
-		# 	# # "year_end_date": year_end_date,
-		# 	# "currency": 'GTQ',
-		# 	# "is_group": 0,
-		# 	# "opening_balance": d.get("opening_balance", 0.0) * (1 if balance_must_be=="Debit" else -1),
-		# 	"total": item_data.paid_amount,
-		# }
 
 		row = frappe._dict({
-			"name": _(item_data.party)
+			"name": _(item_data.party),
+			"indent": flt(1)
 		})
 
 		total = 0
@@ -133,14 +140,6 @@ def get_data(filters):
 
 		row["total"] = total
 		data.append(row)
-
-		# for dummy, end_date in ranges:
-		# 	period = get_period(end_date, filters)
-		# 	amount = flt(periodic_data.get(item_data.name, {}).get(period))
-		# 	row[scrub(period)] = amount
-		# 	total += amount
-		# row["total"] = total
-		# data.append(row)
 
 	return data
 
@@ -174,6 +173,41 @@ def conversion_fechas(fecha, filters):
 	elif filters.range == 'Quarterly':
 		period = 'Quarter ' + str(((fecha.month - 1) //3) + 1) + ' ' + str(fecha.year)
 	else:
-		period = str(fecha.year)
+		# period = str(fecha.year)
+		year = get_fiscal_year(fecha, company=filters.company)
+		period = str(year[2])
 
 	return period
+
+
+def add_total_row(out, filters):
+	data = []
+	row_data = frappe._dict({
+		"name": _("<b>Total</b>")
+	})
+
+	ranges = get_period_date_ranges(filters)
+	total = 0
+	for row in out:
+		for x in row:
+			
+			for dummy, end_date in ranges:
+				period = get_period(end_date, filters)
+				# frappe.msgprint(_(str(period.key)))
+				if str(x.replace('_', ' ').capitalize()) == str(period):
+					
+					amount = (row[x])
+					if x != 'name':
+						total += flt(amount)
+						row_data.setdefault(scrub(period), 0.0)
+						row_data[scrub((period))] += flt(amount)
+					# else:
+					# 	row_data.setdefault(scrub(period), 0.0)
+					# 	row_data[scrub((period))] += 0
+
+
+	row_data["total"] = total
+	data.append(row_data)
+	data.append({})
+
+	return data
