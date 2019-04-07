@@ -1,4 +1,60 @@
+<style>
+@page {
+    /* en-US: This attribute establishes the page size in W x H for any browser*/
+    /* Size attribute is always width x height, leave single whitespace, and specify units.*/
+    /* Letter Landscape: 279mm 216mm*/
+    /* US Legal Landscape: 356mm 216mm; */
+    /* Guatemalan Oficio Landscape: 330mm 216mm; */
+    /* Letter Portrait: 216mm 279mm; */
+    /* US Legal Portrait: 216mm 356mm; */
+    /* Guatemalan Oficio Portrait: 216mm 330mm; */
+    size: 279mm 216mm !important;
+     /* Chrome sets own margins, we change these printer settings */
+     /* Order: Top, Right, Bottom, Left*/
+    margin: 0mm 5mm 5mm 5mm;
+    /* Could also use margin-top: 5mm; margin-right: 5mm; margin-bottom: 5mm; margin-left: 5mm; */
+}
+body {
+    background-color: #DDD !important;
+    margin: 0mm;
+    padding: 0mm;
+}
+.print-format {
+    /*background-color: cornflowerblue !important;*/
+    background-color: white !important;
+    box-shadow: 0px 0px 9px rgba(0,0,0,0.5);
+    max-width: 279mm !important;
+    min-height: 216mm !important;
+    padding: .00mm !important;
+    margin: auto !important;
 
+    font-size: .7em !important;
+    /*font-family: "Helvetica Neue", Helvetica, Arial, "Open Sans", sans-serif !important;*/
+    font-family: "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    -webkit-print-color-adjust:exact;
+}
+table {
+    page-break-inside: auto;
+}
+.table {
+    /* width: 320mm !important; */
+    table-layout: fixed !important;
+    overflow: visible !important;
+    /* width: 100% !important; */
+}
+.print-format > img.one {
+    /*height: 15%cm !important;*/
+    /* width: 10% !important; */
+    /*max-height: 1.0cm !important;*/
+    /* max-width: 1.0cm !important;*/
+    /* position:center !important; */
+
+    position:absolute !important;
+    margin: 0px 15px 15px 0px !important;
+    width: 9% !important;
+}
+</style>
+<img class="one" src="/files/company_logo.png" />
 <h2 class="text-center">{%= __("PUMA AMATITLAN") %}</h2>
 <h5 class="text-center">
     {%= __("Vales del ") %}
@@ -6,16 +62,21 @@
     {%= __("Al ") %}
     {%= frappe.datetime.str_to_user(filters.to_date) %}
 </h5>
+<h4 class="text-center">
+    {% if (filters.customer) { %}
+        {%= filters.customer %}
+    {% } %}
+</h4>
 <hr>
 <table class="table table-bordered">
-    <thead>
+    <thead class="encabezado">
         <tr>
             <th class="text-center" style="width: auto">{%= __("Identificador") %}</th>
             <th class="text-center" style="width: auto">{%= __("Fecha") %}</th>
             <th class="text-center" style="width: auto">{%= __("Cliente") %}</th>
             <th class="text-center" style="width: auto">{%= __("Codigo del Producto") %}</th>
-            <th class="text-center" style="width: auto">{%= __("Cantidad") %}</th>
             <th class="text-center" style="width: auto">{%= __("Tarifa de la lista de precios") %}</th>
+            <th class="text-center" style="width: auto">{%= __("Monto") %}</th>
             <th class="text-center" style="width: auto">{%= __("UOM") %}</th>
             <th class="text-center" style="width: auto">{%= __("DIESEL") %}</th>
             <th class="text-center" style="width: auto">{%= __("REGULAR") %}</th>
@@ -26,12 +87,15 @@
         {% for(var i=0, l=data.length; i<l; i++) { %}
             <tr>
                 <td> {%=  data[i].identificador %} </td>
-                <td> {%=  data[i].posting_date %} </td>
-                <td> {%=  data[i].cliente %} </td>
-                <td> {%=  data[i].codigo_producto %} </td>
-                <td> {%=  data[i].cantidad %} </td>
-                <td> {%=  data[i].tarifa_lista %} </td>
-                <td> {%=  data[i].uom %} </td>
+                <td class="text-center"> {%=  data[i].posting_date %} </td>
+                <td class="text-center"> {%=  data[i].cliente %} </td>
+                <td class="text-center"> {%=  data[i].codigo_producto %} </td>
+                <td style="text-align: right"> {%=  data[i].tarifa_lista %} </td>
+                <td style="text-align: right"> {%=  format_currency(data[i].monto) %} </td>
+                <td class="text-center"> {%=  data[i].uom %} </td>
+                <td class="text-center"> {%=  data[i].diesel %} </td>
+                <td class="text-center"> {%=  data[i].regular %} </td>
+                <td class="text-center"> {%=  data[i].super %} </td>
             </tr>
         {% } %}
     </tbody>

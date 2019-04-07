@@ -3,9 +3,12 @@
 
 from __future__ import unicode_literals
 import frappe
+import json
 from frappe import _, scrub
 
 def execute(filters=None):
+    data = []
+
     columns = get_columns()
 
     if (filters.customer):
@@ -13,9 +16,11 @@ def execute(filters=None):
     else:
         datos = get_all_data(filters)
 
-    # frappe.msgprint(_(str(type(filters.customer))))
-    data = prepare_data(datos)
- 
+    data_preparada = prepare_data(datos)
+    data.extend(data_preparada)
+    # data.append({})
+    data.extend(add_total_row(data_preparada))
+
     return columns, data
 
 
@@ -48,14 +53,14 @@ def get_columns():
             "width": 100
         },
         {
-            "label": _("Monto"),
-            "fieldname": "monto",
+            "label": _("Tarifa de la lista de precios"),
+            "fieldname": "tarifa_lista",
             "fieldtype": "Currency",
             "width": 100
         },
         {
-            "label": _("Tarifa de la lista de precios"),
-            "fieldname": "tarifa_lista",
+            "label": _("Monto"),
+            "fieldname": "monto",
             "fieldtype": "Currency",
             "width": 100
         },
@@ -70,19 +75,19 @@ def get_columns():
             "label": _("DIESEL"),
             "fieldname": "diesel",
             "fieldtype": "Float",
-            "width": 90
+            "width": 80
         },
         {
             "label": _("REGULAR"),
             "fieldname": "regular",
             "fieldtype": "Float",
-            "width": 90
+            "width": 80
         },
         {
             "label": _("SUPER"),
             "fieldname": "super",
             "fieldtype": "Float",
-            "width": 90
+            "width": 80
         }
     ]
 
@@ -145,17 +150,51 @@ def prepare_data(data_delivery_note):
         row['monto'] = item_info[0]['amount']
         row['tarifa_lista'] = item_info[0]['rate']
         row['uom'] = item_info[0]['uom']
-        # frappe.msgprint(_(str(item_info)))
 
         if 'DIESEL' in item_info[0]['item_code']:
-            row['diesel'] = item_info[0]['qty']
+            row['diesel'] = float(item_info[0]['qty'])
 
         elif 'REGULAR' in item_info[0]['item_code']:
-            row['regular'] = item_info[0]['qty']
+            row['regular'] = float(item_info[0]['qty'])
 
         elif 'SUPER' in item_info[0]['item_code']:
-            row['super'] = item_info[0]['qty']
+            row['super'] = float(item_info[0]['qty'])
 
         data.append(row)
+
+    return data
+
+
+def add_total_row(data_preparada):
+    data = []
+
+    row_data_total = frappe._dict({
+        "identificador": _("<b>TOTAL</b>")
+    })
+
+    total_diesel = 0
+    total_regular = 0
+    total_super = 0
+    total_monto = 0
+
+    for row_data in data_preparada:
+        if row_data.diesel:
+            total_diesel += row_data.diesel
+
+        if row_data.regular:
+            total_regular += row_data.regular
+
+        if row_data.super:
+            total_super += row_data.super
+
+        total_monto += row_data.monto
+
+    row_data_total['monto'] = total_monto
+    row_data_total['diesel'] = total_diesel
+    row_data_total['regular'] = total_regular
+    row_data_total['super'] = total_super
+
+    data.append(row_data_total)
+    # data.append({})
 
     return data
