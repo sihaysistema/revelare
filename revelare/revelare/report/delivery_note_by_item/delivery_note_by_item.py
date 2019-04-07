@@ -48,9 +48,9 @@ def get_columns():
             "width": 100
         },
         {
-            "label": _("Cantidad"),
-            "fieldname": "cantidad",
-            "fieldtype": "Float",
+            "label": _("Monto"),
+            "fieldname": "monto",
+            "fieldtype": "Currency",
             "width": 100
         },
         {
@@ -122,8 +122,8 @@ def get_specific_data(filters):
 def get_data_item(vale):
     delivery_note_item = frappe.db.get_values('Delivery Note Item',
                                         filters={'parent': vale},
-                                        fieldname=['item_code', 'qty', 'base_amount', 'uom'],
-                                        as_dict=1)
+                                        fieldname=['item_code', 'qty', 'amount', 'uom',
+                                                  'rate'], as_dict=1)
 
     return delivery_note_item
 
@@ -142,10 +142,19 @@ def prepare_data(data_delivery_note):
 
         item_info = get_data_item(item_data.name)
         row['codigo_producto'] = item_info[0]['item_code']
-        row['cantidad'] = item_info[0]['qty']
-        row['tarifa_lista'] = item_info[0]['base_amount']
+        row['monto'] = item_info[0]['amount']
+        row['tarifa_lista'] = item_info[0]['rate']
         row['uom'] = item_info[0]['uom']
         # frappe.msgprint(_(str(item_info)))
+
+        if 'DIESEL' in item_info[0]['item_code']:
+            row['diesel'] = item_info[0]['qty']
+
+        elif 'REGULAR' in item_info[0]['item_code']:
+            row['regular'] = item_info[0]['qty']
+
+        elif 'SUPER' in item_info[0]['item_code']:
+            row['super'] = item_info[0]['qty']
 
         data.append(row)
 
