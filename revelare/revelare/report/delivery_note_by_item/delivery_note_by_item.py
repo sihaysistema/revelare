@@ -56,7 +56,7 @@ def get_columns():
         {
             "label": _("Tarifa de la lista de precios"),
             "fieldname": "tarifa_lista",
-            "fieldtype": "Float",
+            "fieldtype": "Currency",
             "width": 100
         },
         {
@@ -64,6 +64,24 @@ def get_columns():
             "fieldname": "uom",
             "fieldtype": "Link",
             "options": "UOM",
+            "width": 90
+        },
+        {
+            "label": _("DIESEL"),
+            "fieldname": "diesel",
+            "fieldtype": "Float",
+            "width": 90
+        },
+        {
+            "label": _("REGULAR"),
+            "fieldname": "regular",
+            "fieldtype": "Float",
+            "width": 90
+        },
+        {
+            "label": _("SUPER"),
+            "fieldname": "super",
+            "fieldtype": "Float",
             "width": 90
         }
     ]
