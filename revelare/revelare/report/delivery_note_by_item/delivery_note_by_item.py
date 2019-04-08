@@ -7,15 +7,19 @@ import json
 from frappe import _, scrub
 
 def execute(filters=None):
+    # Array que contendra n diccionarios donde cada diccionario
+    # es una fila
     data = []
 
     columns = get_columns()
 
+    # Si se selecciona un cliente en el filtro
     if (filters.customer):
         datos = get_specific_data(filters)
     else:
         datos = get_all_data(filters)
 
+    # Prepara la data para ser adaptada
     data_preparada = prepare_data(datos)
     data.extend(data_preparada)
     # data.append({})
@@ -25,6 +29,8 @@ def execute(filters=None):
 
 
 def get_columns():
+    '''Retorna las columnas que conforman el reporte'''
+
     columns = [
         {
             "label": _("Identificador"),
@@ -95,6 +101,9 @@ def get_columns():
 
 
 def get_all_data(filters):
+    '''Retorna todas las notas de entrega que se encuentren en el rango
+       seleccionado
+    '''
 
     delivery_note = frappe.db.sql('''SELECT posting_date, numero_vale_cliente,
                                             name, customer_name 
@@ -110,6 +119,10 @@ def get_all_data(filters):
 
 
 def get_specific_data(filters):
+    '''Retorna notas de entrega que se encuentren en el rango seleccionado
+       y que pertenezcan a cliente seleccionado en el filtro
+    '''
+
     delivery_note = frappe.db.sql('''SELECT posting_date, numero_vale_cliente,
                                             name, customer_name 
                                     FROM `tabDelivery Note`
@@ -125,6 +138,8 @@ def get_specific_data(filters):
 
 
 def get_data_item(vale):
+    '''Obtiene informacion de n items de la nota de entrega'''
+
     delivery_note_item = frappe.db.get_values('Delivery Note Item',
                                         filters={'parent': vale},
                                         fieldname=['item_code', 'qty', 'amount', 'uom',
@@ -134,6 +149,7 @@ def get_data_item(vale):
 
 
 def prepare_data(data_delivery_note):
+    '''Prepara la data para que se muestre en especificas columnas'''
 
     data = []
 
@@ -166,6 +182,8 @@ def prepare_data(data_delivery_note):
 
 
 def add_total_row(data_preparada):
+    '''Agrega una fila extra donde tendran la totalizacion de x items'''
+
     data = []
 
     row_data_total = frappe._dict({
