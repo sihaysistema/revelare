@@ -57,7 +57,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Reportes GASECO"),
+			"label": _("Delivery Note by Item with 4 Item Column Totalization"),
 			"icon": "fa fa-table",
 			"items": [
 				{
