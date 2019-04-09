@@ -26,20 +26,23 @@ def execute(filters=None):
 		"name": "<b>INGRESOS</b>"
 	}]
 
-	prepare_data = get_data(filters)
+	prepare_data = prepare_data_unpaid(filters)
 	data.extend(prepare_data)
-	
-	total_oper = add_total_row(prepare_data, filters)
+	total_oper = add_total_row(prepare_data, filters, True)
 	data.extend(total_oper)
+	data.append({
+		"name": "<b>EGRESOS</b>"
+	})
+
+	prepare_data_p = prepare_data_paid(filters)
+	data.extend(prepare_data_p)
+	total_paid = add_total_row(prepare_data_p, filters, False)
+	data.extend(total_paid)
 
 	chart = get_chart_data(columns)
 
-	# frappe.msgprint(_(str(json.dumps(prepare_data))))
-	# with open('test.json', 'w') as f:
-	# 	f.write(str(json.dumps(total_oper)))
-
 	return columns, data, None, chart
-	# return columns, data
+
 
 def get_columns(filters):
 	columns = [{
@@ -63,6 +66,7 @@ def get_columns(filters):
 		})
 
 	return columns
+
 
 def get_period_date_ranges(filters):
 		from dateutil.relativedelta import relativedelta
@@ -92,6 +96,7 @@ def get_period_date_ranges(filters):
 
 		return periodic_daterange
 
+
 def get_period(posting_date, filters):
 	months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -107,12 +112,13 @@ def get_period(posting_date, filters):
 
 	return period
 
-def get_data(filters):
+
+def prepare_data_unpaid(filters):
 	data = []
-	# items = get_items(filters)
+	# items = get_reg_unpaid(filters)
 	# sle = get_stock_ledger_entries(filters, items)
 	# item_details = get_item_details(items, sle, filters)
-	item_details = get_items(filters)
+	item_details = get_reg_unpaid(filters)
 	# periodic_data = get_periodic_data(sle, filters)
 	ranges = get_period_date_ranges(filters)
 
@@ -143,6 +149,44 @@ def get_data(filters):
 
 	return data
 
+
+def prepare_data_paid(filters):
+	data = []
+	# items = get_reg_unpaid(filters)
+	# sle = get_stock_ledger_entries(filters, items)
+	# item_details = get_item_details(items, sle, filters)
+	item_details = get_reg_paid(filters)
+	# periodic_data = get_periodic_data(sle, filters)
+	ranges = get_period_date_ranges(filters)
+
+	for item_data in item_details:
+
+		row = frappe._dict({
+			"name": _(item_data.party),
+			"indent": flt(1)
+		})
+
+		total = 0
+		for dummy, end_date in ranges:
+			period = get_period(end_date, filters)
+			fecha_registro = conversion_fechas(item_data.posting_date, filters)
+
+			# frappe.msgprint(_(period))
+			if fecha_registro == period:
+				amount = flt(item_data.paid_amount)
+				row[scrub(period)] = amount
+				total += amount
+			else:
+				amount = 0.00
+				row[scrub(period)] = amount
+				total += amount
+
+		row["total"] = total
+		data.append(row)
+
+	return data
+
+
 def get_chart_data(columns):
 	labels = [d.get("label") for d in columns[1:]]
 	chart = {
@@ -156,9 +200,18 @@ def get_chart_data(columns):
 	return chart
 
 
-def get_items(filters):
+def get_reg_unpaid(filters):
 	data_cash_flow = frappe.db.get_values('Budgeted Cash Flow',
 										filters={'company': filters.get("company"), 'status_payment': 'Unpaid'},
+										fieldname=['name', 'party', 'paid_amount', 'posting_date',
+												'due_date'], as_dict=1)
+
+	return data_cash_flow
+
+
+def get_reg_paid(filters):
+	data_cash_flow = frappe.db.get_values('Budgeted Cash Flow',
+										filters={'company': filters.get("company"), 'status_payment': 'Paid'},
 										fieldname=['name', 'party', 'paid_amount', 'posting_date',
 												'due_date'], as_dict=1)
 
@@ -180,11 +233,18 @@ def conversion_fechas(fecha, filters):
 	return period
 
 
-def add_total_row(out, filters):
+def add_total_row(out, filters, tipo=False):
 	data = []
-	row_data = frappe._dict({
-		"name": _("<b>Total</b>")
-	})
+
+	if tipo:
+		row_data = frappe._dict({
+			"name": _("<b>Total Ingresos</b>")
+		})
+
+	else:
+		row_data = frappe._dict({
+			"name": _("<b>Total Egresos</b>")
+		})
 
 	ranges = get_period_date_ranges(filters)
 	total = 0
@@ -204,7 +264,6 @@ def add_total_row(out, filters):
 					# else:
 					# 	row_data.setdefault(scrub(period), 0.0)
 					# 	row_data[scrub((period))] += 0
-
 
 	row_data["total"] = total
 	data.append(row_data)
