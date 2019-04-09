@@ -26,10 +26,14 @@ def execute(filters=None):
 		"name": "<b>INGRESOS</b>"
 	}]
 
+	# Data Ingresos
 	prepare_data = prepare_data_unpaid(filters)
 	data.extend(prepare_data)
-	total_oper = add_total_row(prepare_data, filters, True)
-	data.extend(total_oper)
+	# Agregar total de Ingresos
+	total_unpaid = add_total_row(prepare_data, filters, True)
+	data.extend(total_unpaid)
+
+	# Data Egresos
 	data.append({
 		"name": "<b>EGRESOS</b>"
 	})
@@ -38,6 +42,12 @@ def execute(filters=None):
 	data.extend(prepare_data_p)
 	total_paid = add_total_row(prepare_data_p, filters, False)
 	data.extend(total_paid)
+
+	with open('dataTest.json', 'w') as f:
+		f.write(str(json.dumps(total_paid, indent=2)))
+
+	total_cash_flow = add_total_row_report(total_unpaid, total_paid, filters)
+	data.extend(total_cash_flow)
 
 	chart = get_chart_data(columns)
 
@@ -247,6 +257,7 @@ def add_total_row(out, filters, tipo=False):
 		})
 
 	ranges = get_period_date_ranges(filters)
+
 	total = 0
 	for row in out:
 		for x in row:
@@ -255,17 +266,49 @@ def add_total_row(out, filters, tipo=False):
 				period = get_period(end_date, filters)
 				# frappe.msgprint(_(str(period.key)))
 				if str(x.replace('_', ' ').capitalize()) == str(period):
-					
 					amount = (row[x])
-					if x != 'name':
+
+					if str(x) != 'name':
 						total += flt(amount)
 						row_data.setdefault(scrub(period), 0.0)
 						row_data[scrub((period))] += flt(amount)
-					# else:
-					# 	row_data.setdefault(scrub(period), 0.0)
-					# 	row_data[scrub((period))] += 0
+
+				if filters.range == 'Yearly':
+					if str(x) != 'name' and str(x) != 'indent' and str(x) != 'total':
+						total += flt(row[scrub(period)])
+						row_data.setdefault(scrub(period), 0.0)
+						row_data[scrub((period))] += flt(row[scrub(period)])
 
 	row_data["total"] = total
+	data.append(row_data)
+	data.append({})
+
+	return data
+
+
+def add_total_row_report(total_in, total_e, filters):
+	data = []
+
+	row_data = frappe._dict({
+		"name": _("<b>Total Flujo de caja</b>")
+	})
+
+	for x in total_in:
+		if x:
+			total_ingresos = x
+	
+	for y in total_e:
+		if y:
+			total_egresos = y
+
+	for item_ingreso in total_ingresos:
+		for item_egreso in total_egresos:
+
+			if item_egreso == item_ingreso:
+				if item_egreso != 'name':
+					row_data[str(item_egreso)] = float(total_ingresos[item_ingreso]
+													 - total_egresos[item_egreso])
+
 	data.append(row_data)
 	data.append({})
 
