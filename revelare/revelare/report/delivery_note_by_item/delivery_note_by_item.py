@@ -130,7 +130,7 @@ def get_specific_data(filters):
                                     FROM `tabDelivery Note`
                                     WHERE posting_date
                                     BETWEEN %(fecha_inicio)s AND %(fecha_final)s
-                                    AND customer_name=%(cliente)s AND company=%(compa)s''', 
+                                    AND customer=%(cliente)s AND company=%(compa)s''',
                                     {'fecha_inicio': str(filters.from_date),
                                      'fecha_final': str(filters.to_date),
                                      'cliente': str(filters.customer),
