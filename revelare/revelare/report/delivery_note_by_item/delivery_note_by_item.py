@@ -105,7 +105,7 @@ def get_all_data(filters):
        seleccionado
     '''
 
-    delivery_note = frappe.db.sql('''SELECT posting_date, numero_vale_gaseco,
+    delivery_note = frappe.db.sql('''SELECT posting_date, numero_vale_cliente,
                                             name, customer_name 
                                     FROM `tabDelivery Note`
                                     WHERE posting_date
@@ -123,7 +123,7 @@ def get_specific_data(filters):
        y que pertenezcan a cliente seleccionado en el filtro
     '''
 
-    delivery_note = frappe.db.sql('''SELECT posting_date, numero_vale_gaseco,
+    delivery_note = frappe.db.sql('''SELECT posting_date, numero_vale_cliente,
                                             name, customer_name 
                                     FROM `tabDelivery Note`
                                     WHERE posting_date
@@ -155,7 +155,7 @@ def prepare_data(data_delivery_note):
 
     for item_data in data_delivery_note:
         row = frappe._dict({
-            'identificador': _(item_data.numero_vale_gaseco),
+            'identificador': _(item_data.numero_vale_cliente),
             'posting_date': item_data.posting_date,
             'cliente': item_data.customer_name
             # "indent": flt(1)
