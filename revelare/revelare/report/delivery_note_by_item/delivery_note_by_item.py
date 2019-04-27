@@ -106,7 +106,7 @@ def get_all_data(filters):
     '''
 
     delivery_note = frappe.db.sql('''SELECT posting_date, numero_vale_cliente,
-                                            name, customer_name 
+                                            name, customer_name, customer 
                                     FROM `tabDelivery Note`
                                     WHERE posting_date
                                     BETWEEN %(fecha_inicio)s AND %(fecha_final)s
@@ -124,7 +124,7 @@ def get_specific_data(filters):
     '''
 
     delivery_note = frappe.db.sql('''SELECT posting_date, numero_vale_cliente,
-                                            name, customer_name 
+                                            name, customer_name, customer
                                     FROM `tabDelivery Note`
                                     WHERE posting_date
                                     BETWEEN %(fecha_inicio)s AND %(fecha_final)s
@@ -157,7 +157,7 @@ def prepare_data(data_delivery_note):
         row = frappe._dict({
             'identificador': _(item_data.numero_vale_cliente),
             'posting_date': item_data.posting_date,
-            'cliente': item_data.customer_name
+            'cliente': item_data.customer
             # "indent": flt(1)
         })
 
