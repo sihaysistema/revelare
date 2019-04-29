@@ -68,4 +68,37 @@ def get_data():
 				}
 			]
 		},
+		{
+			"label": _("Reports"),
+			"items": [
+				{
+					"type": "report",
+					"name": "Purchase Ledger",
+					"label": _("Purchase Ledger"),
+					"doctype": "Revelare",
+					"is_query_report": True
+				},
+				{
+					"type": "report",
+					"name": "Sales Ledger",
+					"label": _("Sales Ledger"),
+					"doctype": "Revelare",
+					"is_query_report": True
+				},
+				{
+					"type": "report",
+					"name": "General Ledger Report",
+					"label": _("General Ledger Report"),
+					"doctype": "Revelare",
+					"is_query_report": True
+				},
+				{
+					"type": "report",
+					"name": "Daily Book Report",
+					"label": _("Daily Book Report"),
+					"doctype": "Revelare",
+					"is_query_report": True
+				}
+			]
+		}
 	]
