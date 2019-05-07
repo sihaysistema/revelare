@@ -19,12 +19,6 @@ def get_data():
 					"is_query_report": True
 				},
 				{
-					"type": "page",
-					"name": "budgeted-cash-flow",
-					"label": _("Budgeted Cash Flow Analytics"),
-					"icon": "fa fa-bar-chart",
-				},
-				{
 					"type": "doctype",
 					"label": _("Category Cash Flow Group"),
 					"name": "Category Cash Flow Group",
