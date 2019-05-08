@@ -94,5 +94,24 @@ def get_data():
 					"is_query_report": True
 				}
 			]
+		},
+		{
+			"label": _("Agriculture Reports"),
+			"items": [
+				{
+					"type": "report",
+					"name": "Production Report",
+					"label": _("Production Report"),
+					"doctype": "Revelare",
+					"is_query_report": True
+				},
+				{
+					"type": "report",
+					"name": "Production Per Day Report",
+					"label": _("Production Per Day Report"),
+					"doctype": "Revelare",
+					"is_query_report": True
+				}
+			]
 		}
 	]
