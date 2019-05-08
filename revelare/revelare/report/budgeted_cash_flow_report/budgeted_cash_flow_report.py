@@ -43,8 +43,8 @@ def execute(filters=None):
 	total_paid = add_total_row(prepare_data_p, filters, False)
 	data.extend(total_paid)
 
-	with open('dataTest.json', 'w') as f:
-		f.write(str(json.dumps(total_paid, indent=2)))
+	# with open('dataTest.json', 'w') as f:
+	# 	f.write(str(json.dumps(total_paid, indent=2)))
 
 	total_cash_flow = add_total_row_report(total_unpaid, total_paid, filters)
 	data.extend(total_cash_flow)

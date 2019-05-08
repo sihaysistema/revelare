@@ -37,7 +37,7 @@ frappe.query_reports["Budgeted Cash Flow Report"] = {
 				{ "value": "Quarterly", "label": __("Quarterly") },
 				{ "value": "Yearly", "label": __("Yearly") }
 			],
-			default: "Weekly",
+			default: "Monthly",
 			reqd: 1
 		}
 	],
