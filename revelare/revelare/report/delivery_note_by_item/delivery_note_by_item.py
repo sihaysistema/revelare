@@ -105,8 +105,8 @@ def get_all_data(filters):
        seleccionado
     '''
 
+    # campo viejo es -> numero_vale_gaseco
     delivery_note = frappe.db.sql('''SELECT posting_date, numero_vale_cliente,
-                                            numero_vale_gaseco,
                                             name, customer_name, customer 
                                     FROM `tabDelivery Note`
                                     WHERE posting_date
@@ -124,8 +124,8 @@ def get_specific_data(filters):
        y que pertenezcan a cliente seleccionado en el filtro
     '''
 
+    # campo viejo es -> numero_vale_gaseco
     delivery_note = frappe.db.sql('''SELECT posting_date, numero_vale_cliente,
-                                            numero_vale_gaseco,
                                             name, customer_name, customer
                                     FROM `tabDelivery Note`
                                     WHERE posting_date
