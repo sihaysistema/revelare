@@ -156,30 +156,32 @@ def prepare_data(data_delivery_note):
     data = []
 
     for item_data in data_delivery_note:
-        row = frappe._dict({
-            # 'identificador': _(item_data.numero_vale_cliente),
-            'identificador': _(item_data.numero_vale_gaseco),
-            'posting_date': item_data.posting_date,
-            'cliente': item_data.customer
-            # "indent": flt(1)
-        })
-
         item_info = get_data_item(item_data.name)
-        row['codigo_producto'] = item_info[0]['item_code']
-        row['monto'] = item_info[0]['amount']
-        row['tarifa_lista'] = item_info[0]['rate']
-        row['uom'] = item_info[0]['uom']
 
-        if 'DIESEL' in item_info[0]['item_code']:
-            row['diesel'] = float(item_info[0]['qty'])
+        n_items = len(item_info)
+        if (n_items > 1):
 
-        elif 'REGULAR' in item_info[0]['item_code']:
-            row['regular'] = float(item_info[0]['qty'])
+            for x in range(0, n_items):
+                row = frappe._dict({
+                    'identificador': '<b>{}</b>'.format(item_data.numero_vale_cliente),
+                    'posting_date': item_data.posting_date,
+                    'cliente': item_data.customer
+                })
+                row['codigo_producto'] = item_info[x]['item_code']
+                row['monto'] = item_info[x]['amount']
+                row['tarifa_lista'] = item_info[x]['rate']
+                row['uom'] = item_info[x]['uom']
 
-        elif 'SUPER' in item_info[0]['item_code']:
-            row['super'] = float(item_info[0]['qty'])
+                if 'DIESEL' in item_info[x]['item_code']:
+                    row['diesel'] = float(item_info[x]['qty'])
 
-        data.append(row)
+                elif 'REGULAR' in item_info[x]['item_code']:
+                    row['regular'] = float(item_info[x]['qty'])
+
+                elif 'SUPER' in item_info[x]['item_code']:
+                    row['super'] = float(item_info[x]['qty'])
+
+                data.append(row)
 
     return data
 
