@@ -172,11 +172,18 @@ def prepare_data(data_delivery_note):
             row['tarifa_lista'] = item_info[x]['rate']
             row['uom'] = item_info[x]['uom']
 
-            # filtra y compara por item_code a columnas_productos
+            # filtra y compara que el item exista en la configuracion de columnas para el reporte
             columna = filter(lambda xx: xx['item_code'] == item_info[x]['item_code'], columnas_productos)
-            row[str(columna[0]['column_name']).lower()] = float(item_info[x]['qty'])
 
-            data.append(row)
+            # Intentara acceder a la cantidad de X producto, si ocurre un error quiere decir que no
+            # existe en la configuracion de columnas por lo que no se agregara y procedera con las que
+            # si
+            try:
+                row[str(columna[0]['column_name']).lower()] = float(item_info[x]['qty'])
+            except:
+                pass
+            else:
+                data.append(row)
 
     return data
 
