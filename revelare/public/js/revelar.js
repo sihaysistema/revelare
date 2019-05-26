@@ -59,7 +59,3 @@ frappe.ui.form.on('UOM Conversion Detail', {
         });
     }
 });
-
-frappe.ui.form.on('Sales Invoice', {
-
-});

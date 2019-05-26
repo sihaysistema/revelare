@@ -28,12 +28,12 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Setup"),
+			"label": _("Setup Revelare"),
 			"icon": "fa fa-cog",
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Configuration",
+					"name": "Configuration Revelare",
 					"description": _("General Configuration to Revelare.")
 				}
 			]

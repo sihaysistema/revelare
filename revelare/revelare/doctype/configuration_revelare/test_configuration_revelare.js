@@ -2,15 +2,15 @@
 // rename this file from _test_[name] to test_[name] to activate
 // and remove above this line
 
-QUnit.test("test: Configuration", function (assert) {
+QUnit.test("test: Configuration Revelare", function (assert) {
 	let done = assert.async();
 
 	// number of asserts
 	assert.expect(1);
 
 	frappe.run_serially([
-		// insert a new Configuration
-		() => frappe.tests.make('Configuration', [
+		// insert a new Configuration Revelare
+		() => frappe.tests.make('Configuration Revelare', [
 			// values to be set
 			{key: 'value'}
 		]),
