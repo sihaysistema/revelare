@@ -7,15 +7,18 @@ import json
 from frappe import _, scrub
 
 def execute(filters=None):
-    # Array que contendra n diccionarios donde cada diccionario
+    # Array que contendra n {objetos} donde cada {objeto}
     # es una fila
     data = []
 
     columns = get_columns()
 
-    # Si se selecciona un cliente en el filtro
+    # Si se selecciona un cliente en el filtro, se retornara
+    # la data especifica para x cliente
     if (filters.customer):
         datos = get_specific_data(filters)
+
+    # Selecciona toda la data que encuentre
     else:
         datos = get_all_data(filters)
 
@@ -29,7 +32,7 @@ def execute(filters=None):
 
 
 def get_columns():
-    '''Retorna las columnas que conforman el reporte'''
+    '''Retorna las columnas a utilizar en el reporte'''
 
     columns = [
         {
@@ -76,33 +79,27 @@ def get_columns():
             "fieldtype": "Link",
             "options": "UOM",
             "width": 90
-        },
-        {
-            "label": _("DIESEL"),
-            "fieldname": "diesel",
-            "fieldtype": "Float",
-            "width": 80
-        },
-        {
-            "label": _("REGULAR"),
-            "fieldname": "regular",
-            "fieldtype": "Float",
-            "width": 80
-        },
-        {
-            "label": _("SUPER"),
-            "fieldname": "super",
-            "fieldtype": "Float",
-            "width": 80
         }
     ]
+
+    # Obtiene las columnas configuras para el reporte
+    dat_config = get_configured_columns()
+
+    # Por cada columna configurada encontrada la agregara
+    for i in dat_config:
+        columns.append({
+            "label": str(i['column_name']),
+            "fieldname": str(i['column_name']).lower(),
+            "fieldtype": "Float",
+            "width": 80
+        })
 
     return columns
 
 
 def get_all_data(filters):
     '''Retorna todas las notas de entrega que se encuentren en el rango
-       seleccionado
+       de fechas seleccionado
     '''
 
     # campo viejo es -> numero_vale_gaseco
@@ -140,12 +137,12 @@ def get_specific_data(filters):
 
 
 def get_data_item(vale):
-    '''Obtiene informacion de n items de la nota de entrega'''
+    '''Obtiene informacion de n items de x nota de entrega'''
 
     delivery_note_item = frappe.db.get_values('Delivery Note Item',
-                                        filters={'parent': vale},
-                                        fieldname=['item_code', 'qty', 'amount', 'uom',
-                                                  'rate'], as_dict=1)
+                                              filters={'parent': vale},
+                                              fieldname=['item_code', 'qty', 'amount', 'uom',
+                                                        'rate'], as_dict=1)
 
     return delivery_note_item
 
@@ -154,34 +151,32 @@ def prepare_data(data_delivery_note):
     '''Prepara la data para que se muestre en especificas columnas'''
 
     data = []
+    # Obtiene las columnas configuradas para el reporte
+    columnas_productos = get_configured_columns()
 
+    # Por cada nota de entrega encontrada
     for item_data in data_delivery_note:
+        # Obtiene n items por x nota de entrega
         item_info = get_data_item(item_data.name)
 
         n_items = len(item_info)
-        if (n_items > 1):
 
-            for x in range(0, n_items):
-                row = frappe._dict({
-                    'identificador': '<b>{}</b>'.format(item_data.numero_vale_cliente),
-                    'posting_date': item_data.posting_date,
-                    'cliente': item_data.customer
-                })
-                row['codigo_producto'] = item_info[x]['item_code']
-                row['monto'] = item_info[x]['amount']
-                row['tarifa_lista'] = item_info[x]['rate']
-                row['uom'] = item_info[x]['uom']
+        for x in range(0, n_items):
+            row = frappe._dict({
+                'identificador': '<b>{}</b>'.format(item_data.numero_vale_cliente),
+                'posting_date': item_data.posting_date,
+                'cliente': item_data.customer
+            })
+            row['codigo_producto'] = item_info[x]['item_code']
+            row['monto'] = item_info[x]['amount']
+            row['tarifa_lista'] = item_info[x]['rate']
+            row['uom'] = item_info[x]['uom']
 
-                if 'DIESEL' in item_info[x]['item_code']:
-                    row['diesel'] = float(item_info[x]['qty'])
+            # filtra y compara por item_code a columnas_productos
+            columna = filter(lambda xx: xx['item_code'] == item_info[x]['item_code'], columnas_productos)
+            row[str(columna[0]['column_name']).lower()] = float(item_info[x]['qty'])
 
-                elif 'REGULAR' in item_info[x]['item_code']:
-                    row['regular'] = float(item_info[x]['qty'])
-
-                elif 'SUPER' in item_info[x]['item_code']:
-                    row['super'] = float(item_info[x]['qty'])
-
-                data.append(row)
+            data.append(row)
 
     return data
 
@@ -190,34 +185,69 @@ def add_total_row(data_preparada):
     '''Agrega una fila extra donde tendran la totalizacion de x items'''
 
     data = []
+    # Obtiene las columnas configuradas para el reporte
+    columnas_productos = get_configured_columns()
 
     row_data_total = frappe._dict({
         "identificador": _("<b>TOTAL</b>")
     })
 
-    total_diesel = 0
-    total_regular = 0
-    total_super = 0
-    total_monto = 0
+    # Totales por cantidad item - columna
+    for i in columnas_productos:
+        total_columna = filter(lambda xx: xx['codigo_producto'] == i['item_code'], data_preparada)
+        data_col = []
 
-    for row_data in data_preparada:
-        if row_data.diesel:
-            total_diesel += row_data.diesel
+        for y in total_columna:
+            data_col.append(y[str(i['column_name']).lower()])
 
-        if row_data.regular:
-            total_regular += row_data.regular
+        row_data_total[str(i['column_name']).lower()] = reduce(lambda x, yy: x + yy, data_col)
 
-        if row_data.super:
-            total_super += row_data.super
-
-        total_monto += row_data.monto
-
-    row_data_total['monto'] = total_monto
-    row_data_total['diesel'] = total_diesel
-    row_data_total['regular'] = total_regular
-    row_data_total['super'] = total_super
+    # Total monto reporte
+    total_mt = []
+    total_monto = filter(lambda z: z['monto'], data_preparada)
+    for t in total_monto:
+        total_mt.append(t['monto'])
+    
+    row_data_total['monto'] = reduce(lambda b, c: b + c, total_mt)
 
     data.append(row_data_total)
-    # data.append({})
 
     return data
+
+
+def get_configured_columns():
+    '''Obtiene la configuracion de columnas'''
+
+    data_validada = validar_configuracion()
+
+    if data_validada[0] == 1:
+        columnas_configuradas = frappe.db.get_values('Columnas Reporte', 
+                                                     filters={'parent': str(data_validada[1])},
+                                                     fieldname=['item_code', 'column_name'], as_dict=1)
+        return columnas_configuradas
+    else:
+        return []
+
+
+def validar_configuracion():
+    '''Permite verificar que exista una configuracion validada,
+       retorna 1 de 3 opciones:
+       1 : Una configuracion valida
+       2 : Hay mas de una configuracion
+       3 : No hay configuraciones
+    '''
+
+    # verifica que exista un documento validado, docstatus = 1 => validado
+    if frappe.db.exists('Configuration Revelare', {'docstatus': 1}):
+
+        configuracion_valida = frappe.db.get_values('Configuration Revelare',
+                                                   filters={'docstatus': 1},
+                                                   fieldname=['name'], as_dict=1)
+        if (len(configuracion_valida) == 1):
+            return (int(1), str(configuracion_valida[0]['name']))
+
+        elif (len(configuracion_valida) > 1):
+            return (int(2), 'Error 2')
+
+    else:
+        return (int(3), 'Error 3')
