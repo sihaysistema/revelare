@@ -1,0 +1,29 @@
+{
+ "content": null, 
+ "creation": "2019-06-21 14:10:41.105092", 
+ "docstatus": 0, 
+ "doctype": "Page", 
+ "idx": 0, 
+ "modified": "2019-06-21 14:25:03.536816", 
+ "modified_by": "Administrator", 
+ "module": "Revelare", 
+ "name": "tabular-delivery-not", 
+ "owner": "Administrator", 
+ "page_name": "tabular-delivery-note", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Fulfillment User"
+  }, 
+  {
+   "role": "Sales User"
+  }
+ ], 
+ "script": null, 
+ "standard": "Yes", 
+ "style": null, 
+ "system_page": 0, 
+ "title": "Delivery Note Tabular Entry"
+}

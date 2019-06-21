@@ -113,5 +113,17 @@ def get_data():
 					"is_query_report": True
 				}
 			]
+		},
+		{
+			"label": _("Tabular Entry Tools"),
+			"icon": "fa fa-table",
+			"items": [
+				{
+					"type": "page",
+					"name": "tabular-delivery-not",
+					"label": _("Delivery Note Tabular Entry"),
+					"doctype": "Revelare"
+				}
+			]
 		}
 	]
