@@ -123,39 +123,11 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
             const container = document.querySelector('.layout-main-section');
             const options = {
                 columns: [column1, column2, column3, column4, column5, column6, column7, column8, column9],
-                data: data_content,
-                // getEditor(colIndex, rowIndex, value, parent, column, row, data) {
-                //     // colIndex, rowIndex of the cell being edited
-                //     // value: value of cell before edit
-                //     // parent: edit container (use this to append your own custom control)
-                //     // column: the column object of editing cell
-                //     // row: the row of editing cell
-                //     // data: array of all rows
-
-                //     const $input = document.createElement('input');
-                //     // $input.type = 'data';
-                //     parent.appendChild($input);
-
-                //     return {
-                //         // called when cell is being edited
-                //         initValue(value) {
-                //             $input.focus();
-                //             $input.value = (value);
-                //         },
-                //         // called when cell value is set
-                //         setValue(value) {
-                //             $input.value = (value);
-                //         },
-                //         // value to show in cell
-                //         getValue() {
-                //             return ($input.value);
-                //         }
-                //     }
-                // }
+                data: data_content
             }
 
             const data_datatable = new DataTable(container, options);
-            console.log(data_datatable);
+
         });
 
     }
@@ -171,12 +143,6 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
             var seleccion = '';
             $('.data-table-body tr').each(function (a, b) {
 
-                // seleccion = String('tr[data-row-index="' + a + '"] td[data-col-index="1"] .content');
-                // var seleccion = 'tr[data-row-index="0"] td[data-col-index="1"] .content';
-                // console.log(seleccion);
-
-                // var fila = $(seleccion).text().trim();
-                // console.log(fila);
                 ary.push({
                     serie: $('tr[data-row-index="' + a + '"] td[data-col-index="1"] .content').text().trim(),
                     numero: $('tr[data-row-index="' + a + '"] td[data-col-index="2"] .content').text().trim(),
@@ -192,11 +158,22 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
             });
             console.log(ary);
             // alert(JSON.stringify(ary));
+
+            frappe.call({
+                method: "revelare.api.convertir_data",
+                args: {
+                    data: ary
+                },
+                callback: function () {
+                    // frm.reload_doc();
+                }
+            });
+
         });
     });
 
 };
 
-frappe.pages['tabular-delivery-not'].onclick = function (wrapper) {
-    console.log('worked!');
-}
+// frappe.pages['tabular-delivery-not'].onclick = function (wrapper) {
+//     console.log('worked!');
+// }
