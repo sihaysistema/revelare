@@ -11,6 +11,7 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
     page.add_menu_item('Delivery Note', () => frappe.set_route('List', 'Delivery Note'));
     // page.add_button("Hello", () => {});
 
+    // Declaracion constantes data para columnas
     const column1 = {
         content: "Serie",
         id: 'serie',
@@ -18,7 +19,10 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
         resizable: true,
         sortable: true,
         focusable: true,
-        width: 100
+        width: 100,
+        format: (value) => {
+            return value.bold();
+        }
     }
     const column2 = {
         content: "Numero",
@@ -28,7 +32,7 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
         sortable: false,
         focusable: true,
         dropdown: false,
-        width: 150
+        width: 114
     }
     const column3 = {
         content: "Factura",
@@ -38,7 +42,7 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
         sortable: false,
         focusable: true,
         dropdown: false,
-        width: 150
+        width: 121
     }
     const column4 = {
         content: "Total Factura",
@@ -48,7 +52,7 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
         sortable: false,
         focusable: true,
         dropdown: false,
-        width: 150
+        width: 111
     }
     const column5 = {
         content: "Cliente",
@@ -58,7 +62,7 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
         sortable: false,
         focusable: true,
         dropdown: false,
-        width: 150
+        width: 130
     }
     const column6 = {
         content: "Monto del Vale",
@@ -68,7 +72,7 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
         sortable: false,
         focusable: true,
         dropdown: false,
-        width: 150
+        width: 127
     }
     const column7 = {
         content: "Producto",
@@ -88,7 +92,7 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
         sortable: false,
         focusable: true,
         dropdown: false,
-        width: 150
+        width: 121
     }
     const column9 = {
         content: "Cantidad",
@@ -98,7 +102,7 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
         sortable: false,
         focusable: true,
         dropdown: false,
-        width: 150
+        width: 121
     }
 
     // Carga las dependencias necesarias para DATATABLE, para luego ser renderizado
@@ -129,20 +133,25 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
             const data_datatable = new DataTable(container, options);
 
         });
-
     }
 
+    // Ejecucion serialmente
     frappe.run_serially([
         () => load_dependencies()
     ]);
 
+    // Agrega un boton al menu de la pagina
     page.add_menu_item(__("OK"), function (e) {
+        // Array contendra la data de las 25 filas y 9 columnas
         var ary = [];
+
         $(function () {
             var numero = 0;
             var seleccion = '';
-            $('.data-table-body tr').each(function (a, b) {
 
+            // Selector jquery -> especificamente la seccion de datatable
+            $('.data-table-body tr').each(function (a, b) {
+                // Por cada fila, agregara info al array anteriormente declarado
                 ary.push({
                     serie: $('tr[data-row-index="' + a + '"] td[data-col-index="1"] .content').text().trim(),
                     numero: $('tr[data-row-index="' + a + '"] td[data-col-index="2"] .content').text().trim(),
@@ -156,16 +165,19 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
                 });
 
             });
-            console.log(ary);
+
+            // console.log(ary);
             // alert(JSON.stringify(ary));
 
+            // Se ejecuta una peticion al servidor cuando se pulsa el boton 'OK'
             frappe.call({
                 method: "revelare.api.convertir_data",
                 args: {
                     data: ary
                 },
-                callback: function () {
+                callback: function (r) {
                     // frm.reload_doc();
+                    console.log(r.message);
                 }
             });
 
