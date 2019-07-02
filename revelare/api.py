@@ -3,12 +3,9 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 import json
-from utils.clean_data import preparar_data_tabla
 
-# Permite trabajar con acentos, ñ, simbolos, etc
-import os, sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
+from utils_revelare.clean_data import preparar_data_tabla
+from utils_revelare.delivery_note import crear_nota_entrega
 
 
 @frappe.whitelist()
@@ -21,7 +18,12 @@ def convertir_data(data):
        - data (object-array): Contiene informacion de datatable del frontend
     '''
 
+    # Carga la data como json
     data_tabla = json.loads(data)
+
+    # Limpiar y preparar data json
+    # data_preparada = preparar_data_tabla(data_tabla)
+
 
     # with open('mi_archivo.json', 'w') as f:
     #     f.write(json.dumps(data_tabla, indent=2))
@@ -29,62 +31,30 @@ def convertir_data(data):
 
     # for i in data_tabla:
     #     crear_nota_entrega(i)
-    hola = crear_nota_entrega(data_tabla[0])
+    # hola = crear_nota_entrega(data_tabla[0])
     # frappe.msgprint(_(str(data_tabla[0])))
-    return hola
-
-
-def crear_nota_entrega(documento):
-    '''Funcion para crear nota de entrega'''
-
-    delivery_note_tax = [{
-        "charge_type": _('On net total'),
-        "account_head": 'IVA - S',
-        "cost_center": 'Main - S',
-        "description": 'IVA @ 12.0',
-        "included_in_print_rate": 1,
-        "rate": 12
-    }]
-
-    delivery_note_items = [{
-        "item_code": 'GAS-001',
-        "item_name": 'Gasolina Regular',
-        "rate": 24,
-        "shs_dn_is_fuel": 1,
-        "shs_dn_is_good": 0,
-        "shs_dn_is_service": 0,
-        "amount": 24,
-        "qty": 1
-    }]
-
-    delivery_note = frappe.get_doc({"doctype": "Delivery Note",
-                                    "title": documento['cliente'],
-                                    "customer": documento['cliente'],
-                                    "numero_vale_gaseco": documento['numero'],
-                                    "name": documento['factura'],
-                                    "company": "SHS",
-                                    "items": delivery_note_items,
-                                    "apply_discount_on": "Grand Total",
-                                    # "taxes": delivery_note_tax,
-                                    "docstatus": 1})
-    DN_created = delivery_note.insert(ignore_permissions=True)
-
     return 'OK'
-# {
-#     "cantidad": "", 
-#     "monto_del_vale": "", 
-#     "producto": "", 
-#     "precio": "", 
-#     "total_factura": "", 
-#     "factura": "", 
-#     "serie": "mamam", 
-#     "numero": "", 
-#     "cliente": ""
-#   }
-
-def crear_factura(documento):
-    pass
 
 
-def calculos_impuestos(documento):
-    pass
+def validador_operaciones(data_prep):
+    '''Funcion encargada de verificar si es necesario crear uno
+       de los siguientes documentos:
+       - Nota de entrega
+       - Factura de Venta
+
+       Parametros:
+       ----------
+       * data_prep (array-json): Array-json
+    '''
+
+    for documento in data_prep:
+        # Verificacion notas de entrega
+        if documento['numero']:
+            if not frappe.db.exists('Delivery Note', {'numero_vale_gaseco': documento['numero']}):
+                status_nota_entrega = crear_nota_entrega(documento)
+
+                return status_nota_entrega
+
+        # Verificacion facturas
+        if documento['factura']:
+            pass

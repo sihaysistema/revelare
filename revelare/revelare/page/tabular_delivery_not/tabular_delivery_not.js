@@ -9,6 +9,7 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
     // Adding breadcrumbs back to the module / app
     frappe.breadcrumbs.add("Revelare");
     page.add_menu_item('Delivery Note', () => frappe.set_route('List', 'Delivery Note'));
+
     // page.add_button("Hello", () => {});
 
     // Declaracion constantes data para columnas
