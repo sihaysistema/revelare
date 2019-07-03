@@ -28,7 +28,6 @@ def validar_configuracion():
         return (int(3), 'Error 3')
 
 
-@frappe.whitelist()
 def template_impuestos():
     '''Funcion encargada de obtener el template de impuestos a
        utilizar en la creacion de Delivery Note en base a la
