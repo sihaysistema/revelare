@@ -30,8 +30,8 @@ def validar_configuracion():
 
 def template_impuestos():
     '''Funcion encargada de obtener el template de impuestos a
-       utilizar en la creacion de Delivery Note en base a la
-       Configuracion de revelare
+       utilizar en la creacion de Delivery Note, Sales Invoice
+       en base a la Configuracion de revelare
     '''
 
     c_valida = validar_configuracion()
@@ -56,9 +56,7 @@ def template_impuestos():
 
 
 def crear_nota_entrega(documento):
-    '''Funcion para crear nota de entrega'''
-
-    delivery_note_tax = template_impuestos()
+    '''Funcion encargada de crear las notas de entrega'''
 
     delivery_note_items = [{
         "item_code": 'GAS-001',
@@ -82,6 +80,24 @@ def crear_nota_entrega(documento):
                                     # "taxes": delivery_note_tax,
                                     "docstatus": 1})
     DN_created = delivery_note.insert(ignore_permissions=True)
+
+
+def crear_factura_venta(documento):
+    '''Funcion encargada de crear facturas de venta'''
+    pass
+
+
+def crear_dn_si(documento):
+    '''Funcion encargada de verificar la creacion de Notas de Entrega
+       y/o Facturas de Venta
+    '''
+
+    delivery_note_tax = template_impuestos()
+
+    data_tabla = json.loads(documento)
+
+    for data in data_tabla:
+        pass
 
     return 'OK'
 

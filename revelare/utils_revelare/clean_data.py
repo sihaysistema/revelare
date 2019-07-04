@@ -8,8 +8,14 @@ import pandas as pd
 
 
 def preparar_data_tabla(data_tabla):
+    '''Funcion encargada de preparar la data con la ayuda de pandas, filtra y agrupa
+       en base al numero de vales encontrados
+    '''
+
     # Data dummy prueba
-    data_dn = json.loads(open(frappe.get_app_path("revelare", "utils_revelare", "data_prueba.json")).read())
+    data_dn = json.loads(open(frappe.get_app_path("revelare",
+                                                  "utils_revelare",
+                                                  "data_prueba.json")).read())
 
     # Declaracion DataFrame
     df = pd.read_json(data_dn, orient='columns')
@@ -20,7 +26,7 @@ def preparar_data_tabla(data_tabla):
 
     # Obtiene los datos de la columna numero que hace referencia a los vales,
     # filtrando los duplicados
-    vales = list(set(list(filtrado_pro['numero'])))
+    vales = list(set(list(filtrado_vale['numero'])))
     # Ordena de menor a mayor
     vales.sort()
 
@@ -36,4 +42,6 @@ def preparar_data_tabla(data_tabla):
 
         mis_vales.append(mi_vale)
 
-    vales_nota_entrega = json.dumps(mis_vales)
+    vales_dn_si = json.dumps(mis_vales)
+
+    return vales_dn_si
