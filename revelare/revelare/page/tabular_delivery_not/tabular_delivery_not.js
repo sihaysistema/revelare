@@ -147,8 +147,6 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
         var ary = [];
 
         $(function () {
-            var numero = 0;
-            var seleccion = '';
 
             // Selector jquery -> especificamente la seccion de datatable
             $('.data-table-body tr').each(function (a, b) {
@@ -172,7 +170,7 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
 
             // Se ejecuta una peticion al servidor cuando se pulsa el boton 'OK'
             frappe.call({
-                method: "revelare.api.convertir_data",
+                method: "revelare.api.procesar_data",
                 args: {
                     data: ary
                 },

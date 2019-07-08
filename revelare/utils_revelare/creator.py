@@ -30,7 +30,7 @@ def validar_configuracion():
 
 def template_impuestos():
     '''Funcion encargada de obtener el template de impuestos a
-       utilizar en la creacion de Delivery Note, Sales Invoice
+       utilizar en la creacion de Delivery Note, Sales Invoice,
        en base a la Configuracion de revelare
     '''
 
@@ -55,8 +55,13 @@ def template_impuestos():
         return data_impuestos
 
 
-def crear_nota_entrega(documento):
+def crear_nota_entrega(documento, no_vale):
     '''Funcion encargada de crear las notas de entrega'''
+
+    delivery_note_items = []
+    for i in documento:
+        item = {}
+        item['item_code'] = i['']
 
     delivery_note_items = [{
         "item_code": 'GAS-001',
@@ -94,10 +99,13 @@ def crear_dn_si(documento):
 
     delivery_note_tax = template_impuestos()
 
-    data_tabla = json.loads(documento)
+    data_tabla = json.loads(documento[0])
 
-    for data in data_tabla:
-        pass
+    vales = documento[1]
 
-    return 'OK'
+    for vale in vales:
+        estado_doc = crear_nota_entrega(data_tabla[vale], vale)
+        # frappe.msgprint(_(str(data_tabla[vale])))
+        # estado_doc = crear_nota_entrega(documento[0])
+    # return 'OK'
 

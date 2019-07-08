@@ -13,9 +13,9 @@ def preparar_data_tabla(data_tabla):
     '''
 
     # Data dummy prueba
-    data_dn = json.loads(open(frappe.get_app_path("revelare",
-                                                  "utils_revelare",
-                                                  "data_prueba.json")).read())
+    data_dn = open(frappe.get_app_path("revelare",
+                                    "utils_revelare",
+                                    "data_prueba.json")).read()
 
     # Declaracion DataFrame
     df = pd.read_json(data_dn, orient='columns')
@@ -29,19 +29,14 @@ def preparar_data_tabla(data_tabla):
     vales = list(set(list(filtrado_vale['numero'])))
     # Ordena de menor a mayor
     vales.sort()
-
-    mis_vales = []
+    
+    mis_vales = {}
     for vale in vales:
-        # Para cada vale creara un objeto (diccionario)
-        mi_vale = {}
-
-        # Crea un array de objetos, donde cada objeto son todas las filas 
-        # con el mismo numero de vale
         vale_x = (filtrado_vale.loc[filtrado_vale['numero'] == vale]).to_json(orient='records')
-        mi_vale[str(vale)] = json.loads(vale_x)
-
-        mis_vales.append(mi_vale)
+        mis_vales[str(vale)] = json.loads(vale_x)
 
     vales_dn_si = json.dumps(mis_vales)
 
-    return vales_dn_si
+    # Retorna un tupla con un diccionario con los vales
+    # y un lista de los vales encontrados
+    return vales_dn_si, vales
