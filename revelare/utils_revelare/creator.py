@@ -58,33 +58,38 @@ def template_impuestos():
 def crear_nota_entrega(documento, no_vale):
     '''Funcion encargada de crear las notas de entrega'''
 
+    delivery_note_tax = template_impuestos()
+
     delivery_note_items = []
     for i in documento:
         item = {}
-        item['item_code'] = i['']
+        item['item_code'] = i['producto']
+        item['rate'] = i['precio']
+        item['shs_dn_is_fuel'] = i['producto']
+        item['shs_dn_is_good'] = i['producto']
+        item['shs_dn_is_service'] = i['producto']
+        item['amount'] = float(i['precio']) * float(i['cantidad'])
+        item['qty'] = i['cantidad']
 
-    delivery_note_items = [{
-        "item_code": 'GAS-001',
-        "item_name": 'Gasolina Regular',
-        "rate": 24,
-        "shs_dn_is_fuel": 1,
-        "shs_dn_is_good": 0,
-        "shs_dn_is_service": 0,
-        "amount": 24,
-        "qty": 1
-    }]
+        delivery_note_items.append(item)
 
-    delivery_note = frappe.get_doc({"doctype": "Delivery Note",
-                                    "title": documento['cliente'],
-                                    "customer": documento['cliente'],
-                                    "numero_vale_gaseco": documento['numero'],
-                                    "name": documento['factura'],
-                                    "company": "SHS",
-                                    "items": delivery_note_items,
-                                    "apply_discount_on": "Grand Total",
-                                    # "taxes": delivery_note_tax,
-                                    "docstatus": 1})
-    DN_created = delivery_note.insert(ignore_permissions=True)
+    try:
+        delivery_note = frappe.get_doc({"doctype": "Delivery Note",
+                                        "title": documento[0]['cliente'],
+                                        "customer": documento[0]['cliente'],
+                                        "numero_vale_gaseco": documento[0]['numero'],
+                                        "name": documento[0]['factura'],
+                                        "company": "SHS",
+                                        "items": delivery_note_items,
+                                        "apply_discount_on": "Grand Total",
+                                        "taxes": delivery_note_tax,
+                                        "docstatus": 1})
+        DN_created = delivery_note.insert(ignore_permissions=True)
+    except:
+        frappe.msgprint(_('Error al intentat crear la nota de entrega'))
+    else:
+        # return 'OK delivery note created'
+        frappe.msgprint(_('OK Creado'))
 
 
 def crear_factura_venta(documento):
