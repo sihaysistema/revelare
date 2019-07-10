@@ -146,7 +146,29 @@ def crear_nota_entrega(documento, no_vale):
                                                     (float(delivery_note_tax[0]['rate']) / 100))
 
         delivery_note_items.append(item)
-    frappe.msgprint(_(str(delivery_note_items)))
+
+
+    total_fuel = 0
+    total_service = 0
+    total_goods = 0
+    total_iva = 0
+
+    for x in delivery_note_items:
+        # Vericacion y acumulacion combustibles
+        if 'shs_dn_gt_tax_net_fuel_amt' in x:
+            total_fuel += x['shs_dn_gt_tax_net_fuel_amt']
+
+        # Verificacion y acumulacion bienes
+        if 'shs_dn_gt_tax_net_goods_amt' in x:
+            total_goods += x['shs_dn_gt_tax_net_goods_amt']
+
+        # Verificacion y acumulacion servicios
+        if 'shs_dn_gt_tax_net_services_amt' in x:
+            total_service += x['shs_dn_gt_tax_net_services_amt']
+
+        # Verificacion y acumulacion IVA total para la factura
+        if 'shs_dn_sales_tax_for_this_row' in x:
+            total_iva += x['shs_dn_sales_tax_for_this_row']
 
     try:
         # SI no existe la nota de entrega
@@ -159,11 +181,16 @@ def crear_nota_entrega(documento, no_vale):
                                             "name": documento[0]['factura'],
                                             "company": "SHS",
                                             "items": delivery_note_items,
+                                            "shs_dn_gt_tax_fuel": total_fuel,
+                                            "shs_dn_gt_tax_goods": total_goods,
+                                            "shs_dn_gt_tax_services": total_service,
+                                            "shs_dn_total_iva": total_iva,
                                             "apply_discount_on": "Grand Total",
                                             "taxes": delivery_note_tax,
                                             "docstatus": 1})
+
             # Insertando la nota de entrega a la base de datos
-            # DN_created = delivery_note.insert(ignore_permissions=True)
+            DN_created = delivery_note.insert(ignore_permissions=True)
     except:
         frappe.msgprint(_('Error al intentar crear la nota de entrega'))
     else:
@@ -188,8 +215,9 @@ def crear_dn_si(documento):
     vales = documento[1]
 
     for vale in vales:
-        estado_doc = crear_nota_entrega(data_tabla[vale], vale)
+        # estado_doc = crear_nota_entrega(data_tabla[vale], vale)
+        estado_doc = crear_nota_entrega(data_tabla['100'], '100')
         # frappe.msgprint(_(str(data_tabla[vale])))
         # estado_doc = crear_nota_entrega(documento[0])
-    # return 'OK'
+    return 'OK'
 
