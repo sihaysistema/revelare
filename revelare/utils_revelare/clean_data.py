@@ -29,7 +29,8 @@ def preparar_data_tabla(data_tabla):
     vales = list(set(list(filtrado_vale['numero'])))
     # Ordena de menor a mayor
     vales.sort()
-    
+
+    # Crea estructura en formato json/dict para mejor manejo
     mis_vales = {}
     for vale in vales:
         vale_x = (filtrado_vale.loc[filtrado_vale['numero'] == vale]).to_json(orient='records')

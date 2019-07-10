@@ -100,6 +100,7 @@ def crear_nota_entrega(documento, no_vale):
 
     # Obtencion de items por vale
     delivery_note_items = []
+    # Por cada fila agrupada por vale de datatable
     for i in documento:
         item = {}
         item['item_code'] = i['producto']
@@ -114,9 +115,11 @@ def crear_nota_entrega(documento, no_vale):
         item_tax = detalles_item(i['producto'])
         item['shs_dn_other_tax_amount'] = (float(item_tax['facelec_tax_rate_per_uom']) * 
                                           (float(i['cantidad']) * 1))
+
         item['shs_dn_amount_minus_excise_tax'] = ((float(i['cantidad']) * float(i['precio'])) -
                                                  (float(i['cantidad']) * 1) * float(item_tax['facelec_tax_rate_per_uom']))
 
+        # asignacion tipo de producto
         item['shs_dn_is_fuel'] = item_tax['facelec_is_fuel']
         item['shs_dn_is_good'] = item_tax['facelec_is_good']
         item['shs_dn_is_service'] = item_tax['facelec_is_service']
@@ -153,6 +156,8 @@ def crear_nota_entrega(documento, no_vale):
     total_goods = 0
     total_iva = 0
 
+    # Por cada item del array de items
+    # Totaliza por combustible, bienes, servicios y total IVA
     for x in delivery_note_items:
         # Vericacion y acumulacion combustibles
         if 'shs_dn_gt_tax_net_fuel_amt' in x:
@@ -166,10 +171,11 @@ def crear_nota_entrega(documento, no_vale):
         if 'shs_dn_gt_tax_net_services_amt' in x:
             total_service += x['shs_dn_gt_tax_net_services_amt']
 
-        # Verificacion y acumulacion IVA total para la factura
+        # Verificacion y acumulacion IVA total para el documento trabajado
         if 'shs_dn_sales_tax_for_this_row' in x:
             total_iva += x['shs_dn_sales_tax_for_this_row']
 
+    # Creacion nota de entrega
     try:
         # SI no existe la nota de entrega
         if not frappe.db.exists('Delivery Note', {'numero_vale_gaseco': documento[0]['numero']}):
@@ -189,13 +195,13 @@ def crear_nota_entrega(documento, no_vale):
                                             "taxes": delivery_note_tax,
                                             "docstatus": 1})
 
-            # Insertando la nota de entrega a la base de datos
+            # Inserta la nota de entrega a la base de datos
             DN_created = delivery_note.insert(ignore_permissions=True)
     except:
-        frappe.msgprint(_('Error al intentar crear la nota de entrega'))
+        frappe.msgprint(_('Error al intentar crear la nota de entrega con el vale {}'.format(str(documento[0]['numero']))))
     else:
-        # return 'OK delivery note created'
-        frappe.msgprint(_('OK Creado'))
+        return 'OK delivery note created'
+        # frappe.msgprint(_('OK Creado'))
 
 
 def crear_factura_venta(documento):
@@ -208,16 +214,15 @@ def crear_dn_si(documento):
        y/o Facturas de Venta
     '''
 
-    delivery_note_tax = template_impuestos()
-
     data_tabla = json.loads(documento[0])
 
+    # lista que contiene los vales encontrados en datatable
     vales = documento[1]
 
+    # Por cada vale de datatable
     for vale in vales:
         # estado_doc = crear_nota_entrega(data_tabla[vale], vale)
         estado_doc = crear_nota_entrega(data_tabla['100'], '100')
         # frappe.msgprint(_(str(data_tabla[vale])))
-        # estado_doc = crear_nota_entrega(documento[0])
+    # TODO: TRABAJAR LOG ESPECIFICANDO ERRORES...ETC...
     return 'OK'
-
