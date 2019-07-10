@@ -179,6 +179,16 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
                     console.log(r.message);
                 }
             });
+            // frappe.call({
+            //     method: "revelare.utils_revelare.creator.template_impuestos",
+            //     // args: {
+            //     //     item_code: 'GAS-001'
+            //     // },
+            //     callback: function (r) {
+            //         // frm.reload_doc();
+            //         console.log(r.message);
+            //     }
+            // });
 
         });
     });
