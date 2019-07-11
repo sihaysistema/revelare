@@ -11,13 +11,13 @@ input {
     font-size: 16px;
 }
 
-input[type=text] {
+/* input[type=text] {
     background-color: #f1f1f1;
     width: 100%;
-}
+} */
 
 input[type=submit] {
-    background-color: DodgerBlue;
+    background-color: #353b48;
     color: #fff;
     cursor: pointer;
 }
@@ -48,6 +48,6 @@ input[type=submit] {
 
 /*Cuando se navega por los elementos con las teclas de arriba y abajo:*/
 .autocomplete-active {
-    background-color: DodgerBlue !important;
+    background-color: #353b48 !important;
     color: #ffffff;
 }

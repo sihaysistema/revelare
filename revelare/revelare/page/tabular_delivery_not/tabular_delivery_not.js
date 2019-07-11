@@ -125,8 +125,40 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
         "China", "Colombia", "Congo", "Cook Islands", "Costa Rica", "Cote D Ivoire", "Croatia", "Cuba", "Curacao", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia", "Falkland Islands", "Faroe Islands", "Fiji", "Finland", "France", "French Polynesia", "French West Indies", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Greenland", "Grenada", "Guam", "Guatemala", "Guernsey", "Guinea", "Guinea Bissau", "Guyana", "Haiti", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Isle of Man", "Israel", "Italy", "Jamaica", "Japan", "Jersey", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macau", "Macedonia", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Montserrat", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauro", "Nepal", "Netherlands", "Netherlands Antilles", "New Caledonia", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Puerto Rico", "Qatar", "Reunion", "Romania", "Russia", "Rwanda", "Saint Pierre & Miquelon", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Spain", "Sri Lanka", "St Kitts & Nevis", "St Lucia", "St Vincent", "Sudan", "Suriname", "Swaziland", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor L'Este", "Togo", "Tonga", "Trinidad & Tobago", "Tunisia", "Turkey", "Turkmenistan", "Turks & Caicos", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States of America", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Virgin Islands (US)", "Yemen", "Zambia", "Zimbabwe"
     ];
 
+    frappe.db.get_list('Customer', {
+        fields: ['name'],
+        filters: {
+            disabled: false
+        }
+    }).then(records => {
+        // console.log(records);
+        array_cli = [];
+
+        for (let index = 0; index < records.length; index++) {
+            array_cli.push(records[index].name);
+        }
+        console.log(array_cli);
+
+        frappe.db.get_list('Item', {
+            fields: ['item_code'],
+            filters: {
+                disabled: false
+            }
+        }).then(records => {
+            // console.log(records);
+            array_itms = [];
+
+            for (let index = 0; index < records.length; index++) {
+                array_itms.push(records[index].item_code);
+            }
+            console.log(array_itms);
+
+            load_dependencies(array_cli, array_itms);
+        });
+    });
+
     // Carga las dependencias necesarias para DATATABLE, para luego ser renderizado
-    function load_dependencies() {
+    function load_dependencies(cliente_arr, items_arr) {
         frappe.require(["/assets/frappe/css/frappe-datatable.css",
             "/assets/frappe/js/lib/clusterize.min.js",
             "/assets/frappe/js/lib/Sortable.min.js",
@@ -152,29 +184,59 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
 
                 getEditor(colIndex, rowIndex, value, parent) {
                     // editing obj only for date field
-                    if (colIndex != 5) return;
+                    // if ((colIndex != 5) || (colIndex != 7)) return;
 
-                    const $input = document.createElement('input');
-                    $input.type = 'data';
-                    parent.appendChild($input);
+                    if (colIndex == 5) {
+                        const $input = document.createElement('input');
+                        $input.type = 'data';
+                        parent.appendChild($input);
 
-                    // const parse = value => value.replace(/\//g, '-');
-                    // const format = value => value.replace(/\-/g, '/');
-                    console.log(colIndex);
-                    return {
-                        initValue(value) {
-                            $input.focus();
-                            autocompletar($input, countries)
-                            // $input.value = value;
-                        },
-                        setValue(value) {
-                            $input.value = value + 1;
-                        },
-                        getValue() {
-                            return ($input.value);
+
+                        return {
+                            initValue(value) {
+                                $input.focus();
+                                console.log(colIndex);
+
+                                autocompletar($input, cliente_arr);
+
+                                // $input.value = value;
+                            },
+                            setValue(value) {
+                                $input.value = value;
+                            },
+                            getValue() {
+                                return ($input.value);
+                                // autocompletar($input, countries);
+                            }
                         }
+                    } else if (colIndex == 7) {
+                        const $input = document.createElement('input');
+                        $input.type = 'data';
+                        parent.appendChild($input);
+
+
+                        return {
+                            initValue(value) {
+                                $input.focus();
+                                console.log(colIndex);
+
+                                autocompletar($input, items_arr);
+
+                                // $input.value = value;
+                            },
+                            setValue(value) {
+                                $input.value = value;
+                            },
+                            getValue() {
+                                return ($input.value);
+                                // autocompletar($input, countries);
+                            }
+                        }
+                    } else {
+                        return
                     }
-                },
+
+                }
             }
 
             const data_datatable = new DataTable(container, options);
@@ -183,9 +245,10 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
     }
 
     // Ejecucion serialmente
-    frappe.run_serially([
-        () => load_dependencies()
-    ]);
+    // frappe.run_serially([
+    //     () => load_dependencies(),
+    //     () => mi_prueba()
+    // ]);
 
     // Agrega un boton al menu de la pagina
     page.add_menu_item(__("OK"), function (e) {
@@ -229,12 +292,26 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
         });
     });
 
+    // function mi_prueba() {
+    //     frappe.db.get_list('Customer', {
+    //         fields: ['name'],
+    //         filters: {
+    //             disabled: false
+    //         }
+    //     }).then(records => {
+    //         arra = [];
+
+    //         for (let index = 0; index < records.length; index++) {
+    //             arra.push(records[index].name);
+    //         }
+    //         console.log(arra);
+    //     });
+    // }
 };
 
 // frappe.pages['tabular-delivery-not'].onclick = function (wrapper) {
 //     console.log('worked!');
 // }
-
 
 function autocompletar(inp, arr) {
     /*la función de autocompletar toma dos argumentos,

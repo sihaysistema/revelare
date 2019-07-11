@@ -28,3 +28,18 @@ def procesar_data(data):
     status_dn_si = crear_dn_si(data_preparada)
 
     return status_dn_si
+
+
+@frappe.whitelist()
+def obtener_clientes():
+   pass
+
+
+@frappe.whitelist()
+def obtener_items():
+   pass
+
+
+@frappe.whitelist()
+def obtener_series():
+   pass
