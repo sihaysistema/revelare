@@ -32,14 +32,25 @@ def procesar_data(data):
 
 @frappe.whitelist()
 def obtener_clientes():
-   pass
+    pass
 
 
 @frappe.whitelist()
 def obtener_items():
-   pass
+    pass
 
 
 @frappe.whitelist()
 def obtener_series():
-   pass
+    mis_series = {}
+
+    naming_series = frappe.get_meta("Delivery Note").get_field("naming_series").options or ""
+    naming_series = naming_series.split("\n")
+    mis_series['delivery_note'] = naming_series
+
+    naming_series_s = frappe.get_meta("Sales Invoice").get_field("naming_series").options or ""
+    naming_series_s = naming_series_s.split("\n")
+    mis_series['sales_invoice'] = naming_series_s
+    #out = naming_series[0] or (naming_series[1] if len(naming_series) > 1 else None)
+
+    return mis_series

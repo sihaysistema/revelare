@@ -3,16 +3,21 @@
 
 frappe.ui.form.on('Configuration Revelare', {
 	refresh: function (frm) {
-		frm.add_custom_button(__('Test'), function () {
-			frappe.call({
-				method: "revelare.utils_revelare.delivery_note.template_impuestos",
-				callback: function (r) {
-					//console.log(r);
-					//frappe.msgprint(r);
-					//frm.doc.cae = r.message
-					// frm.reload_doc()
-				}
-			})
-		}).addClass("btn-primary");
+
+		frappe.call({
+			method: "revelare.api.obtener_series",
+			callback: function (r) {
+				// console.log(r.message);
+				// console.log(r.message['delivery_note']);
+
+				frm.set_df_property("serie_para_notas_de_entrega", "options", r.message['delivery_note']);
+				frm.refresh_field('serie_para_notas_de_entrega');
+
+				// frm.set_value('serie_para_factura_de_venta', r.message['sales_invoice'])
+				frm.set_df_property("serie_para_factura_de_venta", "options", r.message['sales_invoice']);
+				frm.refresh_field('serie_para_factura_de_venta');
+			}
+		})
+
 	}
 });
