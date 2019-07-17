@@ -24,7 +24,7 @@ def procesar_data(data):
     if conf_revelare[0] == 1:
         # Carga la data como json
         data_tabla = json.loads(data)
-
+        # frappe.msgprint(_(str(len(data_tabla))))
         # Prepara la data y agrupa por numeros de vale
         data_preparada = preparar_data_tabla(data_tabla)
 
@@ -32,7 +32,7 @@ def procesar_data(data):
         status_dn_si = crear_dn_si(data_preparada, conf_revelare[1])
 
         return status_dn_si
-    
+
     if conf_revelare[0] == 2:
         return '''Existe mas de una configuracion para revelare, porfavor verifique que exista
         solo una <a href='#Form/Configuration Revelare/<b>arreglar</b></a>'''

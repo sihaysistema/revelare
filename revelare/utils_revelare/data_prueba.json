@@ -34,24 +34,24 @@
     {
         "cantidad": "4",
         "monto_del_vale": "100",
-        "producto": "GAS-002",
+        "producto": "GAS-001",
         "precio": "35",
         "total_factura": "",
         "factura": "",
         "serie": "NOTA-ENTREGA.-",
         "numero": "12",
-        "cliente": "Pedro Gonzales"
+        "cliente": "Juan Perez"
     },
     {
         "cantidad": "4",
         "monto_del_vale": "100",
-        "producto": "GAS-002",
+        "producto": "GAS-001",
         "precio": "35",
         "total_factura": "",
         "factura": "",
         "serie": "NOTA-ENTREGA.-",
         "numero": "12",
-        "cliente": "Pedro Gonzales"
+        "cliente": "Juan Perez"
     },
     {
         "cantidad": "4",
