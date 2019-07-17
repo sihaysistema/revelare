@@ -108,6 +108,7 @@ def crear_nota_entrega(documento, no_vale, conf):
 
        Retornos:
        --------
+       mensaje con el estado del proceso
     '''
     serie_doc = detalles_configuracion(conf)  # Obtiene las series para DN
     delivery_note_tax = template_impuestos()  # Obtiene template tax para DN
@@ -220,6 +221,7 @@ def crear_nota_entrega(documento, no_vale, conf):
         # frappe.msgprint(_('OK Creado'))
 
 
+# WIP: verificar impuestos tabla extra, GL Entry, Actualizaciones transacciones
 def crear_factura_venta(documento):
     '''Funcion encargada de crear la facturas de venta
        Parametros:

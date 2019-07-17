@@ -24,15 +24,18 @@ def procesar_data(data):
     if conf_revelare[0] == 1:
         # Carga la data como json
         data_tabla = json.loads(data)
-        # frappe.msgprint(_(str(len(data_tabla))))
+
         # Prepara la data y agrupa por numeros de vale
         data_preparada = preparar_data_tabla(data_tabla)
 
+        # Si el dataframe tiene data
         if data_preparada is not False:
             # Creador de Notas de Entraga y/o Facturas de Venta
             status_dn_si = crear_dn_si(data_preparada, conf_revelare[1])
 
             return status_dn_si
+
+        # Si el dataframe no tiene data
         else:
             return 'No Data'
 

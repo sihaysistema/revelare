@@ -275,7 +275,7 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
                     // frm.reload_doc();
                     console.log(r.message);
                     frappe.show_alert({
-                        indicator: 'orange',
+                        indicator: 'green',
                         message: __(`${r.message}`)
                     });
                 }

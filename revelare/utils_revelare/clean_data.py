@@ -26,7 +26,8 @@ def preparar_data_tabla(data_tabla):
     # Filtrara todas las filas que contengan un valor en la columna numero
     filtrado_vale = df.loc[df['numero'] != '']
 
-    # SI un dataframe esta vacio retorna true
+    # VERIFICACION: .empty returna true si el dataframe esta vacio, y 
+    # true si tiene data
     if filtrado_vale.empty is False:
         # Obtiene los datos de la columna numero que hace referencia a los vales,
         # filtrando los duplicados
@@ -45,5 +46,7 @@ def preparar_data_tabla(data_tabla):
         # Retorna un tupla con un diccionario con los vales
         # y un lista de los vales encontrados
         return vales_dn_si, vales
+
+    # Si el dataframe esta vacio
     else:
         return False
