@@ -28,10 +28,13 @@ def procesar_data(data):
         # Prepara la data y agrupa por numeros de vale
         data_preparada = preparar_data_tabla(data_tabla)
 
-        # Creador de Notas de Entraga y/o Facturas de Venta
-        status_dn_si = crear_dn_si(data_preparada, conf_revelare[1])
+        if data_preparada is not False:
+            # Creador de Notas de Entraga y/o Facturas de Venta
+            status_dn_si = crear_dn_si(data_preparada, conf_revelare[1])
 
-        return status_dn_si
+            return status_dn_si
+        else:
+            return 'No Data'
 
     if conf_revelare[0] == 2:
         return '''Existe mas de una configuracion para revelare, porfavor verifique que exista
