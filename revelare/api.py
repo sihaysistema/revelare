@@ -6,6 +6,7 @@ import json
 
 from utils_revelare.clean_data import preparar_data_tabla
 from utils_revelare.creator import crear_dn_si
+from utils_revelare.creator import validar_configuracion
 
 
 @frappe.whitelist()
@@ -17,27 +18,28 @@ def procesar_data(data):
        ----------
        - data (object-array): Contiene informacion de datatable del frontend
     '''
+    # Verifica que exista una configuracion valida
+    conf_revelare = validar_configuracion()
 
-    # Carga la data como json
-    data_tabla = json.loads(data)
+    if conf_revelare[0] == 1:
+        # Carga la data como json
+        data_tabla = json.loads(data)
 
-    # Prepara la data y agrupa por numeros de vale
-    data_preparada = preparar_data_tabla(data_tabla)
+        # Prepara la data y agrupa por numeros de vale
+        data_preparada = preparar_data_tabla(data_tabla)
 
-    # Creador de Notas de Entraga y/o Facturas de Venta
-    status_dn_si = crear_dn_si(data_preparada)
+        # Creador de Notas de Entraga y/o Facturas de Venta
+        status_dn_si = crear_dn_si(data_preparada, conf_revelare[1])
 
-    return status_dn_si
-
-
-@frappe.whitelist()
-def obtener_clientes():
-    pass
-
-
-@frappe.whitelist()
-def obtener_items():
-    pass
+        return status_dn_si
+    
+    if conf_revelare[0] == 2:
+        return '''Existe mas de una configuracion para revelare, porfavor verifique que exista
+        solo una <a href='#Form/Configuration Revelare/<b>arreglar</b></a>'''
+    
+    if conf_revelare[0] == 3:
+        return '''No existe configuracion valida para revelare, porfavor cree o valide
+        una nueva configuracion <a href='#Form/Configuration Revelare/<b>arreglar</b></a>'''
 
 
 @frappe.whitelist()

@@ -274,6 +274,10 @@ frappe.pages['tabular-delivery-not'].on_page_load = function (wrapper) {
                 callback: function (r) {
                     // frm.reload_doc();
                     console.log(r.message);
+                    frappe.show_alert({
+                        indicator: 'orange',
+                        message: __(`${r.message}`)
+                    });
                 }
             });
 
