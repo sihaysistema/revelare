@@ -3,10 +3,6 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 
-# Permite trabajar con acentos, ñ, simbolos, etc
-import os, sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
 
 @frappe.whitelist()
 def crear_registros():

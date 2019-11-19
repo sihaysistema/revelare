@@ -3,8 +3,7 @@
 import frappe
 from frappe import _
 import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
+
 
 @frappe.whitelist()
 def obtenerDatosItem(codigoItem):
