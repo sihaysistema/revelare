@@ -1,64 +1,66 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from frappe import _
+import frappe
+
 
 def get_data():
 	return [
+		{
+			"label": _("Configuración"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Configuration Revelare",
+					"description": _("General Configuration to Revelare."),
+					"onboard": 1,
+				}
+			]
+		},
 		{
 			"label": _("Cash Flow"),
 			"items": [
 				{
 					"type": "doctype",
 					"name": "Budgeted Cash Flow",
-					"description": _("Entries budgeted cash flow.")
-				},
-				{
-					"type": "report",
-					"name": "Budgeted Cash Flow Report",
-					"doctype": "Revelare",
-					"is_query_report": True
+					"description": _("Entries budgeted cash flow."),
+					"onboard": 1,
 				},
 				{
 					"type": "doctype",
-					"label": _("Category Cash Flow Group"),
+					"name": "Budgeted Cash Flow Report",
+					"description": _("Report Cash Flow"),
+					"onboard": 1
+				},
+				{
+					"type": "doctype",
 					"name": "Category Cash Flow Group",
 					"link": "Tree/Category Cash Flow Group",
 					"description": _("Manage Categories Group Tree."),
-				}
-			]
-		},
-		{
-			"label": _("Setup Revelare"),
-			"icon": "fa fa-cog",
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Configuration Revelare",
-					"description": _("General Configuration to Revelare.")
+					"onboard": 1
 				}
 			]
 		},
 		{
 			"label": _("Analytics"),
-			"icon": "fa fa-table",
 			"items": [
 				{
 					"type": "page",
 					"name": "sales-analytics-2",
-					"label": _("Sales Analytics 2"),
-					"icon": "fa fa-bar-chart",
+					"description": _("Sales Analytics 2.0"),
+					"onboard": 1,
 				}
 			]
 		},
 		{
 			"label": _("Delivery Note by Item with 4 Item Column Totalization"),
-			"icon": "fa fa-table",
 			"items": [
 				{
 					"type": "report",
 					"name": "Delivery Note By Item",
-					"doctype": "Revelare",
-					"is_query_report": True
+					"description": _("Delivery Note By Item"),
+					"is_query_report": True,
+					"onboard": 1,
 				}
 			]
 		},
@@ -68,31 +70,24 @@ def get_data():
 				{
 					"type": "report",
 					"name": "Purchase Ledger",
-					"label": _("Purchase Ledger"),
-					"doctype": "Revelare",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Sales Ledger",
-					"label": _("Sales Ledger"),
-					"doctype": "Revelare",
-					"is_query_report": True
+					"description": _("Purchase Ledger"),
+					"is_query_report": True,
+					"onboard": 1,
 				},
 				{
 					"type": "report",
 					"name": "General Ledger Report",
-					"label": _("General Ledger Report"),
-					"doctype": "Revelare",
-					"is_query_report": True
+					"description": _("General Ledger Report"),
+					"is_query_report": True,
+					"onboard": 1,
 				},
 				{
 					"type": "report",
 					"name": "Daily Book Report",
-					"label": _("Daily Book Report"),
-					"doctype": "Revelare",
-					"is_query_report": True
-				}
+					"description": _("Daily Book Report"),
+					"is_query_report": True,
+					"onboard": 1,
+				},
 			]
 		},
 		{
@@ -101,28 +96,21 @@ def get_data():
 				{
 					"type": "report",
 					"name": "Production Report",
-					"label": _("Production Report"),
-					"doctype": "Revelare",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Production Per Day Report",
-					"label": _("Production Per Day Report"),
-					"doctype": "Revelare",
-					"is_query_report": True
+					"description": _("Production Report"),
+					"is_query_report": True,
+					"onboard": 1,
 				}
 			]
 		},
 		{
 			"label": _("Tabular Entry Tools"),
-			"icon": "fa fa-table",
 			"items": [
 				{
-					"type": "page",
+					"type": "report",
 					"name": "tabular-delivery-not",
-					"label": _("Delivery Note Tabular Entry"),
-					"doctype": "Revelare"
+					"description": _("Delivery Note Tabular Entry"),
+					"is_query_report": True,
+					"onboard": 1,
 				}
 			]
 		}
