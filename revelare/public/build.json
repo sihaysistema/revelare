@@ -1,5 +1,9 @@
 {
     "revelare/js/revelar.min.js": [
         "public/js/revelar.js"
+    ],
+
+    "revelare/js/plotly-latest.min.js": [
+        "public/js/plotly-latest.min.js"
     ]
 }
