@@ -17,8 +17,32 @@ fixtures = ["Custom Field"]
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/revelare/css/revelare.css"
-app_include_js = "/assets/revelare/js/revelar.js"
+# app_include_js = "/assets/revelare/js/revelar.min.js"
 
+app_include_js = [
+    "/assets/revelare/js/revelar.min.js",
+    "/assets/revelare/js/plotly_start_tool.min.js",
+    "/assets/revelare/node_modules/plotly.js/dist/plotly.min.js",
+    "/assets/revelare/node_modules/plotly.js/dist/plotly-gl3d.min.js",
+    "/assets/revelare/node_modules/plotly.js/dist/plotly-gl2d.min.js",
+    "/assets/revelare/node_modules/plotly.js/dist/plotly-geo.min.js",
+    "/assets/revelare/node_modules/plotly.js/dist/plotly-basic.min.js",
+    "/assets/revelare/node_modules/plotly.js/dist/plotly-cartesian.min.js",
+    "/assets/revelare/node_modules/plotly.js/dist/plotly-finance.min.js"
+]
+
+'''
+app_include_js = [
+    "/assets/revelare/js/revelar.min.js",
+    "/assets/node_modules/plotly.js/plotly.min.js",
+    "/assets/node_modules/plotly.js/plotly-gl3d.min.js",
+    "/assets/node_modules/plotly.js/plotly-gl2d.min.js",
+    "/assets/node_modules/plotly.js/plotly-geo.min.js",
+    "/assets/node_modules/plotly.js/plotly-basic.min.js",
+    "/assets/node_modules/plotly.js/plotly-cartesian.min.js",
+    "/assets/node_modules/plotly.js/plotly-finance.min.js"
+]
+'''
 # include js, css files in header of web template
 # web_include_css = "/assets/revelare/css/revelare.css"
 # web_include_js = "/assets/revelare/js/revelare.js"

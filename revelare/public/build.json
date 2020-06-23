@@ -2,8 +2,7 @@
     "revelare/js/revelar.min.js": [
         "public/js/revelar.js"
     ],
-
-    "revelare/js/plotly-latest.min.js": [
-        "public/js/plotly-latest.min.js"
+    "revelare/js/plotly_start_tool.min.js": [
+        "public/js/plotly_start_tool.js"
     ]
 }
