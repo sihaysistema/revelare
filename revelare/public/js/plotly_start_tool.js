@@ -5,7 +5,7 @@ console.log('Hello from plotly startup tool');
 frappe.msgprint('Plotly-startup cargado exitosamente');
 //frappe.provide('frappe.revelare');
 
-// works, with some errors.
+// works, with some errors, namely attaching some libraries to a document.
 import Plotly from '../node_modules/plotly.js/dist/plotly.js'
 
 /*
