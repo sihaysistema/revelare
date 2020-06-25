@@ -1,0 +1,19 @@
+{
+ "content": null,
+ "creation": "2020-06-25 16:32:16.236777",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2020-06-25 16:34:12.377922",
+ "modified_by": "Administrator",
+ "module": "Revelare",
+ "name": "plotly-test",
+ "owner": "Administrator",
+ "page_name": "Plotly Test",
+ "roles": [],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Our Cool Plotly Test"
+}
