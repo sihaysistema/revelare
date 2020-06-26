@@ -22,7 +22,7 @@ app_license = "GNU General Public License (v3)"
 
 app_include_js = [
     "/assets/revelare/js/revelar.min.js",
-    "/assets/revelare/js/plotly_start_tool.min.js",
+    "/assets/revelare/js/revelare_vue_bundle.min.js",
     "/assets/revelare/node_modules/plotly.js/dist/plotly.min.js",
     "/assets/revelare/node_modules/plotly.js/dist/plotly-gl3d.min.js",
     "/assets/revelare/node_modules/plotly.js/dist/plotly-gl2d.min.js",

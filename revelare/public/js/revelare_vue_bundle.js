@@ -9,7 +9,7 @@ console.log('Plotly startup tool basic');
 // import Plotly from '../node_modules/plotly.js/dist/plotly.js'
 // import Plotly from '/assets/revelare/node_modules/plotly.js/dist/plotly.min.js'
 
-import ToolRoot from './ToolRoot.vue';
+import ToolRoot from '../vue/ToolRoot.vue';
 
 frappe.provide('frappe.revelare');   // create a namespace within the Frappe instance
 

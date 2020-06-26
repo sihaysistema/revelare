@@ -6,5 +6,9 @@ frappe.pages['plotly-test'].on_page_load = function (wrapper) {
 	});
 
 	this.page.$export_tool = new frappe.revelare.ExportTool(this.page);
-
+	/*
+	frappe.require("/assets/revelare/js/plotly_start_tool.min.js", function () {
+		// your code here
+	});
+	*/
 }
