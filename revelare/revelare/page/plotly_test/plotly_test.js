@@ -4,14 +4,7 @@ frappe.pages['plotly-test'].on_page_load = function (wrapper) {
 		title: 'Our Cool Plotly Test',
 		single_column: true
 	});
+
+	this.page.$export_tool = new frappe.revelare.ExportTool(this.page);
+
 }
-console.log('Hello from plotly_test.js');
-
-var imported_helper = undefined;
-frappe.require('assets/revelare/js/plotly_start_tool.min.js', () => {
-	test2
-	//imported_helper = () => { test2 };
-});
-
-//imported_helper();
-test2();
