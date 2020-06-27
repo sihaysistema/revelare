@@ -2,12 +2,16 @@
   <div>
     {{ some_data }}
     <br />
-    <ButtonCounter :count="10"></ButtonCounter>
+    <PlotlyGraph :count="1"></PlotlyGraph>
+    <br>
   </div>
 </template>
 
+
 <script>
 import ButtonCounter from "../vue/ButtonCounter.vue";
+import PlotlyGraph from "../vue/PlotlyGraph.vue";
+
 // Works great!
 console.log("VUE Component ToolRoot Loaded");
 export default {
@@ -19,7 +23,8 @@ export default {
     };
   },
   components: {
-    ButtonCounter
+    ButtonCounter,
+    PlotlyGraph
   }
 };
 </script>
