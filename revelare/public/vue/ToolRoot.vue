@@ -1,16 +1,17 @@
 <template>
-  <div>
-    {{ some_data }}
-    <br />
-    <PlotlyGraph :count="1"></PlotlyGraph>
-    <br>
+  <div class="graph-canvas">
+    <h3>{{ some_data }}</h3>
+    <component1 :count="1"></component1>
+    <Component2 :count="10"></Component2>
   </div>
 </template>
 
 
 <script>
-import ButtonCounter from "../vue/ButtonCounter.vue";
-import PlotlyGraph from "../vue/PlotlyGraph.vue";
+// Local registration in a module system:
+// Source: https://vuejs.org/v2/guide/components-registration.html#Local-Registration-in-a-Module-System
+import Component1 from "../vue/components/Component1.vue";
+import Component2 from "../vue/components/Component2.vue";
 
 // Works great!
 console.log("VUE Component ToolRoot Loaded");
@@ -19,12 +20,12 @@ export default {
   data: function() {
     return {
       some_data:
-        "This cool button was loaded using Vue components on Revelare App"
+        "These buttons were loaded as 2 different Single File Vue components on Revelare App"
     };
   },
   components: {
-    ButtonCounter,
-    PlotlyGraph
+    Component1,
+    Component2
   }
 };
 </script>
