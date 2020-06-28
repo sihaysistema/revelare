@@ -1,5 +1,5 @@
 <template>
-  <button v-on:click="count++">Button From Component 1 — {{ count }}</button>
+  <button class="my1" v-on:click="count++">Button From Component 1 — {{ count }}</button>
 </template>
 
 <script>
@@ -14,8 +14,8 @@ export default {
 </script>
 
 <style scoped>
-.button {
-  background-color: blue;
+.my1 {
+  background-color: red;
   border: none;
   color: white;
   padding: 15px 32px;

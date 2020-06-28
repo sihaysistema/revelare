@@ -3,6 +3,7 @@
     <h3>{{ some_data }}</h3>
     <component1 :count="1"></component1>
     <Component2 :count="10"></Component2>
+    <Component3></Component3>
   </div>
 </template>
 
@@ -12,6 +13,7 @@
 // Source: https://vuejs.org/v2/guide/components-registration.html#Local-Registration-in-a-Module-System
 import Component1 from "../vue/components/Component1.vue";
 import Component2 from "../vue/components/Component2.vue";
+import Component3 from "../vue/components/Component3.vue";
 
 // Works great!
 console.log("VUE Component ToolRoot Loaded");
@@ -25,7 +27,8 @@ export default {
   },
   components: {
     Component1,
-    Component2
+    Component2,
+    Component3
   }
 };
 </script>
