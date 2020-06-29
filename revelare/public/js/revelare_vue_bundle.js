@@ -11,7 +11,7 @@ console.log('Plotly startup tool basic');
 
 import ToolRoot from '../vue/ToolRoot.vue';
 
-frappe.provide('frappe.revelare');   // create a namespace within the Frappe instance
+frappe.provide('frappe.revelare');   // create a namespace within the Frappe instance.
 
 frappe.revelare.ExportTool = class {   // create a glue class, wich will manage your Vue instance
     constructor({ parent }) {
