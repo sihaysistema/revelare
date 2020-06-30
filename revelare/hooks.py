@@ -29,7 +29,9 @@ app_include_js = [
     "/assets/revelare/node_modules/plotly.js/dist/plotly-geo.min.js",
     "/assets/revelare/node_modules/plotly.js/dist/plotly-basic.min.js",
     "/assets/revelare/node_modules/plotly.js/dist/plotly-cartesian.min.js",
-    "/assets/revelare/node_modules/plotly.js/dist/plotly-finance.min.js"
+    "/assets/revelare/node_modules/plotly.js/dist/plotly-finance.min.js",
+    "/assets/revelare/node_modules/apexcharts/src/apexcharts.js",
+    "/assets/revelare/node_modules/vue-apexcharts/dist/vue-apexcharts.js"
 ]
 
 # include js, css files in header of web template
