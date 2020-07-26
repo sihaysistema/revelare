@@ -5,6 +5,7 @@
     <Component2 :count="10"></Component2>
     <Component3></Component3>
     <Component5></Component5>
+    <Component6></Component6>
   </div>
 </template>
 
@@ -16,6 +17,7 @@ import Component1 from "../vue/components/Component1.vue";
 import Component2 from "../vue/components/Component2.vue";
 import Component3 from "../vue/components/Component3.vue";
 import Component5 from "../vue/components/Component5.vue";
+import Component6 from "../vue/components/Component6.vue";
 
 // Works great!
 console.log("VUE Component ToolRoot Loaded");
@@ -31,7 +33,8 @@ export default {
     Component1,
     Component2,
     Component3,
-    Component5
+    Component5,
+    Component6
   }
 };
 </script>
