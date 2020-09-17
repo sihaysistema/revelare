@@ -11,6 +11,7 @@ nuevos fixtures que estes creando se agreguen al listado fixtures.
 
 """
 
+
 def fill_fixtures():
     # We declare fixtures as an empty list.
     fixtures_fillup = []
@@ -35,7 +36,12 @@ def fill_fixtures():
                 "source_name", "in", [
                     "Amount UOM",
                     "Estimated Items and Quantities Available",
-                    "Estimated Available Items"
+                    "Estimated Available Items",
+                    "Availability Estimates",
+                    "Item Availability Estimate Importer",
+                    "Include in Estimations",
+                    "REVELARE: Only for Items used as materials in BOM. If checked, Item will be included automatically when users download the Item Availability Estimate Importer spreadsheet format.",
+                    "REVELARE: Name to be displayed for categories used in Item Availability reports for users and customers"
                 ]
             ]
         ]
