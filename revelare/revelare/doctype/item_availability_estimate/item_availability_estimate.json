@@ -7,6 +7,7 @@
  "field_order": [
   "title",
   "company",
+  "posting_date",
   "start_date",
   "end_date",
   "days",
@@ -62,10 +63,15 @@
    "options": "Item Availability Estimate",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date"
   }
  ],
  "is_submittable": 1,
- "modified": "2020-09-16 21:03:11.401807",
+ "modified": "2020-09-16 21:13:30.422821",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Item Availability Estimate",
