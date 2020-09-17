@@ -1,0 +1,16 @@
+[
+ {
+  "contributed_translation_doctype_name": null,
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2020-09-16 20:42:42.445310",
+  "name": "71e8a630b7",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_name": "Amount UOM",
+  "status": "Saved",
+  "target_name": "Unidad de Medida"
+ }
+]

@@ -2,6 +2,8 @@
 from __future__ import unicode_literals
 from . import __version__ as app_version
 
+from revelare.fixtures import fill_fixtures
+
 app_name = "revelare"
 app_title = "Revelare"
 app_publisher = "SHS"
@@ -10,7 +12,12 @@ app_icon = "octicon octicon-graph"
 app_color = "#1C2833"
 app_email = "m.monroyc22@gmail.com"
 app_license = "GNU General Public License (v3)"
-fixtures = ["Custom Field"]
+
+# es-GT: Indica la existencia de campos a la medida para agregar a la instalación estandar de ERPNext
+# en-US: Indicates the existense of custom fields to add to existing ERPNext installation
+# fixtures = ["Custom Field", "Tax Category"]
+
+fixtures = fill_fixtures()
 
 # Includes in <head>
 # ------------------
