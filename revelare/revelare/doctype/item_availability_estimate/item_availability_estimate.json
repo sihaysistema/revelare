@@ -6,9 +6,13 @@
  "engine": "InnoDB",
  "field_order": [
   "title",
+  "view_item_availability",
   "company",
+  "column_break_4",
   "posting_date",
+  "section_break_6",
   "start_date",
+  "column_break_8",
   "end_date",
   "days",
   "estimate_available_items",
@@ -19,7 +23,7 @@
   {
    "fieldname": "company",
    "fieldtype": "Link",
-   "label": "Company",
+   "label": "<p>Click on the link above to view the generated budget spreadsheets</p>",
    "options": "Company"
   },
   {
@@ -68,10 +72,28 @@
    "fieldname": "posting_date",
    "fieldtype": "Date",
    "label": "Posting Date"
+  },
+  {
+   "fieldname": "view_item_availability",
+   "fieldtype": "HTML",
+   "label": "View Sales Item Availability Report",
+   "options": "<h4><i class=\"fa fa-table\"></i> <a href=\"#List/File/Home/presupuestos\">View Sales Item Availability Report</a></h4>\n<p>Click on the link above to view the Items available for sale net of sales.</p>"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
   }
  ],
  "is_submittable": 1,
- "modified": "2020-09-16 21:13:30.422821",
+ "modified": "2020-09-16 21:21:19.455468",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Item Availability Estimate",
