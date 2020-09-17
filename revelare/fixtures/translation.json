@@ -12,5 +12,33 @@
   "source_name": "Amount UOM",
   "status": "Saved",
   "target_name": "Unidad de Medida"
+ },
+ {
+  "contributed_translation_doctype_name": null,
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2020-09-16 21:04:56.275488",
+  "name": "6bbc8f101b",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_name": "Estimated Items and Quantities Available",
+  "status": "Saved",
+  "target_name": "Estimaci\u00f3n de Productos y Cantidades Disponibles"
+ },
+ {
+  "contributed_translation_doctype_name": null,
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2020-09-16 21:05:23.755907",
+  "name": "eb399cb049",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_name": "Estimated Available Items",
+  "status": "Saved",
+  "target_name": "Productos Estimados Disponibles"
  }
 ]

@@ -33,7 +33,9 @@ def fill_fixtures():
         "dt": "Translation", "filters": [
             [
                 "source_name", "in", [
-                    "Amount UOM"
+                    "Amount UOM",
+                    "Estimated Items and Quantities Available",
+                    "Estimated Available Items"
                 ]
             ]
         ]
