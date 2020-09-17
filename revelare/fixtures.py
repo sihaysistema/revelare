@@ -23,8 +23,11 @@ def fill_fixtures():
         "dt": "Custom Field", "filters": [
             [
                 "name", "in", [
-                    "Purchase Invoice-facelec_tax_retention_guatemala",
-                    "Sales Invoice-facelec_tax_retention_guatemala"
+                    "Item-availability_estimates",
+                    "Item-include_in_estimations",
+                    "Item-column_break_estimations",
+                    "Item-estimation_uom",
+                    "Item-estimation_name"
                 ]
             ]
         ]
@@ -72,7 +75,7 @@ def fill_fixtures():
     }
 
     # NEW FUNCTIONALITY FOR EXPORTING
-    # fixtures_fillup.append(custom_field)
+    fixtures_fillup.append(custom_field)
     fixtures_fillup.append(translation)
     # fixtures_fillup.append(tax_category)
     # fixtures_fillup.append(id_doctype)
