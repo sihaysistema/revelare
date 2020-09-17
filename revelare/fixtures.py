@@ -41,7 +41,10 @@ def fill_fixtures():
                     "Item Availability Estimate Importer",
                     "Include in Estimations",
                     "REVELARE: Only for Items used as materials in BOM. If checked, Item will be included automatically when users download the Item Availability Estimate Importer spreadsheet format.",
-                    "REVELARE: Name to be displayed for categories used in Item Availability reports for users and customers"
+                    "REVELARE: Name to be displayed for categories used in Item Availability reports for users and customers",
+                    "Sales Item Availability",
+                    "Show sales adjustments",
+                    "Obtain sales adjustments from"
                 ]
             ]
         ]
