@@ -14,11 +14,12 @@ from frappe.utils import nowdate, cstr, flt
 import pandas as pd
 import numpy as np
 
-def execute(filters=None):
-	columns = get_columns(filters)
-	data = get_data(filters)
+from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import item_availability_estimates_range, periods_estimated_items, estimation_item_attributes, find_bom_items, find_boms, find_sales_items
 
-	return columns, data
+def execute(filters=None):
+    columns = get_columns(filters)
+    data = get_data(filters)
+    return columns, data
 
 def get_columns(filters):
     """
@@ -36,53 +37,174 @@ def get_columns(filters):
             "label": _("Material"),
             "fieldname": "material",
             "fieldtype": "Data",
-            "width": 120
+            "width": 90
         },
         {
             "label": _("Quantity"),
             "fieldname": "quantity",
-            "fieldtype": "Float",
-            "width": 120
+            "fieldtype": "Data",
+            "width": 90
         },
         {
             "label": _("UOM"),
             "fieldname": "uom",
             "fieldtype": "Link",
             "options": "UOM",
-            "hidden": 0,
-            "width": 120
+            "hidden": 1,
+            "width": 90
         },
         {
             "label": _("Item Code"),
             "fieldname": "item_code",
             "fieldtype": "Link",
             "options": "Item",
-            "width": 120
+            "width": 320
         },
         {
             "label": _("Sales Item"),
             "fieldname": "item_name",
             "fieldtype": "Data",
-            "width": 120
+            "width": 120,
+            "hidden": 1,
         },
         {
             "label": _("Possible Quantity"),
             "fieldname": "possible_quantity",
-            "fieldtype": "Int",
-            "width": 120
+            "fieldtype": "Data",
+            "width": 180
         }
     ]
 
     return columns
 
 def get_data(filters):
+    """Function to obtain and process the data.
+
+    Args:
+        filters ([type]): [description]
+
+    Returns:
+        dicitonary list: A list of dictionaries, in ascending order, each key corresponds to a 
+        column name as declared in the function above, and the value is what will be shown.
+
+    """
+    # --------- EMPTY ROW ----------
     empty_row = {}
     data = [empty_row]
+    # --------- Testing styles for report START ----------
+    quantity_style_1 = "<span style='color: green; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    quantity_style_2 = "</strong></span>"
+    quantity_material = quantity_style_1 + str(35) + quantity_style_2
+    quantity_sales_item = quantity_style_1 + str(70) + quantity_style_2
+    row1 = {
+        "material": "Albahaca",
+        "quantity": quantity_material,
+        "uom": "Pound",
+        "item_code": "7401168800724",
+        "item_name": "Albahaca 8Oz",
+        "possible_quantity": quantity_sales_item
+    }
+
+    for x in range(4):
+        data.append(row1)
+    # --------- Testing styles for report ENDS ----------
+
+    # Obtain Valid Item Availability Estimates for dates from our query functions.
+    estimates = item_availability_estimates_range(filters)
+    # Just the name
+    # estimate_data = estimates[0]['name']
+
+    # We create an empty list where we will add Item Availability Estimate doctype names 
+    iae_list = []
+    # we now add them
+    for x in estimates:
+        iae_list.append(x['name'])
+
+    # We are now ready to assemble a list of Material items, for those estimate titles that fit
+    # [{'item_code': 'MATITEMCODE-001', 'amount':'15.0', 'amount_uom': 'Pound'}]
+    # since we will do several rounds of list gathering, we will extend a single list of objects.
+    available_material_list = []
+    for x in iae_list:
+        materials = periods_estimated_items(filters, x)
+        available_material_list.extend(materials)
+
+    # estimation item attributes
+    # We now create a list of estimation item attributes
+    # [{'name': 'CULTIVO-0069', 'estimation_name': 'Perejil', 'estimation_uom': 'Pound', 'stock_uom': 'Onza'}]
+    # This list is already "filtered" and curated to include all the REQUESTED estimation item codes and attributes
+    available_materials_with_attributes = []
+    for x in available_material_list:
+        item_attributes = estimation_item_attributes(filters, x['item_code'])
+        # we extend the list along with the item attributes, so it is only one list, for each item in the material list.
+        available_materials_with_attributes.extend(item_attributes)
+
+    # Now we find the BOM names based on the names of material items in our item_attributes_list
+    # [{'item_code': 'CULTIVO-0069', 'parent': 'BOM-7401168802186-001', 'stock_qty': 6.0, 'stock_uom': 'Onza'}]
+    # The assembled object contains  
+    bom_names_list = []
+    for x in available_materials_with_attributes:
+        bom_items = find_bom_items(filters, x['name'])
+        bom_names_list.extend(bom_items)
+        '''
+        row = {
+            "material": "Albahaca",
+            "quantity": quantity_material,
+            "uom": "PRUEBA",
+            "item_code": str(bom_names_list),
+            "item_name": "",
+            "possible_quantity": quantity_sales_item
+        }
+        data.append(row)
+        '''
+    
+    # we get sales item code, quantity obtained, and uom obtained for each bom parent.
+    material_and_sales_items = []
+    for x in bom_names_list:
+        boms = find_boms(filters, x['parent'])
+        # We rearrange the current dictionary, assigning values from returned keys in this list
+        # to new keys in this object.
+        # We also drop the parent key in the existing
+        #x['sales_item_code'] = boms['item']
+        #x['sales_item_qty'] = boms['quantity']
+        #x['sales_item_uom'] = boms['uom']
+        x['sales_item_code'] = boms[0]['item']
+        x['sales_item_qty'] = boms[0]['quantity']
+        x['sales_item_uom'] = boms[0]['uom']
+        x.pop("parent")
+        material_and_sales_items.append(x)
+
+
+    row = {
+            "material": "Albahaca",
+            "quantity": quantity_material,
+            "uom": "PRUEBA",
+            "item_code": str(material_and_sales_items),
+            "item_name": "",
+            "possible_quantity": quantity_sales_item
+        }
+
+    data.append(row)
+
+    return data
+'''
+initial_vat_payable = {
+ "doc_type": "",
+ "doc_id": "<strong>Saldo Inicial IVA por pagar</strong>",
+ "trans_date": "",
+ "vat_debit": "",
+ "vat_credit": "300.00",
+ "trans_total": "",
+ "currency": "GTQ"
+ }
+
+
+
+
 
     return data
 
 
-'''
+
 def get_data(filters):
  empty_row = {}
  data = [empty_row]
