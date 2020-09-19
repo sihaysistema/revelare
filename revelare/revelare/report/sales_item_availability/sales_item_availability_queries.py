@@ -79,7 +79,7 @@ def find_boms(filters, bom):
     """
     result = frappe.db.sql(
         f"""
-        SELECT item, quantity, uom FROM `tabBOM` WHERE name='{bom}';
+        SELECT item, quantity, uom, item_name FROM `tabBOM` WHERE name='{bom}';
         """, as_dict=True
     )
     return result
@@ -96,4 +96,28 @@ def find_sales_items(filters, item_code):
         SELECT item_name, item_code FROM `tabItem` WHERE name='{item_code}' AND is_sales_item=1;
         """, as_dict=True
     )
+    return result
+
+def find_conversion_factor(from_uom, to_uom):
+    """Function that returns the item code and item name for sales items only.
+
+    Args:
+        from_uom: Unit that user wishes to convert from, i.e. Kilogram
+        to_uom: Unit that the user wishes to convert to, i.e. Gram
+    Returns: A list containing the following object:
+        {
+            name: the individual ID name for the conversion factor
+            from_uom: the name of the origin UOM
+            to_uom: the name of the target UOM
+            value: the amount by which origin amount must be multiplied to obtain target amount.
+        }
+        Updated: returns the value of the 'value' key only.
+    """
+    result = frappe.db.sql(
+        f"""
+        SELECT from_uom, to_uom, value FROM `tabUOM Conversion Factor` WHERE from_uom='{from_uom}' AND to_uom='{to_uom}';
+        """, as_dict=True
+    )
+    # Change the return to this variable to provide only the value of the conversion.
+    value_only = result[0]['value']
     return result

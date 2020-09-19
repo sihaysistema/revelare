@@ -14,7 +14,7 @@ from frappe.utils import nowdate, cstr, flt
 import pandas as pd
 import numpy as np
 
-from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import item_availability_estimates_range, periods_estimated_items, estimation_item_attributes, find_bom_items, find_boms, find_sales_items
+from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import item_availability_estimates_range, periods_estimated_items, estimation_item_attributes, find_bom_items, find_boms, find_sales_items, find_conversion_factor
 
 def execute(filters=None):
     columns = get_columns(filters)
@@ -121,7 +121,7 @@ def get_data(filters):
         iae_list.append(x['name'])
 
     # We are now ready to assemble a list of Material items, for those estimate titles that fit
-    # [{'item_code': 'MATITEMCODE-001', 'amount':'15.0', 'amount_uom': 'Pound'}]
+    # [{'item_code': 'CULTIVO-0069', 'amount':'15.0', 'amount_uom': 'Pound'}]
     # since we will do several rounds of list gathering, we will extend a single list of objects.
     available_material_list = []
     for x in iae_list:
@@ -170,9 +170,10 @@ def get_data(filters):
         x['sales_item_code'] = boms[0]['item']
         x['sales_item_qty'] = boms[0]['quantity']
         x['sales_item_uom'] = boms[0]['uom']
+        x['sales_item_name'] = boms[0]['item_name']
+        x['conversion_factor'] = find_conversion_factor(available_material_list[0]['amount_uom'], x['stock_uom'])
         x.pop("parent")
         material_and_sales_items.append(x)
-
 
     row = {
             "material": "Albahaca",
