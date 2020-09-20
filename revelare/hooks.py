@@ -35,7 +35,7 @@ app_include_js = "/assets/revelare/js/revelar.js"
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
-# doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
+doctype_list_js = {"Item Availability Estimate" : "public/js/item_availability_estimate_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
