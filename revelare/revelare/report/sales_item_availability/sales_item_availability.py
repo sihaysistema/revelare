@@ -13,6 +13,7 @@ from frappe.utils import nowdate, cstr, flt
 
 import pandas as pd
 import numpy as np
+import math
 
 from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import item_availability_estimates_range, periods_estimated_items, estimation_item_attributes, find_bom_items, find_boms, find_sales_items, find_conversion_factor
 
@@ -32,7 +33,7 @@ def get_columns(filters):
         list: List of dictionaries
     """
 
-    columns = [
+    old_columns = [
         {
             "label": _("Material"),
             "fieldname": "material",
@@ -75,6 +76,45 @@ def get_columns(filters):
         }
     ]
 
+    columns = [
+        {
+            "label": _("A"),
+            "fieldname": "A",
+            "fieldtype": "Data",
+            "width": 90
+        },
+        {
+            "label": _("B"),
+            "fieldname": "B",
+            "fieldtype": "Data",
+            "width": 90
+        },
+        {
+            "label": _("C"),
+            "fieldname": "C",
+            "fieldtype": "Data",
+            "width": 90
+        },
+        {
+            "label": _("D"),
+            "fieldname": "D",
+            "fieldtype": "Data",
+            "width": 90
+        },
+        {
+            "label": _("E"),
+            "fieldname": "E",
+            "fieldtype": "Data",
+            "width": 90
+        },
+        {
+            "label": _("F"),
+            "fieldname": "F",
+            "fieldtype": "Data",
+            "width": 90
+        },
+    ]
+
     return columns
 
 def get_data(filters):
@@ -97,18 +137,19 @@ def get_data(filters):
     quantity_material = quantity_style_1 + str(35) + quantity_style_2
     quantity_sales_item = quantity_style_1 + str(70) + quantity_style_2
     row1 = {
-        "material": "Albahaca",
-        "quantity": quantity_material,
-        "uom": "Pound",
-        "item_code": "7401168800724",
-        "item_name": "Albahaca 8Oz",
-        "possible_quantity": quantity_sales_item
+        "A": "Albahaca",
+        "B": quantity_material,
+        "C": "Pound",
+        "D": "7401168800724",
+        "E": "Albahaca 8Oz",
+        "F": quantity_sales_item
     }
 
-    for x in range(4):
-        data.append(row1)
+    # for x in range(4):
+    #    data.append(row1)
     # --------- Testing styles for report ENDS ----------
 
+    # ----- QUERY # 1 BEGIN -----
     # Obtain Valid Item Availability Estimates for dates from our query functions.
     estimates = item_availability_estimates_range(filters)
     # Just the name
@@ -119,7 +160,9 @@ def get_data(filters):
     # we now add them
     for x in estimates:
         iae_list.append(x['name'])
+    # ----- QUERY # 1 END -----
 
+    # ----- QUERY # 2 BEGIN -----
     # We are now ready to assemble a list of Material items, for those estimate titles that fit
     # [{'item_code': 'CULTIVO-0069', 'amount':'15.0', 'amount_uom': 'Pound'}]
     # since we will do several rounds of list gathering, we will extend a single list of objects.
@@ -127,7 +170,9 @@ def get_data(filters):
     for x in iae_list:
         materials = periods_estimated_items(filters, x)
         available_material_list.extend(materials)
+    # ----- QUERY # 2 END -----
 
+    # ----- QUERY # 3 BEGIN -----
     # estimation item attributes
     # We now create a list of estimation item attributes
     # [{'name': 'CULTIVO-0069', 'estimation_name': 'Perejil', 'estimation_uom': 'Pound', 'stock_uom': 'Onza'}]
@@ -137,7 +182,9 @@ def get_data(filters):
         item_attributes = estimation_item_attributes(filters, x['item_code'])
         # we extend the list along with the item attributes, so it is only one list, for each item in the material list.
         available_materials_with_attributes.extend(item_attributes)
+    # ----- QUERY # 3 END -----
 
+    # ----- QUERY # 4 BEGIN -----
     # Now we find the BOM names based on the names of material items in our item_attributes_list
     # [{'item_code': 'CULTIVO-0069', 'parent': 'BOM-7401168802186-001', 'stock_qty': 6.0, 'stock_uom': 'Onza'}]
     # The assembled object contains  
@@ -156,7 +203,9 @@ def get_data(filters):
         }
         data.append(row)
         '''
-    
+    # ----- QUERY # 4 END -----
+
+    # ----- QUERY # 5 BEGIN -----
     # we get sales item code, quantity obtained, and uom obtained for each bom parent.
     material_and_sales_items = []
     for x in bom_names_list:
@@ -174,133 +223,93 @@ def get_data(filters):
         x['conversion_factor'] = find_conversion_factor(available_material_list[0]['amount_uom'], x['stock_uom'])
         x.pop("parent")
         material_and_sales_items.append(x)
-
+    '''
     row = {
-            "material": "Albahaca",
-            "quantity": quantity_material,
-            "uom": "PRUEBA",
-            "item_code": str(material_and_sales_items),
-            "item_name": "",
-            "possible_quantity": quantity_sales_item
+            "A": "Albahaca",
+            "B": quantity_material,
+            "C": "PRUEBA",
+            "D": str(material_and_sales_items),
+            "E": "",
+            "F": quantity_sales_item
         }
+    '''
+    # ----- QUERY # 5 END -----
 
-    data.append(row)
+    # data.append(row)
+    test_data1 = [{'A': 'Perejil', 'B': '4.0', 'C': 'Pound', 'D': '', 'E': '', 'F': '', 'G': ''}, {'A': '', 'B': '', 'C': '', 'D': '2186', 'E': 'Perejil 6Oz', 'F': '10', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2193', 'E': 'Perejil 8Oz', 'F': '8', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2209', 'E': 'Perejil 1Lb', 'F': '4', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2179', 'E': 'Perejil 5Oz', 'F': '12', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2278', 'E': 'Perejil .5Oz', 'F': '128', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2674', 'E': 'Perejil 1Oz', 'F': '64', 'G': 'Unidades'}, {}]
 
+    # We go through each item in the available_material_list.
+    
+    # ----- PROCESS DATA BEGIN -----
+    for available_material in available_material_list:
+        # en: We add the "grouping row"
+        # we need to find the estimation name
+        estimation_name = ""
+        for x in available_materials_with_attributes:
+            if x['name'] == available_material['item_code']:
+                # print("i found it!")
+                estimation_name = x['estimation_name']
+                print(estimation_name)
+                break
+            else:
+                x = None
+        
+        row_header = {
+                        "A": estimation_name,
+                        "B": available_material['amount'],
+                        "C": available_material['amount_uom'],
+                        "D": "",
+                        "E": "",
+                        "F": "",
+                        "G": ""
+                    }
+        data.append(row_header)
+
+        # We now cross-check, convert and structure our row output.
+        for pair in material_and_sales_items:
+            if pair['item_code'] == available_material['item_code']:
+                #code exists, do this
+                # print("item code code exists")
+                # amount_uom is in A
+                # Item stock uom is in B
+                if pair['stock_uom'] != available_material['amount_uom']:
+                    # print('Must convert units!')
+                    # find conversion factor , from unit is available material amount_uom - INSERT QUERY CALL HERE
+                    conversion_factor = find_conversion_factor(available_material['amount_uom'], pair['stock_uom'])
+                    # Convert available_material uom to pair uom, by multiplying available material amount by conversion factor found
+                    conversion_factor1 = [{'from_uom': 'Pound', 'to_uom': 'Onza', 'value': 16.0}]
+                    
+                    av_mat_amt_converted = float(available_material['amount']) * float(conversion_factor[0]['value'])
+                    # print('Available material amount has been converted to stock units in BOM for sales item')
+                    
+                    # print('Possible amount')
+                    # Now, we divide the av_mat_amt_converted by the stock_qty to obtain possible quantity
+                    possible_quantity = av_mat_amt_converted / pair['stock_qty']
+                    
+                    if math.floor(possible_quantity) > 1:
+                        possible_uom = "Unidades"
+                    else:
+                        possible_uom = "Unidad"
+                    # print(pair['sales_item_code'][-4:] + ' ' + pair['sales_item_name'] + ' ' + str(math.floor(possible_quantity)) + ' ' + possible_uom)
+                    
+                    
+                    sales_item_row = {
+                        "A": "",
+                        "B": "",
+                        "C": "",
+                        "D": str(pair['sales_item_code'][-4:]),
+                        "E": str(pair['sales_item_name']),
+                        "F": str(math.floor(possible_quantity)),
+                        "G": possible_uom
+                    }
+                    data.append(sales_item_row)
+                else:
+                    print('Units are the same, no need for conversion.')
+            else:
+                pass
+        
+        # We add an empty row after a set of products for easier reading
+        data.append(empty_row)
+    # ----- PROCESS DATA END -----
     return data
-'''
-initial_vat_payable = {
- "doc_type": "",
- "doc_id": "<strong>Saldo Inicial IVA por pagar</strong>",
- "trans_date": "",
- "vat_debit": "",
- "vat_credit": "300.00",
- "trans_total": "",
- "currency": "GTQ"
- }
-
-
-
-
-
-    return data
-
-
-
-def get_data(filters):
- empty_row = {}
- data = [empty_row]
- initial_vat_payable = {
- "doc_type": "",
- "doc_id": "<strong>Saldo Inicial IVA por pagar</strong>",
- "trans_date": "",
- "vat_debit": "",
- "vat_credit": "300.00",
- "trans_total": "",
- "currency": "GTQ"
- }
- por_pagar_header = {
- "doc_type": "",
- "doc_id": "<strong>IVA POR PAGAR</strong>",
- "trans_date": "",
- "vat_debit": "",
- "vat_credit": "",
- "trans_total": "",
- "currency": "GTQ"
- }
- por_pagar_footer = {
- "doc_type": "",
- "doc_id": "<strong>SUBTOTAL IVA POR PAGAR</strong>",
- "trans_date": "",
- "vat_debit": "",
- "vat_credit": "672.00",
- "trans_total": "",
- "currency": "GTQ"
- }
- por_cobrar_header = {
- "doc_type": "",
- "doc_id": "<strong>IVA POR COBRAR</strong>",
- "trans_date": "",
- "vat_debit": "",
- "vat_credit": "",
- "trans_total": "",
- "currency": "GTQ"
- }
- por_cobrar_footer = {
- "doc_type": "",
- "doc_id": "<strong>SUBTOTAL IVA POR COBRAR</strong>",
- "trans_date": "",
- "vat_debit": "",
- "vat_credit": "36.00",
- "trans_total": "",
- "currency": "GTQ"
- }
- payable_vat_this_month = {
- "doc_type": "",
- "doc_id": "<strong>IVA a liquidar este mes</strong>",
- "trans_date": "",
- "vat_debit": "",
- "vat_credit": "636.00",
- "trans_total": "",
- "currency": "GTQ"
- }
- total_vat_payable_now = {
- "doc_type": "",
- "doc_id": "<strong>Monto a Liquidar Incluyendo Saldos pendientes</strong>",
- "trans_date": "",
- "vat_debit": "",
- "vat_credit": "936.00",
- "trans_total": "",
- "currency": "GTQ"
- }
- data.append(initial_vat_payable)
- data.append(por_pagar_header)
-
- # en_US: Getting the transactions for vat payable accounts to insert the rows, for this month.
- # es: Obtenemos las transacciones de IVA por pagar de este mes para insertar las filas.
-
- payable_data = get_vat_payable_data(filters)
- if len(payable_data) > 0:
- por_pagar = apply_on_site_links(payable_data)
- data.extend(por_pagar)
-
- data.append(por_pagar_footer)
- data.append(empty_row)
- data.append(empty_row)
- data.append(por_cobrar_header)
-
- # en_US: Getting the transactions for vat receivable accounts to insert the rows, for this month.
- # es: Obtenemos las transacciones de IVA por cobrar de este mes para insertar las filas.
- receivable_data = get_vat_receivable_data(filters)
- if len(receivable_data) > 0:
- por_cobrar = apply_on_site_links(receivable_data)
- data.extend(por_cobrar)
-
- data.append(por_cobrar_footer)
- data.append(empty_row)
- data.append(empty_row)
- data.append(payable_vat_this_month)
- data.append(empty_row)
- data.append(total_vat_payable_now)
-
- return data
-'''
+    #return test_data1
