@@ -143,11 +143,11 @@
   {
    "fieldname": "items_helper",
    "fieldtype": "HTML",
-   "options": "<p><strong>en:</strong> Indicate which material items you have available between the dates specified above. For each, specify amount and the unit of measure.</p>\n<p><strong>es-GT:</strong> Indica cuales Productos de Materia Prima estima tener disponibles entre las fechas especificadas arriba. Para cada uno, especifique la cantidad y la unidad de medida.</p>"
+   "options": "<p><strong>es-GT:</strong> Indica cuales Productos de Materia Prima estima tener disponibles entre las fechas especificadas arriba. Para cada uno, especifique la cantidad y la unidad de medida.</p>\n<p><strong>en:</strong> Indicate which material items you have available between the dates specified above. For each, specify amount and the unit of measure.</p>\n"
   }
  ],
  "is_submittable": 1,
- "modified": "2020-09-20 14:35:57.820934",
+ "modified": "2020-09-20 15:30:32.201763",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Item Availability Estimate",
