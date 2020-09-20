@@ -180,5 +180,19 @@
   "source_name": "Obtain sales adjustments from",
   "status": "Saved",
   "target_name": "Obtenga los ajustes de ventas desde"
+ },
+ {
+  "contributed_translation_doctype_name": null,
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2020-09-19 19:30:46.007294",
+  "name": "d509e5d44d",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_name": "Item Availability Estimate",
+  "status": "Saved",
+  "target_name": "Estimado de Disponibilidad de Productos"
  }
 ]

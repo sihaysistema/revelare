@@ -47,7 +47,8 @@ def fill_fixtures():
                     "REVELARE: Name to be displayed for categories used in Item Availability reports for users and customers",
                     "Sales Item Availability",
                     "Show sales adjustments",
-                    "Obtain sales adjustments from"
+                    "Obtain sales adjustments from",
+                    "Item Availability Estimate"
                 ]
             ]
         ]

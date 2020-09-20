@@ -12,6 +12,7 @@ frappe.query_reports["Sales Item Availability"] = {
 			default: frappe.defaults.get_user_default("Company"),
 			reqd: 1
 		},
+		/*
 		{
 			fieldname: "periodicity",
 			label: __("Periodicity"),
@@ -20,6 +21,7 @@ frappe.query_reports["Sales Item Availability"] = {
 			reqd: 1,
 			default: "Weekly"
 		},
+		*/
 		{
 			fieldname: "from_date",
 			label: __("From Date"),
@@ -35,19 +37,19 @@ frappe.query_reports["Sales Item Availability"] = {
 			reqd: 0
 		},
 		{
-			fieldname: "show_sales",
-			label: __("Show Sales"),
-			fieldtype: "Check",
-			reqd: 0,
-			default: 0
-		},
-		{
 			fieldname: "sales_from",
 			label: __("Sales From"),
 			fieldtype: "Select",
 			options: [__("Sales Order"), __("Delivery Note"), __("Sales Invoice")],
 			reqd: 1,
-			default: "Sales Order"
+			default: __("Sales Order")
 		},
+		{
+			fieldname: "show_sales",
+			label: __("Show Sales"),
+			fieldtype: "Check",
+			reqd: 0,
+			default: 0
+		}
 	]
 };

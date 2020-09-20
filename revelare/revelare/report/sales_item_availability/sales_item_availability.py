@@ -154,8 +154,9 @@ def get_data(filters):
     estimates = item_availability_estimates_range(filters)
     # Just the name
     # estimate_data = estimates[0]['name']
-
-    # We create an empty list where we will add Item Availability Estimate doctype names 
+    
+    # en: We create an empty list where we will add Item Availability Estimate doctype names 
+    # es-GT: Creamos una lista vacia para luego agregar los nombres de los doctypes de Estimados de Disponibilidad
     iae_list = []
     # we now add them
     for x in estimates:
@@ -240,16 +241,22 @@ def get_data(filters):
 
     # We go through each item in the available_material_list.
     
+    # ----- DEBUGGING BEGIN -----
+    frappe.msgprint(iae_list)
+    # ----- DEBUGGING ENDS -----
+
+
     # ----- PROCESS DATA BEGIN -----
+    # en: We begin by 
+    # es-GT:
     for available_material in available_material_list:
         # en: We add the "grouping row"
         # we need to find the estimation name
         estimation_name = ""
         for x in available_materials_with_attributes:
             if x['name'] == available_material['item_code']:
-                # print("i found it!")
                 estimation_name = x['estimation_name']
-                print(estimation_name)
+                # print(estimation_name)
                 break
             else:
                 x = None
@@ -257,7 +264,7 @@ def get_data(filters):
         row_header = {
                         "A": estimation_name,
                         "B": available_material['amount'],
-                        "C": available_material['amount_uom'],
+                        "C": _(available_material['amount_uom']),
                         "D": "",
                         "E": "",
                         "F": "",

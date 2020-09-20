@@ -77,7 +77,7 @@
    "fieldname": "view_item_availability",
    "fieldtype": "HTML",
    "label": "View Sales Item Availability Report",
-   "options": "<h4><i class=\"fa fa-table\"></i> <a href=\"#List/File/Home/presupuestos\">View Sales Item Availability Report</a></h4>\n<p>Click on the link above to view the Items available for sale net of sales.</p>"
+   "options": "<h4><i class=\"fa fa-table\"></i> <a href=\"#query-report/Sales%20Item%20Availability\">View Sales Item Availability Report</a></h4>\n<p>Click on the link above to view the Items available for sale net of sales.</p>"
   },
   {
    "fieldname": "column_break_4",
@@ -93,7 +93,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2020-09-16 21:21:19.455468",
+ "modified": "2020-09-19 19:02:10.197090",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Item Availability Estimate",
