@@ -48,7 +48,12 @@ def fill_fixtures():
                     "Sales Item Availability",
                     "Show sales adjustments",
                     "Obtain sales adjustments from",
-                    "Item Availability Estimate"
+                    "Item Availability Estimate",
+                    "Valid from this date",
+                    "Until this date",
+                    "Estimate Validity Interval",
+                    "Days",
+                    "Interval duration in days"
                 ]
             ]
         ]

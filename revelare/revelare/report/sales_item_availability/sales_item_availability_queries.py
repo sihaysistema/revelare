@@ -93,7 +93,7 @@ def find_sales_items(filters, item_code):
     """
     result = frappe.db.sql(
         f"""
-        SELECT item_name, item_code FROM `tabItem` WHERE name='{item_code}' AND is_sales_item=1;
+        SELECT item_name, item_code FROM `tabItem` WHERE name='{item_code}' AND is_sales_item=1 AND include_in_estimations=1;
         """, as_dict=True
     )
     return result

@@ -194,5 +194,61 @@
   "source_name": "Item Availability Estimate",
   "status": "Saved",
   "target_name": "Estimado de Disponibilidad de Productos"
+ },
+ {
+  "contributed_translation_doctype_name": null,
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2020-09-20 11:55:18.248924",
+  "name": "8bbd4bd56b",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_name": "Valid from this date",
+  "status": "Saved",
+  "target_name": "Valido desde esta fecha"
+ },
+ {
+  "contributed_translation_doctype_name": null,
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2020-09-20 11:55:28.418281",
+  "name": "c9928365e0",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_name": "Until this date",
+  "status": "Saved",
+  "target_name": "Hasta esta fecha"
+ },
+ {
+  "contributed_translation_doctype_name": null,
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2020-09-20 11:57:36.303822",
+  "name": "b54a8c6337",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_name": "Estimate Validity Interval",
+  "status": "Saved",
+  "target_name": "Intervalo de Validez del Estimado"
+ },
+ {
+  "contributed_translation_doctype_name": "a3eab78ecb",
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2020-09-20 11:58:44.101080",
+  "name": "724f2eda9a",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_name": "Days",
+  "status": "Saved",
+  "target_name": "D\u00edas"
  }
 ]
