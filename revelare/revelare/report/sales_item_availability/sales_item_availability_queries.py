@@ -121,3 +121,35 @@ def find_conversion_factor(from_uom, to_uom):
     # Change the return to this variable to provide only the value of the conversion.
     value_only = result[0]['value']
     return result
+
+def find_sales_orders(filters):
+    """Function that returns the item code and item name for sales items only.
+
+    Args:
+        filters (dict): filters.from_date, filters.to_date, filters.company, filters.show_sales, filters.periodicty
+        item_code: Item code for Item doctype
+    """
+    result = frappe.db.sql(
+        f"""
+        SELECT name FROM `tabSales Order` 
+        WHERE docstatus=1 AND delivery_date BETWEEN '{filters.from_date}' AND '{filters.to_date}'
+        """, as_dict=True
+    )
+    return result
+
+def find_sales_order_items(filters, parent):
+    """Function that returns the code, amount, and amount uom of each estimated item
+    belonging to a valid or submitted Item Availability Estimate
+
+    Args:
+        filters (dict): filters.from_date, filters.to_date, filters.company, filters.show_sales, filters.periodicty
+        parent:  The parent of each one of these items, referring to Item Availability Estimate doctype
+    Returns: A list of objects: [{'item_code': 'ITEMCODE-001', 'amount':'15.0', 'amount_uom': 'Pound'}]
+
+    """
+    result = frappe.db.sql(
+        f"""
+        SELECT item_code, delivery_date, stock_qty, stock_uom FROM `tabSales Order Item` 
+        WHERE docstatus=1 AND parent='{parent}';""", as_dict=True
+    )
+    return result

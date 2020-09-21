@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import math
 
-from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import item_availability_estimates_range, periods_estimated_items, estimation_item_attributes, find_bom_items, find_boms, find_sales_items, find_conversion_factor
+from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import item_availability_estimates_range, periods_estimated_items, estimation_item_attributes, find_bom_items, find_boms, find_sales_items, find_conversion_factor, find_sales_orders, find_sales_order_items
 
 def execute(filters=None):
     columns = get_columns(filters)
@@ -169,15 +169,12 @@ def get_data(filters):
         available_material_list_raw.extend(materials)
     # ----- QUERY # 2 END -----
 
-    # ----- DEBUGGING BEGIN -----
-    frappe.msgprint(iae_list)
-    # ----- DEBUGGING ENDS -----
     # ----- UNIFY ITEM CODES AND ADD UP AMOUNTS BEGIN -----
+    # We want unique item codes and amounts, such that each material item estimate is included only ONCE.
     available_material_list = sum_and_convert_available_material_list(available_material_list_raw)
-    # ----- UNIFY ITEM CODES AND ADD UP AMOUNTS END -----
+    # Cleaning things up.    
     available_material_list_raw.clear()
-
-
+    # ----- UNIFY ITEM CODES AND ADD UP AMOUNTS END -----
 
     # ----- QUERY # 3 BEGIN -----
     # estimation item attributes
@@ -245,9 +242,25 @@ def get_data(filters):
     # data.append(row)
     test_data1 = [{'A': 'Perejil', 'B': '4.0', 'C': 'Pound', 'D': '', 'E': '', 'F': '', 'G': ''}, {'A': '', 'B': '', 'C': '', 'D': '2186', 'E': 'Perejil 6Oz', 'F': '10', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2193', 'E': 'Perejil 8Oz', 'F': '8', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2209', 'E': 'Perejil 1Lb', 'F': '4', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2179', 'E': 'Perejil 5Oz', 'F': '12', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2278', 'E': 'Perejil .5Oz', 'F': '128', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2674', 'E': 'Perejil 1Oz', 'F': '64', 'G': 'Unidades'}, {}]
 
+    # ----- QUERY # 6 BEGIN ----- 
+    # Sales Order query, return all sales order names that fit within the dates in report filter.
+    sales_orders = find_sales_orders(filters)
+    
+    # en: We create an empty list where we will add Item Availability Estimate doctype names 
+    # es-GT: Creamos una lista vacia para luego agregar los nombres de los doctypes de Estimados de Disponibilidad
+    sales_order_list = []
+    # we now add them
+    for sales_order in sales_orders:
+        sales_order_list.append(sales_order['name'])
+    # ----- QUERY # 6 BEGIN -----
 
-
-
+    # ----- QUERY # 7 BEGIN -----
+    matching_sales_order_items = []
+    for sales_order in sales_order_list:
+        matching_sales_order_items.extend(find_sales_order_items(filters, sales_order))
+    
+    frappe.msgprint(str(matching_sales_order_items))
+    # ----- QUERY # 7 BEGIN -----
 
     # ----- PROCESS DATA BEGIN -----
     # en: We begin by 
@@ -318,7 +331,7 @@ def get_data(filters):
             else:
                 pass
         
-        # We add an empty row after a set of products for easier reading
+        # We add an empty row after a set of products for easier reading.
         data.append(empty_row)
     # ----- PROCESS DATA END -----
     return data
@@ -352,7 +365,6 @@ def make_list_of_unique_codes(available_material_list):
     unique_item_codes.extend(list(dict.fromkeys(only_codes_list)))
     
     return unique_item_codes
-
 
 def sum_and_convert_available_material_list(available_material_list):
     """Function that finds all item_code values in an object list, and sums their amount value
@@ -439,8 +451,5 @@ def sum_and_convert_available_material_list(available_material_list):
         # Now that we have summed all of the same unique code, we can change the objects amount value
         temp_dict["amount"] = same_material_amount_total
         new_list.append(temp_dict)
-        # print(available_material_uom)
-        # print(same_material_amount_total)
-        # print(temp_dict)
     # Our list is now ready to use, with like item amounts added.
     return new_list
