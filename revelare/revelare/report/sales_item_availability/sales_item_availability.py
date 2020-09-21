@@ -145,10 +145,6 @@ def get_data(filters):
         "F": quantity_sales_item
     }
 
-    # for x in range(4):
-    #    data.append(row1)
-    # --------- Testing styles for report ENDS ----------
-
     # ----- QUERY # 1 BEGIN -----
     # Obtain Valid Item Availability Estimates for dates from our query functions.
     estimates = item_availability_estimates_range(filters)
@@ -164,14 +160,24 @@ def get_data(filters):
     # ----- QUERY # 1 END -----
 
     # ----- QUERY # 2 BEGIN -----
-    # We are now ready to assemble a list of Material items, for those estimate titles that fit
+    # We are now ready to assemble a list of Material items, for those IAE names that fit date filters.
     # [{'item_code': 'CULTIVO-0069', 'amount':'15.0', 'amount_uom': 'Pound'}]
-    # since we will do several rounds of list gathering, we will extend a single list of objects.
-    available_material_list = []
+    # since we will do several rounds of list gathering, we need to extend the list, and if there are objects with same item code, we want only ONE object for each item_code, but with the total amount of Item Availability Estimates
+    available_material_list_raw = []
     for x in iae_list:
         materials = periods_estimated_items(filters, x)
-        available_material_list.extend(materials)
+        available_material_list_raw.extend(materials)
     # ----- QUERY # 2 END -----
+
+    # ----- DEBUGGING BEGIN -----
+    frappe.msgprint(iae_list)
+    # ----- DEBUGGING ENDS -----
+    # ----- UNIFY ITEM CODES AND ADD UP AMOUNTS BEGIN -----
+    available_material_list = sum_and_convert_available_material_list(available_material_list_raw)
+    # ----- UNIFY ITEM CODES AND ADD UP AMOUNTS END -----
+    available_material_list_raw.clear()
+
+
 
     # ----- QUERY # 3 BEGIN -----
     # estimation item attributes
@@ -239,11 +245,8 @@ def get_data(filters):
     # data.append(row)
     test_data1 = [{'A': 'Perejil', 'B': '4.0', 'C': 'Pound', 'D': '', 'E': '', 'F': '', 'G': ''}, {'A': '', 'B': '', 'C': '', 'D': '2186', 'E': 'Perejil 6Oz', 'F': '10', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2193', 'E': 'Perejil 8Oz', 'F': '8', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2209', 'E': 'Perejil 1Lb', 'F': '4', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2179', 'E': 'Perejil 5Oz', 'F': '12', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2278', 'E': 'Perejil .5Oz', 'F': '128', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2674', 'E': 'Perejil 1Oz', 'F': '64', 'G': 'Unidades'}, {}]
 
-    # We go through each item in the available_material_list.
-    
-    # ----- DEBUGGING BEGIN -----
-    frappe.msgprint(iae_list)
-    # ----- DEBUGGING ENDS -----
+
+
 
 
     # ----- PROCESS DATA BEGIN -----
@@ -320,3 +323,124 @@ def get_data(filters):
     # ----- PROCESS DATA END -----
     return data
     #return test_data1
+
+
+def make_list_of_unique_codes(available_material_list):
+    """Function that makes a list of unique item codes
+
+    Args:
+        available_material_list: It expects a list similar to this one:
+        [
+            {'item_code': 'CULTIVO-0069', 'amount':'15.0', 'amount_uom': 'Pound'},
+            {'item_code': 'CULTIVO-0069', 'amount':'4.0', 'amount_uom': 'Pound'},
+            {'item_code': 'CULTIVO-0024', 'amount':'8.0', 'amount_uom': 'Pound'},
+            {'item_code': 'CULTIVO-0023', 'amount':'21.0', 'amount_uom': 'Pound'},
+            {'item_code': 'CULTIVO-0024', 'amount':'14.0', 'amount_uom': 'Pound'},
+        ]
+
+    Returns:
+        unique item_code list: It returns a list of unique item codes, like the one below:
+        ['CULTIVO-0069', 'CULTIVO-0024', 'CULTIVO-0023']
+    
+    Reference: https://stackoverflow.com/questions/480214/how-do-you-remove-duplicates-from-a-list-whilst-preserving-order
+    """
+    unique_item_codes = []
+    only_codes_list = []
+    for available_material in available_material_list:
+        only_codes_list.append(available_material['item_code'])
+
+    unique_item_codes.extend(list(dict.fromkeys(only_codes_list)))
+    
+    return unique_item_codes
+
+
+def sum_and_convert_available_material_list(available_material_list):
+    """Function that finds all item_code values in an object list, and sums their amount value
+    together, to return a list with only one unique object based on item code and the amounts of 
+    same item_code objects added to the unique one. 
+
+    Args:
+        available_material_list: It expects a list similar to this one:
+        [
+            {'item_code': 'CULTIVO-0069', 'amount':'15.0', 'amount_uom': 'Pound'},
+            {'item_code': 'CULTIVO-0069', 'amount':'4.0', 'amount_uom': 'Pound'},
+            {'item_code': 'CULTIVO-0024', 'amount':'8.0', 'amount_uom': 'Pound'},
+            {'item_code': 'CULTIVO-0023', 'amount':'21.0', 'amount_uom': 'Pound'},
+            {'item_code': 'CULTIVO-0024', 'amount':'14.0', 'amount_uom': 'Pound'},
+        ]
+
+    Returns:
+        unique item code objects, amounts summed in a list, like this one: 
+        [
+            {'item_code': 'CULTIVO-0069', 'amount': 19.0, 'amount_uom': 'Pound'},
+            {'item_code': 'CULTIVO-0024', 'amount': 22.0, 'amount_uom': 'Pound'},
+            {'item_code': 'CULTIVO-0023', 'amount': 21.0, 'amount_uom': 'Pound'}
+        ]
+    """
+    new_list = []
+    temp_list = []
+    new_list.clear()
+    for unique_item_code in make_list_of_unique_codes(available_material_list):
+        temp_dict = {}
+        # en: Subtotalizing variable where we will be adding each amount of each available material, after we convert to the first UOM found.
+        # es-GT: Variable subtotalizadora en donde iremos sumando cada cantidad de cada material disponible posterior a una conversion a la primer UDM encontrada.
+        same_material_amount_total = 0
+    
+        # en: Since we run the risk that similar available materials were added with different units of measure, we must select a UOM and then convert to it before adding amounts.
+        # en: Each time a unique code is found, the variable will have a "not assigned" value, which will help determine whether to assign a variable for the first time.
+        # es-GT: Como corremos el riesgo que materiales similares fueron agregados con diferentes unidades de medida, debemos seleccionar una UDM y luego convertir a esa antes de sumar cantidades.
+
+        available_material_uom = "UOM for unique code not assigned yet"
+
+        # Since we found a unique code, now we can search the available_material_list
+        for available_material in available_material_list:
+            if available_material["item_code"] == unique_item_code:
+                # en: We get the current list index, because we want the entire value of that index!
+                # es-GT: Obtenemos el indice actual de la lista, porque queremos obtener el valor completo de ese indice!
+                index = available_material_list.index(available_material)
+
+                # en: Since all the objects from available_material_list are the same, we obtain them each time and replace temp_dict
+                # es-GT: Como todos los objetos del listado de materiales disponibles son lo mismo, los obtenemos cada vez y reemplazamos temp_dict
+                temp_dict = available_material_list[index]
+
+                # en: A problem arises: We might not have the same units. Therefore we will
+                # es-GT: Como todos los objetos del listado de materiales disponibles son lo mismo, los obtenemos cada vez y reemplazamos temp_dict
+
+                # First we decide to assign the value of the amount_uom
+                if available_material_uom == "UOM for unique code not assigned yet":
+                    # First time, we need to assign the amount_uom of this list item.
+                    available_material_uom = available_material["amount_uom"]
+
+                    # We also assign the value of the first time.
+                    same_material_amount_total += float(available_material["amount"])
+
+                else:
+                    # Value has probably been assigned on first found item, so we need to check if assigned unit matches this unit
+                    if available_material_uom != available_material["amount_uom"]:
+                        # CONVERSION NEEDED!
+                        # we need to convert from: available_material["amount_uom"]  to  available_material_uom
+                        #Ounce to Pound
+                        #32 ounces = 2 pounds
+                        
+                        av_mat_amt_converted = float(available_material['amount']) * float(conversion_factor[0]['value'])
+                        # print('Available material amount has been converted to stock units in BOM for sales item')
+                        #convert
+                        #add
+                        same_material_amount_total += float(available_material["amount"])
+                    elif available_material_uom == available_material["amount_uom"]:
+                        # No conversion needed, just add the amount
+                        # en: We add the available material object amount to our subtotaler variable, for later assignment to temp_dict.
+                        # es-GT: Sumamos el monto del objeto de este material disponible a nuestra variable subtotalizadora, para posterior asignacion al diccionario temporal.
+                        same_material_amount_total += float(available_material["amount"])
+                    else:
+                        pass
+            else:
+                pass
+        # Now that we have summed all of the same unique code, we can change the objects amount value
+        temp_dict["amount"] = same_material_amount_total
+        new_list.append(temp_dict)
+        # print(available_material_uom)
+        # print(same_material_amount_total)
+        # print(temp_dict)
+    # Our list is now ready to use, with like item amounts added.
+    return new_list
