@@ -131,11 +131,18 @@ def get_data(filters):
     # --------- EMPTY ROW ----------
     empty_row = {}
     data = [empty_row]
-    # --------- Testing styles for report START ----------
-    quantity_style_1 = "<span style='color: green; float: right; text-align: right; vertical-align: text-top;'><strong>"
-    quantity_style_2 = "</strong></span>"
-    quantity_material = quantity_style_1 + str(35) + quantity_style_2
-    quantity_sales_item = quantity_style_1 + str(70) + quantity_style_2
+    # --------- STYLES DEIFNITIONS BEGIN ----------
+    quantity_style_plenty_1 = "<span style='color: black; background-color: orange; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    quantity_style_plenty_2 = "</strong></span>"
+    quantity_style_few_1 = "<span style='color: black; background-color: blue; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    quantity_style_few_2 = "</strong></span>"
+    item_link_open = "<a href='#Form/Item/"
+    item_link_open_end = "' target='_blank'>"
+    item_link_close = "</a>"
+
+
+    quantity_material = quantity_style_plenty_1 + str(35) + quantity_style_plenty_2
+    quantity_sales_item = quantity_style_plenty_1 + str(70) + quantity_style_plenty_2
     row1 = {
         "A": "Albahaca",
         "B": quantity_material,
@@ -277,16 +284,27 @@ def get_data(filters):
             else:
                 x = None
         
+        material_amount_html = quantity_style_plenty_1 + str(available_material['amount']) + quantity_style_plenty_2
         row_header = {
                         "A": estimation_name,
-                        "B": available_material['amount'],
+                        "B": material_amount_html,
                         "C": _(available_material['amount_uom']),
                         "D": "",
                         "E": "",
                         "F": "",
                         "G": ""
                     }
+        row_sub_header = {
+                        "A": _("Code"),
+                        "B": _("Name"),
+                        "C": _("Possible"),
+                        "D": "",
+                        "E": "",
+                        "F": "",
+                        "G": ""
+                    }
         data.append(row_header)
+        data.append(row_sub_header)
 
         # We now cross-check, convert and structure our row output.
         for pair in material_and_sales_items:
@@ -315,15 +333,16 @@ def get_data(filters):
                         possible_uom = "Unidad"
                     # print(pair['sales_item_code'][-4:] + ' ' + pair['sales_item_name'] + ' ' + str(math.floor(possible_quantity)) + ' ' + possible_uom)
                     
-                    
+                    quantity_sales_item_html = quantity_style_plenty_1 + str(math.floor(possible_quantity)) + quantity_style_plenty_2
+                    sales_item_route = item_link_open + str(pair['sales_item_code']) + item_link_open_end + str(pair['sales_item_code'][-4:]) + item_link_close
                     sales_item_row = {
-                        "A": "",
-                        "B": "",
-                        "C": "",
-                        "D": str(pair['sales_item_code'][-4:]),
-                        "E": str(pair['sales_item_name']),
-                        "F": str(math.floor(possible_quantity)),
-                        "G": possible_uom
+                        "A": sales_item_route,
+                        "B": str(pair['sales_item_name']),
+                        "C": quantity_sales_item_html,
+                        "D": possible_uom,
+                        "E": "",
+                        "F": "",
+                        "G": ""
                     }
                     data.append(sales_item_row)
                 else:
