@@ -21,6 +21,7 @@ def item_availability_estimates_range(filters):
     )
     return result
 
+
 def periods_estimated_items(filters, parent):
     """Function that returns the code, amount, and amount uom of each estimated item
     belonging to a valid or submitted Item Availability Estimate
@@ -38,6 +39,7 @@ def periods_estimated_items(filters, parent):
     )
     return result
 
+
 def estimation_item_attributes(filters, estimation_item_code):
     """Function that returns the estimation UOM, estimation name and stock_uom for use 
     in the calculations and in the report.
@@ -47,13 +49,14 @@ def estimation_item_attributes(filters, estimation_item_code):
         estimation_item_code:  The estimation item name, to find and obtain data from it.
     Returns: A list of dictionaries like this: 
     [{'name': 'CULTIVO-0069', 'estimation_name': 'Perejil', 'estimation_uom': 'Pound', 'stock_uom': 'Onza'}]
-    """    
+    """
     result = frappe.db.sql(
         f"""
         SELECT name, estimation_name, estimation_uom, stock_uom FROM `tabItem` WHERE name='{estimation_item_code}';
         """, as_dict=True
     )
     return result
+
 
 def find_bom_items(filters, estimation_item_code):
     """Function that returns the item_code, parent, stock_qty, stock_uom used in BOM Item, to prepare conversion for use 
@@ -70,6 +73,7 @@ def find_bom_items(filters, estimation_item_code):
     )
     return result
 
+
 def find_boms(filters, bom):
     """Function that returns the item, quantity and uom to obtain from this bom, such that we may go find Sales Items.
 
@@ -84,6 +88,7 @@ def find_boms(filters, bom):
     )
     return result
 
+
 def find_sales_items(filters, item_code):
     """Function that returns the item code and item name for sales items only.
 
@@ -97,6 +102,7 @@ def find_sales_items(filters, item_code):
         """, as_dict=True
     )
     return result
+
 
 def find_conversion_factor(from_uom, to_uom):
     """Function that returns the item code and item name for sales items only.
@@ -119,8 +125,10 @@ def find_conversion_factor(from_uom, to_uom):
         """, as_dict=True
     )
     # Change the return to this variable to provide only the value of the conversion.
-    value_only = result[0]['value']
+    if result:
+        value_only = result[0]['value']
     return result
+
 
 def find_sales_orders(filters):
     """Function that returns the item code and item name for sales items only.
@@ -136,6 +144,7 @@ def find_sales_orders(filters):
         """, as_dict=True
     )
     return result
+
 
 def find_sales_order_items(filters, parent):
     """Function that returns the code, amount, and amount uom of each estimated item
