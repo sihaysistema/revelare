@@ -61,7 +61,9 @@ def fill_fixtures():
                     "Sold",
                     "Available",
                     "Revelare Configuration",
-                    "Configuration"
+                    "Configuration",
+                    "Pound",
+                    "Sales Estimates"
                 ]
             ]
         ]

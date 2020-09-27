@@ -600,5 +600,33 @@
   "source_name": "Revelare Configuration",
   "status": "Saved",
   "target_name": "Configuraci\u00f3n Revelare"
+ },
+ {
+  "contributed_translation_doctype_name": null,
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2020-09-27 12:21:58.568612",
+  "name": "9a620138d4",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_name": "Pound",
+  "status": "Saved",
+  "target_name": "Libra"
+ },
+ {
+  "contributed_translation_doctype_name": null,
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2020-09-27 12:22:50.738236",
+  "name": "6d57120c06",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_name": "Sales Estimates",
+  "status": "Saved",
+  "target_name": "Estimaciones de Venta"
  }
 ]
