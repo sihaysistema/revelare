@@ -572,5 +572,33 @@
   "source_name": "Sold",
   "status": "Saved",
   "target_name": "Vendido"
+ },
+ {
+  "contributed_translation_doctype_name": null,
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2020-09-27 10:47:11.783367",
+  "name": "e62cbb6538",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_name": "Configuration",
+  "status": "Saved",
+  "target_name": "Configuraci\u00f3n"
+ },
+ {
+  "contributed_translation_doctype_name": null,
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2020-09-27 10:48:47.432277",
+  "name": "73cacc7ad5",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_name": "Revelare Configuration",
+  "status": "Saved",
+  "target_name": "Configuraci\u00f3n Revelare"
  }
 ]

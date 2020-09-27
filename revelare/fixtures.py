@@ -59,7 +59,9 @@ def fill_fixtures():
                     "Possible",
                     "UOM",
                     "Sold",
-                    "Available"
+                    "Available",
+                    "Revelare Configuration",
+                    "Configuration"
                 ]
             ]
         ]
