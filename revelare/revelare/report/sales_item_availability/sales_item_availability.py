@@ -258,12 +258,6 @@ def get_data(filters):
 
     # ----- QUERY # 5 END -----
 
-    # data.append(row)
-    test_data1 = [{'A': 'Perejil', 'B': '4.0', 'C': 'Pound', 'D': '', 'E': '', 'F': '', 'G': ''}, {'A': '', 'B': '', 'C': '', 'D': '2186', 'E': 'Perejil 6Oz', 'F': '10', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2193', 'E': 'Perejil 8Oz', 'F': '8', 'G': 'Unidades'},
-                  {'A': '', 'B': '', 'C': '', 'D': '2209', 'E': 'Perejil 1Lb', 'F': '4', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2179',
-                                                                                                            'E': 'Perejil 5Oz', 'F': '12', 'G': 'Unidades'}, {'A': '', 'B': '', 'C': '', 'D': '2278', 'E': 'Perejil .5Oz', 'F': '128', 'G': 'Unidades'},
-                  {'A': '', 'B': '', 'C': '', 'D': '2674', 'E': 'Perejil 1Oz', 'F': '64', 'G': 'Unidades'}, {}]
-    # data.append(test_data1)
     # ----- QUERY # 6 BEGIN -----
     # Sales Order query, return all sales order names that fit within the dates in report filter.
     sales_orders = find_sales_orders(filters)
@@ -281,7 +275,6 @@ def get_data(filters):
     for sales_order in sales_order_list:
         matching_sales_order_items.extend(
             find_sales_order_items(filters, sales_order))
-
     # ----- QUERY # 7 BEGIN -----
 
     # ----- PROCESS DATA BEGIN -----
