@@ -1,0 +1,208 @@
+{
+ "autoname": "naming_series:",
+ "creation": "2020-09-16 20:58:38.380880",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "section_break_8",
+  "title",
+  "column_break_5",
+  "posting_date",
+  "section_break_7",
+  "view_item_availability",
+  "section_break_6",
+  "start_date",
+  "column_break_8",
+  "end_date",
+  "days",
+  "section_break_12",
+  "interval_help",
+  "estimate_available_items",
+  "items_helper",
+  "estimated_available_items",
+  "section_break_9",
+  "company",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "description": "Valid from this date",
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
+  },
+  {
+   "description": "Until this date",
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date"
+  },
+  {
+   "depends_on": "end_date",
+   "description": "Interval duration in days",
+   "fieldname": "days",
+   "fieldtype": "Int",
+   "label": "Days",
+   "read_only": 1
+  },
+  {
+   "fieldname": "estimate_available_items",
+   "fieldtype": "Section Break",
+   "label": "Estimated Items and Quantities Available"
+  },
+  {
+   "fieldname": "estimated_available_items",
+   "fieldtype": "Table",
+   "label": "Estimated Available Items",
+   "options": "Estimated Item"
+  },
+  {
+   "allow_on_submit": 1,
+   "columns": 2,
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "no_copy": 1,
+   "print_hide": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Item Availability Estimate",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Posting Date"
+  },
+  {
+   "fieldname": "view_item_availability",
+   "fieldtype": "HTML",
+   "label": "View Sales Item Availability Report",
+   "options": "<h4><i class=\"fa fa-table\"></i> <a href=\"#query-report/Sales%20Item%20Availability\">View Sales Item Availability Report</a></h4>\n<p>Click on the link above to view the Items available for sale net of sales.</p>"
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break",
+   "label": "Estimate Validity Interval"
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "no_copy": 1,
+   "options": "ESTIM-DISP-.YYYY.-",
+   "print_hide": 1,
+   "reqd": 1,
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "interval_help",
+   "fieldtype": "HTML",
+   "label": "Interval Helper",
+   "options": "<h5>Fechas de Intervalo</h5>\n<p>Por ahora, el periodo del intervalo predeterminado es semanal (7 d\u00edas iniciando los lunes). Aunque puede cambiar la fecha final del intervalo a m\u00e1s de 7 d\u00edas, se sugiere que maneje periodos de 7 d\u00edas iniciando los lunes para tener un control m\u00e1s sencillo.</p>\n\n<h5>Interval Dates</h5>\n<p> Currently, the interval period defaults to a weekly setting (7 days starting on a monday). Even though you may change the end date to more than 7 days, it is suggested that you select weekly estimate periods for simpler control.</p>\n"
+  },
+  {
+   "fieldname": "section_break_12",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_7",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_9",
+   "fieldtype": "Section Break",
+   "label": "Company"
+  },
+  {
+   "fieldname": "items_helper",
+   "fieldtype": "HTML",
+   "options": "<p><strong>es-GT:</strong> Indica cuales Productos de Materia Prima estima tener disponibles entre las fechas especificadas arriba. Para cada uno, especifique la cantidad y la unidad de medida.</p>\n<p><strong>en:</strong> Indicate which material items you have available between the dates specified above. For each, specify amount and the unit of measure.</p>\n"
+  }
+ ],
+ "is_submittable": 1,
+ "modified": "2020-09-20 15:30:32.201763",
+ "modified_by": "Administrator",
+ "module": "Revelare",
+ "name": "Item Availability Estimate",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Stock User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Manufacturing User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
