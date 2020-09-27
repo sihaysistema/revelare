@@ -53,7 +53,13 @@ def fill_fixtures():
                     "Until this date",
                     "Estimate Validity Interval",
                     "Days",
-                    "Interval duration in days"
+                    "Interval duration in days",
+                    "Code",
+                    "Name",
+                    "Possible",
+                    "UOM",
+                    "Sold",
+                    "Available"
                 ]
             ]
         ]

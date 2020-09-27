@@ -135,14 +135,14 @@ def get_data(filters):
     empty_row = {}
     data = [empty_row]
     # --------- STYLES DEIFNITIONS BEGIN ----------
-    quantity_style_plenty_1 = "<span style='color: black; background-color: orange; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    quantity_style_plenty_1 = "<span style='color: black; background-color: orange; float: right; text-align: right; vertical-align: middle; height: 100%; width: 100%;'><strong>"
     quantity_style_plenty_2 = "</strong></span>"
     quantity_style_few_1 = "<span style='color: black; background-color: blue; float: right; text-align: right; vertical-align: text-top;'><strong>"
     quantity_style_few_2 = "</strong></span>"
-    quantity_style_sold_1 = "<span style='color: black; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    quantity_style_sold_1 = "<span style='color: black; background-color: #60A917; float: right; text-align: right; vertical-align: middle; height: 100%; width: 100%;'><strong>"
     quantity_style_sold_2 = "</strong></span>"
-    item_link_open = "<a href='#Form/Item/"
-    item_link_open_end = "' target='_blank'>"
+    item_link_open = "<a href='#Form/Item/' style='color: #1862AA;'"
+    item_link_open_end = " target='_blank'>"
     item_link_close = "</a>"
 
     # quantity_material = quantity_style_plenty_1 + \
@@ -309,13 +309,23 @@ def get_data(filters):
             "F": "",
             "G": ""
         }
+        # We add bold style to the subtitles for the headers.
+        bld_start = "<strong>"
+        bld_end = "</strong>"
+        col_a = bld_start + _("Code") + bld_end
+        col_b = bld_start + _("Name") + bld_end
+        col_c = bld_start + _("Possible") + bld_end
+        col_d = bld_start + _("UOM") + bld_end
+        col_e = bld_start + _("Sold") + bld_end
+        col_f = bld_start + _("Available") + bld_end
+
         row_sub_header = {
-            "A": _("Code"),
-            "B": _("Name"),
-            "C": _("Possible"),
-            "D": _("UOM"),
-            "E": _("Sold"),
-            "F": _("Available"),
+            "A": col_a,
+            "B": col_b,
+            "C": col_c,
+            "D": col_d,
+            "E": col_e,
+            "F": col_f,
             "G": ""
         }
         data.append(row_header)
