@@ -1,0 +1,96 @@
+{
+ "autoname": "format:Imported on {imported_on}",
+ "creation": "2020-09-16 21:26:44.875756",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "download_estimate_importer_spreadsheet",
+  "company",
+  "imported_on",
+  "attach_data_section",
+  "attach",
+  "import_estimate",
+  "log_error_section",
+  "import_log",
+  "details",
+  "total_rows"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "attach_data_section",
+   "fieldtype": "Section Break",
+   "label": "Attach Data"
+  },
+  {
+   "fieldname": "attach",
+   "fieldtype": "Attach",
+   "label": "Attach"
+  },
+  {
+   "fieldname": "import_estimate",
+   "fieldtype": "Button",
+   "label": "Import Estimate"
+  },
+  {
+   "fieldname": "log_error_section",
+   "fieldtype": "Section Break",
+   "label": "Log"
+  },
+  {
+   "fieldname": "import_log",
+   "fieldtype": "HTML",
+   "label": "Import Log"
+  },
+  {
+   "fieldname": "total_rows",
+   "fieldtype": "Int",
+   "label": "Total Rows"
+  },
+  {
+   "fieldname": "download_estimate_importer_spreadsheet",
+   "fieldtype": "HTML",
+   "label": "Download Estimate Importer Spreadsheet",
+   "options": "<h4><i class=\"fa fa-file-excel-o\"></i> <a href=\"#List/File/Home/presupuestos\">Download Estimate Importer Spreadsheet</a></h4>\n<p>Click on the link above to download the estimate spreadsheet template</p>"
+  },
+  {
+   "fieldname": "imported_on",
+   "fieldtype": "Datetime",
+   "label": "Imported on"
+  },
+  {
+   "fieldname": "details",
+   "fieldtype": "Code",
+   "label": "Detalles Log"
+  }
+ ],
+ "modified": "2020-09-16 21:43:19.214111",
+ "modified_by": "Administrator",
+ "module": "Revelare",
+ "name": "Item Availability Estimate Importer",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
