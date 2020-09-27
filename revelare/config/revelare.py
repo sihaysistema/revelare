@@ -10,6 +10,12 @@ def get_data():
 			"label": _("Sales Estimates"),
 			"items": [
 				{
+					"type": "doctype",
+					"name": "Item Availability Estimate",
+					"description": _("Item Availability Estimate lists"),
+					"onboard": 1,
+				},
+				{
 					"type": "report",
 					"name": "Sales Item Availability",
 					"description": _("Sales Item Availability Report"),
