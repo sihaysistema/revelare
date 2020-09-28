@@ -35,7 +35,7 @@ frappe.ui.form.on('Item Availability Estimate', {
         var end_of_week_date = addDays(curr_start_date,7);
         frm.set_value('end_date', end_of_week_date);
     },
-    end_date: function(frm) {
+    /*end_date: function(frm) {
         // en: When the start date is assigned, we need to calculate what the end date will be. (+7 days including the start date)
         // es-GT: Cuando se asigna la fecha de inicio, necesitamos calcular cual va ser la fecha final (+7 días incluyendo la fecha de inicio)
         var curr_start_date = new Date(cur_frm.doc.start_date);
@@ -43,6 +43,7 @@ frappe.ui.form.on('Item Availability Estimate', {
         var Difference_In_Time = end_of_week_date.getTime() - curr_start_date.getTime();
         var Difference_In_Days = Difference_In_Time / (1000 * 3600 * 24);
         frm.set_value('days', (Difference_In_Days+1));
+        */
     },
     onload: function (frm) {
         cur_frm.fields_dict["estimated_available_items"].grid.get_field("item_code").get_query = function(doc){
