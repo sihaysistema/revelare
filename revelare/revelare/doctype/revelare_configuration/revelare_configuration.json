@@ -1,0 +1,70 @@
+{
+ "autoname": "CONFIG.#####",
+ "creation": "2020-10-07 10:28:20.120352",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sales_order_per_stock_entry_detail_section",
+  "default_company_for_sales_order_per_stock_entry_detail",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "sales_order_per_stock_entry_detail_section",
+   "fieldtype": "Section Break",
+   "label": "Sales Order per Stock Entry Detail"
+  },
+  {
+   "fieldname": "default_company_for_sales_order_per_stock_entry_detail",
+   "fieldtype": "Link",
+   "label": "Default Company for Sales Order per Stock Entry Detail",
+   "options": "Company"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Revelare Configuration",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "is_submittable": 1,
+ "modified": "2020-10-07 10:35:27.823701",
+ "modified_by": "Administrator",
+ "module": "Revelare",
+ "name": "Revelare Configuration",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Administrator",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
