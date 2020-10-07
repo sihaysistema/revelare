@@ -11,7 +11,6 @@ nuevos fixtures que estes creando se agreguen al listado fixtures.
 
 """
 
-
 def fill_fixtures():
     # We declare fixtures as an empty list.
     fixtures_fillup = []
@@ -66,7 +65,8 @@ def fill_fixtures():
                     "Revelare Configuration",
                     "Configuration",
                     "Pound",
-                    "Sales Estimates"
+                    "Sales Estimates",
+                    "Date and time item was first added to warehouse"
                 ]
             ]
         ]
