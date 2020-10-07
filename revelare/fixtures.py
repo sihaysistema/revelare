@@ -26,7 +26,8 @@ def fill_fixtures():
                     "Item-include_in_estimations",
                     "Item-column_break_estimations",
                     "Item-estimation_uom",
-                    "Item-estimation_name"
+                    "Item-estimation_name",
+                    "Stock Entry Detail-available_for_sale"
                 ]
             ]
         ]
@@ -66,7 +67,9 @@ def fill_fixtures():
                     "Configuration",
                     "Pound",
                     "Sales Estimates",
-                    "Date and time item was first added to warehouse"
+                    "Date and time item was first added to warehouse",
+                    "Available For Sale",
+                    "Revelare: Keeps track of availability for sale to be used in Sales Order per Stock Entry Detail Doctype"
                 ]
             ]
         ]

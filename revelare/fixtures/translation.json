@@ -712,5 +712,33 @@
   "source_name": "Date and time item was first added to warehouse",
   "status": "Saved",
   "target_name": "Fecha y hora que se agreg\u00f3 el Item a bodega por primera vez"
+ },
+ {
+  "contributed_translation_doctype_name": null,
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2020-10-06 21:25:59.152950",
+  "name": "449844bed8",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_name": "Available For Sale",
+  "status": "Saved",
+  "target_name": "Disponible para la Venta"
+ },
+ {
+  "contributed_translation_doctype_name": null,
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2020-10-06 21:27:41.573275",
+  "name": "0a935e9d94",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_name": "Revelare: Keeps track of availability for sale to be used in Sales Order per Stock Entry Detail Doctype",
+  "status": "Saved",
+  "target_name": "Revelare: Registra la disponibilidad para la venta seg\u00fan Generador de Ordenes de Venta por Inventario"
  }
 ]
