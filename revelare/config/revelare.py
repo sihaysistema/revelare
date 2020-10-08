@@ -132,5 +132,16 @@ def get_data():
                     "onboard": 1,
                 }
             ]
-        }
+        },
+        {
+            "label": _("Sales Order per Stock Entry Item"),
+            "items": [
+                {
+                    "type": "doctype",
+                    "name": "Sales Order per Stock Entry Detail",
+                    "description": _("Sales Order per Stock Entry Detail"),
+                    "onboard": 1,
+                }
+            ]
+        },
     ]
