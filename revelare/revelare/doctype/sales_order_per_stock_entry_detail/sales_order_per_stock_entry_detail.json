@@ -8,10 +8,13 @@
   "title",
   "datetime",
   "amended_from",
+  "column_break_4",
+  "customer",
   "search_items_section",
   "item",
   "available_items_section",
   "available_items",
+  "select",
   "selected_items_section",
   "selected_items"
  ],
@@ -67,10 +70,25 @@
    "fieldname": "title",
    "fieldtype": "Data",
    "label": "Title"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "select",
+   "fieldtype": "Button",
+   "label": "Select"
   }
  ],
  "is_submittable": 1,
- "modified": "2020-10-06 22:07:50.698342",
+ "modified": "2020-10-09 15:38:36.805481",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Sales Order per Stock Entry Detail",
