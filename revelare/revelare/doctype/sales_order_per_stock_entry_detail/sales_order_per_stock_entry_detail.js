@@ -87,9 +87,8 @@ frappe.ui.form.on('Sales Order per Stock Entry Detail', {
             var tbl = frm.doc.available_items || [];
             var i = tbl.length;
 
-            while (i--)
-            {
-                if(tbl[i].__checked == 1) {  // Elimina las especicas seleccionadas
+            while (i--) {
+                if (tbl[i].__checked == 1) {  // Elimina las especicas seleccionadas
                     cur_frm.get_field("available_items").grid.grid_rows[i].remove();
                 }
             }

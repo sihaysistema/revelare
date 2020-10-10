@@ -87,13 +87,20 @@ doctype_list_js = {"Item Availability Estimate" : "public/js/item_availability_e
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-#	}
-# }
+doc_events = {
+    # "*": {
+    # 	"on_update": "method",
+    # 	"on_cancel": "method",
+    # 	"on_trash": "method"
+    # }
+    "Sales Order per Stock Entry Detail": {
+        # "on_update": "method",
+        # "on_cancel": "method",
+        # "on_trash": "method",
+        "on_submit": "revelare.revelare.doctype.sales_order_per_stock_entry_detail.sales_order_per_stock_entry_detail.create_delivery_note",
+        # "validate": "revelare.revelare.doctype.sales_order_per_stock_entry_detail.sales_order_per_stock_entry_detail.evento", cuando se guarda
+    }
+}
 
 # Scheduled Tasks
 # ---------------
