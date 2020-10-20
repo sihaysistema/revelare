@@ -273,8 +273,8 @@ def get_data(filters):
     # ----- QUERY # 7 BEGIN -----
     matching_sales_order_items = []
     for sales_order in sales_order_list:
-        matching_sales_order_items.extend(
-            find_sales_order_items(filters, sales_order))
+        matching_items = find_sales_order_items(filters, sales_order)
+        matching_sales_order_items.extend(matching_items)
     # ----- QUERY # 7 BEGIN -----
 
     # ----- PROCESS DATA BEGIN -----
@@ -377,10 +377,11 @@ def get_data(filters):
                             str(pair['sales_item_code'][-4:]) + item_link_close
 
                         if pair['sales_item_code'] in sales_item_codes:
-                            idx = sales_item_codes.index(
-                                pair['sales_item_code'])
-                            item_sold = matching_sales_order_items[idx]
-                            sold_quantity = math.floor(item_sold['stock_qty'])
+                            # sum the stock qty for all sales order items
+                            order_qtys = [item['stock_qty'] for item in matching_sales_order_items
+                                          if item['item_code'] == pair['sales_item_code']]
+                            sold_quantity = math.floor(sum(order_qtys))
+
                         else:
                             sold_quantity = 0
                         quantity_sold_html = quantity_style_sold_1 + \
