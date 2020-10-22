@@ -89,7 +89,7 @@ def get_columns(filters):
             "label": _("B"),
             "fieldname": "B",
             "fieldtype": "Data",
-            "width": 90
+            "width": 120
         },
         {
             "label": _("C"),
