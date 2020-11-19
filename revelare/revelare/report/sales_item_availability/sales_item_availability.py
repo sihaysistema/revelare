@@ -322,6 +322,10 @@ def get_data(filters):
             "G": ""
         }
 
+        # Declare the column where we will place the total sold quantity
+        total_sold_column = "E"
+
+        # Set the header and subheader values
         data.append(row_header)
         header_idx = len(data) - 1  # track the header idx for updates later
         data.append(row_sub_header)
@@ -428,7 +432,7 @@ def get_data(filters):
                 pass
 
         # Add the target uom total to the header
-        data[header_idx]["E"] = quantity_style_sold_1 + \
+        data[header_idx][total_sold_column] = quantity_style_sold_1 + \
             str(total_target_uom_sold) + quantity_style_sold_2
 
         # We add an empty row after a set of products for easier reading.
