@@ -297,9 +297,9 @@ def get_data(filters):
             "A": estimation_name,
             "B": material_amount_html,
             "C": _(available_material['amount_uom']),
-            "D": "",
+            "D": _("Total Sold"),
             "E": "",
-            "F": "",
+            "F": _(available_material['amount_uom']),
             "G": ""
         }
         # We add bold style to the subtitles for the headers.
@@ -321,8 +321,13 @@ def get_data(filters):
             "F": col_f,
             "G": ""
         }
+
         data.append(row_header)
+        header_idx = len(data) - 1  # track the header idx for updates later
         data.append(row_sub_header)
+
+        # Initialize the total sold items in the target uom
+        total_target_uom_sold = 0
 
         # Get the sales order quantities for items
         sales_item_codes = [item['item_code']
@@ -335,29 +340,32 @@ def get_data(filters):
 
         # We now cross-check, convert and structure our row output.
         for pair in material_and_sales_items:
+            frappe.msgprint("pair: " + str(pair))
             if pair['item_code'] == available_material['item_code']:
-                # code exists, do this
-                # print("item code code exists")
-                # amount_uom is in A
-                # Item stock uom is in B
                 if pair['stock_uom'] != available_material['amount_uom']:
-                    # print('Must convert units!')
+
+                    # Reinitialize variables
+                    target_uom_sold = 0
+
                     # find conversion factor , from unit is available material amount_uom - INSERT QUERY CALL HERE
                     conversion_factor = find_conversion_factor(
                         available_material['amount_uom'], pair['stock_uom'])
+                    conversion_factor_reversed = find_conversion_factor(
+                        pair['stock_uom'], available_material['amount_uom'])
 
                     # Warn the user if a conversion factor doesn't exist for
                     # the pair
                     if not conversion_factor:
                         frappe.msgprint("A UOM conversion factor is required to convert " + str(
                             available_material['amount_uom']) + " to " + str(pair['stock_uom']))
+                    elif not conversion_factor_reversed:
+                        frappe.msgprint("A UOM conversion factor is required to convert " + str(
+                            pair['stock_uom']) + " to " + str(available_material['amount_uom']))
                     else:
                         # Convert available_material uom to pair uom, by multiplying available material amount by conversion factor found
                         av_mat_amt_converted = float(
                             available_material['amount']) * float(conversion_factor[0]['value'])
-                        # print('Available material amount has been converted to stock units in BOM for sales item')
 
-                        # print('Possible amount')
                         # Now, we divide the av_mat_amt_converted by the stock_qty to obtain possible quantity
                         possible_quantity = av_mat_amt_converted / \
                             pair['stock_qty']
@@ -366,7 +374,6 @@ def get_data(filters):
                             possible_uom = _(pair['sales_item_uom'] + 's')
                         else:
                             possible_uom = _(pair['sales_item_uom'])
-                        # print(pair['sales_item_code'][-4:] + ' ' + pair['sales_item_name'] + ' ' + str(math.floor(possible_quantity)) + ' ' + possible_uom)
 
                         # Add HTML and CSS styles to certain fields
                         quantity_sales_item_html = quantity_style_plenty_1 + \
@@ -376,14 +383,16 @@ def get_data(filters):
                             str(pair['sales_item_code']) + item_link_open_end + \
                             str(pair['sales_item_code'][-4:]) + item_link_close
 
+                        # Calculate the amount sold
                         if pair['sales_item_code'] in sales_item_codes:
                             # sum the stock qty for all sales order items
                             order_qtys = [item['stock_qty'] for item in matching_sales_order_items
                                           if item['item_code'] == pair['sales_item_code']]
                             sold_quantity = math.floor(sum(order_qtys))
-
                         else:
                             sold_quantity = 0
+
+                        # Add HTML to the sold quantity
                         quantity_sold_html = quantity_style_sold_1 + \
                             str(sold_quantity) + quantity_style_sold_2
 
@@ -392,6 +401,11 @@ def get_data(filters):
                             possible_quantity - sold_quantity)
                         available_quantity_html = quantity_style_plenty_1 + \
                             str(available_quantity) + quantity_style_plenty_2
+
+                        # Total target uom for this sales item
+                        conversion = pair['conversion_factor'][0]['value']
+                        target_uom_sold = (
+                            sold_quantity * pair['stock_qty']) / conversion
 
                         # Populate the row
                         sales_item_row = {
@@ -404,13 +418,22 @@ def get_data(filters):
                             "G": ""
                         }
                         data.append(sales_item_row)
+
+                        # modify the header var with the total in the target amt
+                        total_target_uom_sold += target_uom_sold
+
                 else:
                     print('Units are the same, no need for conversion.')
             else:
                 pass
 
+        # Add the target uom total to the header
+        data[header_idx]["E"] = quantity_style_sold_1 + \
+            str(total_target_uom_sold) + quantity_style_sold_2
+
         # We add an empty row after a set of products for easier reading.
         data.append(empty_row)
+
     # ----- PROCESS DATA END -----
     return data
     # return test_data1
