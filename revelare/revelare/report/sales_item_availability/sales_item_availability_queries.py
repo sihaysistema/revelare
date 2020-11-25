@@ -5,6 +5,25 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _, _dict, scrub
 
+def total_item_availability_estimates(filters):
+  """
+  Returns a list of dictionaries that contain the sum of item availability
+  estimate name, amounts and uom that fall within a date range
+  """
+  result = frappe.db.sql(
+      f"""
+      SELECT ei.item_code, SUM(ei.amount) as amount, ei.amount_uom
+      FROM `tabItem Availability Estimate` as iae
+      INNER JOIN `tabEstimated Item` as ei 
+      ON iae.name = ei.parent
+      WHERE iae.docstatus = 1 
+      AND ei.docstatus = 1
+      AND (iae.start_date AND iae.end_date 
+           BETWEEN '{filters.from_date}' AND '{filters.to_date}')
+      GROUP BY ei.item_code;
+      """, as_dict=True
+  )
+  return result
 
 def item_availability_estimates_range(filters):
     """Function that returns the name of the submitted Item Availability Estimates
