@@ -223,10 +223,10 @@ def get_data(filters):
     # ----- QUERY # 4 BEGIN -----
     # Now we find the BOM names based on the names of material items in our item_attributes_list
     # [{'item_code': 'CULTIVO-0069', 'parent': 'BOM-7401168802186-001', 'stock_qty': 6.0, 'stock_uom': 'Onza'}]
-    # The assembled object contains
     bom_names_list = []
-    for x in available_materials_with_attributes:
-        bom_items = find_bom_items(filters, x['name'])
+    for material in estimated_materials_with_attributes:
+        material_doctype_name = material['name']
+        bom_items = find_bom_items(filters, material_doctype_name)
         bom_names_list.extend(bom_items)
         '''
         row = {
@@ -244,22 +244,22 @@ def get_data(filters):
     # ----- QUERY # 5 BEGIN -----
     # we get sales item code, quantity obtained, and uom obtained for each bom parent.
     material_and_sales_items = []
-    for x in bom_names_list:
-        boms = find_boms(filters, x['parent'])
+    for bom in bom_names_list:
+        bom_parent = bom['parent']
+        boms = find_boms(filters, bom_parent)
+
         # We rearrange the current dictionary, assigning values from returned keys in this list
         # to new keys in this object.
-        # We also drop the parent key in the existing
-        # x['sales_item_code'] = boms['item']
-        # x['sales_item_qty'] = boms['quantity']
-        # x['sales_item_uom'] = boms['uom']
-        x['sales_item_code'] = boms[0]['item']
-        x['sales_item_qty'] = boms[0]['quantity']
-        x['sales_item_uom'] = boms[0]['uom']
-        x['sales_item_name'] = boms[0]['item_name']
-        x['conversion_factor'] = find_conversion_factor(
-            available_material_list[0]['amount_uom'], x['stock_uom'])
-        x.pop("parent")
-        material_and_sales_items.append(x)
+        bom['sales_item_code'] = boms[0]['item']
+        bom['sales_item_qty'] = boms[0]['quantity']
+        bom['sales_item_uom'] = boms[0]['uom']
+        bom['sales_item_name'] = boms[0]['item_name']
+        bom['conversion_factor'] = find_conversion_factor(
+            estimated_materials_with_attributes[0]['amount_uom'], bom['stock_uom'])
+        bom.pop("parent")
+
+        # Append it to the list of sales items
+        material_and_sales_items.append(bom)
     '''
     row = {
             "A": "Albahaca",
@@ -461,11 +461,11 @@ def get_data(filters):
     # return test_data1
 
 
-def make_list_of_unique_codes(available_material_list):
+def make_list_of_unique_codes(estimated_material_list):
     """Function that makes a list of unique item codes
 
     Args:
-        available_material_list: It expects a list similar to this one:
+        estimated_material_list: It expects a list similar to this one:
         [
             {'item_code': 'CULTIVO-0069', 'amount':'15.0', 'amount_uom': 'Pound'},
             {'item_code': 'CULTIVO-0069', 'amount':'4.0', 'amount_uom': 'Pound'},
@@ -482,7 +482,7 @@ def make_list_of_unique_codes(available_material_list):
     """
     unique_item_codes = []
     only_codes_list = []
-    for available_material in available_material_list:
+    for available_material in estimated_material_list:
         only_codes_list.append(available_material['item_code'])
 
     unique_item_codes.extend(list(dict.fromkeys(only_codes_list)))
@@ -490,13 +490,13 @@ def make_list_of_unique_codes(available_material_list):
     return unique_item_codes
 
 
-def sum_and_convert_available_material_list(available_material_list):
+def sum_and_convert_estimated_material_list(estimated_material_list):
     """Function that finds all item_code values in an object list, and sums their amount value
     together, to return a list with only one unique object based on item code and the amounts of
     same item_code objects added to the unique one.
 
     Args:
-        available_material_list: It expects a list similar to this one:
+        estimated_material_list: It expects a list similar to this one:
         [
             {'item_code': 'CULTIVO-0069', 'amount':'15.0', 'amount_uom': 'Pound'},
             {'item_code': 'CULTIVO-0069', 'amount':'4.0', 'amount_uom': 'Pound'},
@@ -516,7 +516,7 @@ def sum_and_convert_available_material_list(available_material_list):
     new_list = []
     temp_list = []
     new_list.clear()
-    for unique_item_code in make_list_of_unique_codes(available_material_list):
+    for unique_item_code in make_list_of_unique_codes(estimated_material_list):
         temp_dict = {}
         # en: Subtotalizing variable where we will be adding each amount of each available material, after we convert to the first UOM found.
         # es-GT: Variable subtotalizadora en donde iremos sumando cada cantidad de cada material disponible posterior a una conversion a la primer UDM encontrada.
@@ -528,16 +528,16 @@ def sum_and_convert_available_material_list(available_material_list):
 
         available_material_uom = "UOM for unique code not assigned yet"
 
-        # Since we found a unique code, now we can search the available_material_list
-        for available_material in available_material_list:
+        # Since we found a unique code, now we can search the estimated_material_list
+        for available_material in estimated_material_list:
             if available_material["item_code"] == unique_item_code:
                 # en: We get the current list index, because we want the entire value of that index!
                 # es-GT: Obtenemos el indice actual de la lista, porque queremos obtener el valor completo de ese indice!
-                index = available_material_list.index(available_material)
+                index = estimated_material_list.index(available_material)
 
-                # en: Since all the objects from available_material_list are the same, we obtain them each time and replace temp_dict
+                # en: Since all the objects from estimated_material_list are the same, we obtain them each time and replace temp_dict
                 # es-GT: Como todos los objetos del listado de materiales disponibles son lo mismo, los obtenemos cada vez y reemplazamos temp_dict
-                temp_dict = available_material_list[index]
+                temp_dict = estimated_material_list[index]
 
                 # en: A problem arises: We might not have the same units. Therefore we will
                 # es-GT: Como todos los objetos del listado de materiales disponibles son lo mismo, los obtenemos cada vez y reemplazamos temp_dict
