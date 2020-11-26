@@ -146,6 +146,10 @@ def get_data(filters):
     empty_row = {}
     data = [empty_row]
     # --------- STYLES DEIFNITIONS BEGIN ----------
+    quantity_style_estimate_1 = "<span style='color: white; background-color: darkorange; display: block; text-align: center; vertical-align: middle; height: 100%; width: 100%;'><strong>"
+    quantity_style_estimate_2 = "</strong></span>"
+    quantity_style_sold_dk_1 = "<span style='color: white; background-color: darkgreen;  display: block; text-align: center; vertical-align: middle; height: 100%; width: 100%;'><strong>"
+    quantity_style_sold_dk_2 = "</strong></span>"
     quantity_style_plenty_1 = "<span style='color: black; background-color: orange; float: right; text-align: right; vertical-align: middle; height: 100%; width: 100%;'><strong>"
     quantity_style_plenty_2 = "</strong></span>"
     quantity_style_few_1 = "<span style='color: black; background-color: blue; float: right; text-align: right; vertical-align: text-top;'><strong>"
