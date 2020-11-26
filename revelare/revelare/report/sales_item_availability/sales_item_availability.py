@@ -15,7 +15,18 @@ import pandas as pd
 import numpy as np
 import math
 
-from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import item_availability_estimates_range, periods_estimated_items, estimation_item_attributes, find_bom_items, find_boms, find_sales_items, find_conversion_factor, find_sales_orders, find_sales_order_items
+from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import (
+  item_availability_estimates_range, 
+  periods_estimated_items, 
+  estimation_item_attributes, 
+  find_bom_items, find_boms, 
+  find_sales_items, 
+  find_conversion_factor, 
+  find_sales_orders, 
+  find_sales_order_items,
+  total_item_availability_estimates,
+  total_item_availability_estimate_attributes
+)
 
 
 def execute(filters=None):
@@ -89,31 +100,31 @@ def get_columns(filters):
             "label": _("B"),
             "fieldname": "B",
             "fieldtype": "Data",
-            "width": 90
+            "width": 120
         },
         {
             "label": _("C"),
             "fieldname": "C",
             "fieldtype": "Data",
-            "width": 90
+            "width": 110
         },
         {
             "label": _("D"),
             "fieldname": "D",
             "fieldtype": "Data",
-            "width": 90
+            "width": 110
         },
         {
             "label": _("E"),
             "fieldname": "E",
             "fieldtype": "Data",
-            "width": 90
+            "width": 110
         },
         {
             "label": _("F"),
             "fieldname": "F",
             "fieldtype": "Data",
-            "width": 90
+            "width": 110
         },
     ]
 
