@@ -311,10 +311,10 @@ def get_data(filters):
         row_header = {
             "A": estimation_name,
             "B": material_amount_html,
-            "C": _(available_material['amount_uom']),
-            "D": _("Total Sold"),
+            "C": _(f'{uom_name}'),
+            "D": _(f'Total {uom_name} Sold'),
             "E": "",
-            "F": _(available_material['amount_uom']),
+            "F": "",
             "G": ""
         }
         # We add bold style to the subtitles for the headers.
