@@ -35,18 +35,20 @@ def total_item_availability_estimate_attributes(filters):
     SELECT name, estimation_name, estimation_uom, stock_uom, 
                  estimate.item_name, estimate.amount, estimate.amount_uom
     FROM `tabItem` 
-    INNER JOIN (SELECT ei.item_code, ei.item_name, SUM(ei.amount) as amount, ei.amount_uom
-          FROM `tabItem Availability Estimate` as iae
-          INNER JOIN `tabEstimated Item` as ei 
-          ON iae.name = ei.parent
-          WHERE iae.docstatus = 1 
-          AND ei.docstatus = 1
-          AND (iae.start_date AND iae.end_date BETWEEN '2020-10-01' and '2020-10-31')
-          GROUP BY ei.item_code) as estimate
+    INNER JOIN 
+      (SELECT ei.item_code, ei.item_name, SUM(ei.amount) as amount, ei.amount_uom
+       FROM `tabItem Availability Estimate` as iae
+       INNER JOIN `tabEstimated Item` as ei 
+       ON iae.name = ei.parent
+       WHERE iae.docstatus = 1 
+       AND ei.docstatus = 1
+       AND (iae.start_date AND iae.end_date 
+            BETWEEN '{filters.from_date}' AND '{filters.to_date}')
+       GROUP BY ei.item_code) as estimate
     WHERE name=estimate.item_code;
     """, as_dict=True
   )
-  return result;
+  return result
 
 def item_availability_estimates_range(filters):
     """Function that returns the name of the submitted Item Availability Estimates
