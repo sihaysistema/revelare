@@ -50,6 +50,23 @@ def total_item_availability_estimate_attributes(filters):
   )
   return result
 
+def total_sales_items(filters):
+  result = frappe.db.sql(
+    f"""
+    SELECT soi.item_name, soi.item_code, soi.delivery_date, 
+	         SUM(soi.stock_qty) as stock_qty, soi.stock_uom 
+    FROM `tabSales Order Item` as soi
+    INNER JOIN
+      (SELECT so.name FROM `tabSales Order` AS so 
+        WHERE docstatus=1 
+        AND (delivery_date 
+             BETWEEN '{filters.from_date}' AND '{filters.to_date}')) as sonames
+    ON sonames.name=soi.parent
+    GROUP BY soi.item_code;
+    """, as_dict=True
+  )
+  return result
+
 def item_availability_estimates_range(filters):
     """Function that returns the name of the submitted Item Availability Estimates
     that fall between the dates selected in the filter.
