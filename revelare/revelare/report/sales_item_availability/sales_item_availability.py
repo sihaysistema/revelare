@@ -398,8 +398,11 @@ def get_data(filters):
                         quantity_sales_item_html = quantity_style_plenty_1 + \
                             str(math.floor(possible_quantity)) + \
                             quantity_style_plenty_2
-                        sales_item_route = item_link_open + \
-                            str(pair['sales_item_code']) + item_link_open_end + \
+
+                        # Build the item code url
+                        item_code = pair['sales_item_code']
+                        sales_item_route = f"{item_link_open}/{item_code}'" + \
+                            item_link_style + item_link_open_end + \
                             str(pair['sales_item_code'][-4:]) + item_link_close
 
                         # Calculate the amount sold
