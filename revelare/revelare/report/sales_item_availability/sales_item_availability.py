@@ -450,8 +450,13 @@ def get_data(filters):
                 pass
 
         # Add the target uom total to the header
-        data[header_idx][total_sold_column] = quantity_style_sold_1 + \
-            str(total_target_uom_sold) + quantity_style_sold_2
+        data[header_idx][total_sold_column] = quantity_style_sold_dk_1 + \
+            str(total_target_uom_sold) + quantity_style_sold_dk_2
+
+        # Add the target uom total difference to the header
+        data[header_idx][total_difference_column] = quantity_style_estimate_1 + \
+            str(material_amount - total_target_uom_sold) + \
+            quantity_style_estimate_2
 
         # We add an empty row after a set of products for easier reading.
         data.append(empty_row)
