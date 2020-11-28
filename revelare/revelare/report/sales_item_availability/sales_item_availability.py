@@ -204,123 +204,61 @@ def get_data(filters):
     item_link_open_end = " target='_blank'>"
     item_link_close = "</a>"
 
-    # ----- QUERY # 2 BEGIN -----
-    # We are now ready to assemble a list of Material items, for those IAE names that fit date filters.
+    # ----- QUERY # 1 BEGIN -----
+    # Obtain Valid Item Availability Estimates for dates from our query functions.
     # [{'item_code': 'CULTIVO-0069', 'amount':'15.0', 'amount_uom': 'Pound'}]
-    # since we will do several rounds of list gathering, we need to extend the list, and if there are objects with same item code, we want only ONE object for each item_code, but with the total amount of Item Availability Estimates
-    available_material_list_raw = []
-    for x in iae_list:
-        materials = periods_estimated_items(filters, x)
-        available_material_list_raw.extend(materials)
-    # ----- QUERY # 2 END -----
-
-    # ----- UNIFY ITEM CODES AND ADD UP AMOUNTS BEGIN -----
     # We want unique item codes and amounts, such that each material item estimate is included only ONCE.
-    available_material_list = sum_and_convert_available_material_list(
-        available_material_list_raw)
+    estimated_material_list = total_item_availability_estimates(filters)
 
-    # Cleaning things up.
-    available_material_list_raw.clear()
-    # ----- UNIFY ITEM CODES AND ADD UP AMOUNTS END -----
+    # ----- QUERY # 2 BEGIN -----
+    # We now create a list of estimation item attributes
+    # [{'name': 'CULTIVO-0069', 'estimation_name': 'Perejil', 'estimation_uom': 'Pound', 'stock_uom': 'Onza', 'amount':'15.0', 'amount_uom': 'Pound'}]
+    # This list is already "filtered" and curated to include all the REQUESTED estimation item codes and attributes
+    estimated_materials_with_attributes = total_item_availability_estimate_attributes(
+        filters)
 
     # ----- QUERY # 3 BEGIN -----
-    # estimation item attributes
-    # We now create a list of estimation item attributes
-    # [{'name': 'CULTIVO-0069', 'estimation_name': 'Perejil', 'estimation_uom': 'Pound', 'stock_uom': 'Onza'}]
-    # This list is already "filtered" and curated to include all the REQUESTED estimation item codes and attributes
-    available_materials_with_attributes = []
-    for x in available_material_list:
-        item_attributes = estimation_item_attributes(filters, x['item_code'])
-        # we extend the list along with the item attributes, so it is only one list, for each item in the material list.
-        available_materials_with_attributes.extend(item_attributes)
-
-    # ----- QUERY # 3 END -----
-
-    # ----- QUERY # 4 BEGIN -----
     # Now we find the BOM names based on the names of material items in our item_attributes_list
     # [{'item_code': 'CULTIVO-0069', 'parent': 'BOM-7401168802186-001', 'stock_qty': 6.0, 'stock_uom': 'Onza'}]
-    bom_names_list = []
+    bom_items_list = []
     for material in estimated_materials_with_attributes:
         material_doctype_name = material['name']
         bom_items = find_bom_items(filters, material_doctype_name)
-        bom_names_list.extend(bom_items)
-        '''
-        row = {
-            "material": "Albahaca",
-            "quantity": quantity_material,
-            "uom": "PRUEBA",
-            "item_code": str(bom_names_list),
-            "item_name": "",
-            "possible_quantity": quantity_sales_item
-        }
-        data.append(row)
-        '''
-    # ----- QUERY # 4 END -----
+        bom_items_list.extend(bom_items)
 
-    # ----- QUERY # 5 BEGIN -----
+    # ----- QUERY # 4 BEGIN -----
     # we get sales item code, quantity obtained, and uom obtained for each bom parent.
     material_and_sales_items = []
-    for bom in bom_names_list:
-        bom_parent = bom['parent']
-        boms = find_boms(filters, bom_parent)
+    for bom_item in bom_items_list:
+        bom_name = bom_item['parent']
+        boms = find_boms(filters, bom_name)
 
         # We rearrange the current dictionary, assigning values from returned keys in this list
         # to new keys in this object.
-        bom['sales_item_code'] = boms[0]['item']
-        bom['sales_item_qty'] = boms[0]['quantity']
-        bom['sales_item_uom'] = boms[0]['uom']
-        bom['sales_item_name'] = boms[0]['item_name']
-        bom['conversion_factor'] = find_conversion_factor(
-            estimated_materials_with_attributes[0]['amount_uom'], bom['stock_uom'])
-        bom.pop("parent")
+        bom_item['sales_item_code'] = boms[0]['item']
+        bom_item['sales_item_qty'] = boms[0]['quantity']
+        bom_item['sales_item_uom'] = boms[0]['uom']
+        bom_item['sales_item_name'] = boms[0]['item_name']
+        bom_item['conversion_factor'] = find_conversion_factor(
+            estimated_materials_with_attributes[0]['amount_uom'], bom_item['stock_uom'])
+        bom_item.pop("parent")
 
         # Append it to the list of sales items
-        material_and_sales_items.append(bom)
-    '''
-    row = {
-            "A": "Albahaca",
-            "B": quantity_material,
-            "C": "PRUEBA",
-            "D": str(material_and_sales_items),
-            "E": "",
-            "F": quantity_sales_item
-        }
-    '''
+        material_and_sales_items.append(bom_item)
 
-    # ----- QUERY # 5 END -----
+    # ----- QUERY # 5 BEGIN -----
+    # Sales Order query, return all sales order names that fit within
+    # the dates in report filter
+    matching_sales_order_items = total_sales_items(filters)
 
-    # ----- QUERY # 6 BEGIN -----
-    # Sales Order query, return all sales order names that fit within the dates in report filter.
-    sales_orders = find_sales_orders(filters)
+    # Sort material and sales items list by order of sales item code
+    # Should print the code column in order like: -001, -002, -003, ...
+    material_and_sales_items = sorted(
+        material_and_sales_items, key=lambda x: x['sales_item_code'])
 
-    # en: We create an empty list where we will add Item Availability Estimate doctype names
-    # es-GT: Creamos una lista vacia para luego agregar los nombres de los doctypes de Estimados de Disponibilidad
-    sales_order_list = []
-    # we now add them
-    for sales_order in sales_orders:
-        sales_order_list.append(sales_order['name'])
-    # ----- QUERY # 6 BEGIN -----
-
-    # ----- QUERY # 7 BEGIN -----
-    matching_sales_order_items = []
-    for sales_order in sales_order_list:
-        matching_items = find_sales_order_items(filters, sales_order)
-        matching_sales_order_items.extend(matching_items)
-    # ----- QUERY # 7 BEGIN -----
-
-    # ----- PROCESS DATA BEGIN -----
-    # en: We begin by
-    # es-GT:
-    for available_material in available_material_list:
-        # en: We add the "grouping row"
-        # we need to find the estimation name
-        estimation_name = ""
-        for x in available_materials_with_attributes:
-            if x['name'] == available_material['item_code']:
-                estimation_name = x['estimation_name']
-                break
-            else:
-                x = None
+    # Get the sales order quantities for items
+    sales_item_codes = [item['item_code']
+                        for item in matching_sales_order_items]
 
         material_amount_html = quantity_style_plenty_1 + \
             str(available_material['amount']) + quantity_style_plenty_2
