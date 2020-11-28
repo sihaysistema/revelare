@@ -260,26 +260,33 @@ def get_data(filters):
     sales_item_codes = [item['item_code']
                         for item in matching_sales_order_items]
 
-        material_amount_html = quantity_style_plenty_1 + \
-            str(available_material['amount']) + quantity_style_plenty_2
+    # ----- PROCESS DATA BEGIN -----
+    # Iterate over the list of item estimates, including items from matching
+    # sales orders and converting units to the target uom
+    for available_material in estimated_materials_with_attributes:
+        # en: We build and add the "grouping row"
+        estimation_name = available_material['estimation_name']
+        uom_name = available_material["amount_uom"]
+        material_amount = available_material['amount']
+
+        material_amount_html = html_wrap(
+            str(material_amount), ["span", "strong"], quantity_style_plenty_1)
         row_header = {
             "A": estimation_name,
             "B": material_amount_html,
-            "C": _(f'{uom_name}'),
-            "D": _(f'Total {uom_name} Sold'),
+            "C": _(f"{uom_name}"),
+            "D": _(f"Total {uom_name} Sold"),
             "E": "",
             "F": "",
             "G": ""
         }
         # We add bold style to the subtitles for the headers.
-        bld_start = "<strong>"
-        bld_end = "</strong>"
-        col_a = bld_start + _("Code") + bld_end
-        col_b = bld_start + _("Name") + bld_end
-        col_c = bld_start + _("Possible") + bld_end
-        col_d = bld_start + _("UOM") + bld_end
-        col_e = bld_start + _("Sold") + bld_end
-        col_f = bld_start + _("Available") + bld_end
+        col_a = html_wrap(_("Code"), ["strong"])
+        col_b = html_wrap(_("Name"), ["strong"])
+        col_c = html_wrap(_("Possible"), ["strong"])
+        col_d = html_wrap(_("UOM"), ["strong"])
+        col_e = html_wrap(_("Sold"), ["strong"])
+        col_f = html_wrap(_("Available"), ["strong"])
 
         row_sub_header = {
             "A": col_a,
@@ -349,9 +356,8 @@ def get_data(filters):
                             possible_uom = _(pair['sales_item_uom'])
 
                         # Add HTML and CSS styles to certain fields
-                        quantity_sales_item_html = quantity_style_plenty_1 + \
-                            str(math.floor(possible_quantity)) + \
-                            quantity_style_plenty_2
+                        quantity_sales_item_html = html_wrap(str(math.floor(possible_quantity)), [
+                                                             "span", "strong"], quantity_style_plenty_1)
 
                         # Build the item code url
                         item_code = pair['sales_item_code']
@@ -369,8 +375,8 @@ def get_data(filters):
                             sold_quantity = 0
 
                         # Add HTML to the sold quantity
-                        quantity_sold_html = quantity_style_sold_1 + \
-                            str(sold_quantity) + quantity_style_sold_2
+                        quantity_sold_html = html_wrap(
+                            str(sold_quantity), ["span", "strong"], quantity_style_sold_1)
 
                         # Calculate the difference of possible and sold items
                         available_quantity = int(
