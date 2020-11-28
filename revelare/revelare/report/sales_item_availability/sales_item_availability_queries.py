@@ -53,15 +53,13 @@ def total_item_availability_estimate_attributes(filters):
 def total_sales_items(filters):
   result = frappe.db.sql(
     f"""
-    SELECT soi.item_name, soi.item_code, soi.delivery_date, 
+    SELECT soi.item_code, soi.delivery_date, 
 	         SUM(soi.stock_qty) as stock_qty, soi.stock_uom 
     FROM `tabSales Order Item` as soi
-    INNER JOIN
+    WHERE soi.parent IN
       (SELECT so.name FROM `tabSales Order` AS so 
-        WHERE docstatus=1 
-        AND (delivery_date 
-             BETWEEN '{filters.from_date}' AND '{filters.to_date}')) as sonames
-    ON sonames.name=soi.parent
+        WHERE so.docstatus=1 
+        AND (delivery_date BETWEEN '{filters.from_date}' AND '{filters.to_date}'))
     GROUP BY soi.item_code;
     """, as_dict=True
   )
