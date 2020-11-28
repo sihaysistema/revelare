@@ -16,17 +16,20 @@ import numpy as np
 import math
 
 from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import (
-  item_availability_estimates_range, 
-  periods_estimated_items, 
-  estimation_item_attributes, 
-  find_bom_items, find_boms, 
-  find_sales_items, 
-  find_conversion_factor, 
-  find_sales_orders, 
-  find_sales_order_items,
-  total_item_availability_estimates,
-  total_item_availability_estimate_attributes
+    item_availability_estimates_range,
+    periods_estimated_items,
+    estimation_item_attributes,
+    find_bom_items, find_boms,
+    find_sales_items,
+    find_conversion_factor,
+    find_sales_orders,
+    find_sales_order_items,
+    total_item_availability_estimates,
+    total_item_availability_estimate_attributes,
+    total_sales_items
 )
+
+from revelare.revelare.report.sales_item_availability.sales_item_availability_utils import html_wrap
 
 
 def execute(filters=None):
@@ -145,48 +148,61 @@ def get_data(filters):
     # --------- EMPTY ROW ----------
     empty_row = {}
     data = [empty_row]
+
     # --------- STYLES DEIFNITIONS BEGIN ----------
-    quantity_style_estimate_1 = "<span style='color: white; background-color: darkorange; display: block; text-align: center; vertical-align: middle; height: 100%; width: 100%;'><strong>"
-    quantity_style_estimate_2 = "</strong></span>"
-    quantity_style_sold_dk_1 = "<span style='color: white; background-color: darkgreen;  display: block; text-align: center; vertical-align: middle; height: 100%; width: 100%;'><strong>"
-    quantity_style_sold_dk_2 = "</strong></span>"
-    quantity_style_plenty_1 = "<span style='color: black; background-color: orange; float: right; text-align: right; vertical-align: middle; height: 100%; width: 100%;'><strong>"
-    quantity_style_plenty_2 = "</strong></span>"
-    quantity_style_few_1 = "<span style='color: black; background-color: blue; float: right; text-align: right; vertical-align: text-top;'><strong>"
-    quantity_style_few_2 = "</strong></span>"
-    quantity_style_sold_1 = "<span style='color: black; background-color: #60A917; float: right; text-align: right; vertical-align: middle; height: 100%; width: 100%;'><strong>"
-    quantity_style_sold_2 = "</strong></span>"
-    item_link_open = "<a href='#Form/Item/' style='color: #1862AA;'"
+    # Styles
+    quantity_style_estimate_1 = """
+      color: white;
+      background-color: darkorange;
+      display: block;
+      text-align: center;
+      vertical-align: middle;
+      height: 100%;
+      width: 100%;
+    """
+
+    quantity_style_sold_dk_1 = """
+      color: white;
+      background-color: darkgreen;
+      display: block;
+      text-align: center;
+      vertical-align: middle;
+      height: 100%;
+      width: 100%;
+    """
+
+    quantity_style_plenty_1 = """
+      color: black;
+      background-color: orange;
+      float: right;
+      text-align: right;
+      vertical-align: middle;
+      height: 100%;
+      width: 100%;
+    """
+
+    quantity_style_few_1 = """
+      color: black;
+      background-color: blue;
+      float: right;
+      text-align: right;
+      vertical-align: text-top;
+    """
+
+    quantity_style_sold_1 = """
+      color: black;
+      background-color: #60A917;
+      float: right;
+      text-align: right;
+      vertical-align: middle;
+      height: 100%;
+      width: 100%;
+    """
+
+    item_link_open = "<a href='#Form/Item"
+    item_link_style = "style='color: #1862AA;'"
     item_link_open_end = " target='_blank'>"
     item_link_close = "</a>"
-
-    # quantity_material = quantity_style_plenty_1 + \
-    #     str(35) + quantity_style_plenty_2
-    # quantity_sales_item = quantity_style_plenty_1 + \
-    #     str(70) + quantity_style_plenty_2
-    # row1 = {
-    #     "A": "Albahaca",
-    #     "B": quantity_material,
-    #     "C": "Pound",
-    #     "D": "7401168800724",
-    #     "E": "Albahaca 8Oz",
-    #     "F": quantity_sales_item
-    # }
-
-    # ----- QUERY # 1 BEGIN -----
-    # Obtain Valid Item Availability Estimates for dates from our query functions.
-    estimates = item_availability_estimates_range(filters)
-
-    # Just the name
-    # estimate_data = estimates[0]['name']
-
-    # en: We create an empty list where we will add Item Availability Estimate doctype names
-    # es-GT: Creamos una lista vacia para luego agregar los nombres de los doctypes de Estimados de Disponibilidad
-    iae_list = []
-    # we now add them
-    for x in estimates:
-        iae_list.append(x['name'])
-    # ----- QUERY # 1 END -----
 
     # ----- QUERY # 2 BEGIN -----
     # We are now ready to assemble a list of Material items, for those IAE names that fit date filters.
