@@ -298,31 +298,49 @@ def get_data(filters):
             "G": ""
         }
 
-        # Declare the column where we will place the total sold quantity
+        # Declare the columns where we will place the total sold data
         total_sold_column = "E"
+        total_difference_column = "F"
 
         # Set the header and subheader values
         data.append(row_header)
-        header_idx = len(data) - 1  # track the header idx for updates later
+        header_idx = len(data) - 1  # track the header index for updates later
         data.append(row_sub_header)
 
         # Initialize the total sold items in the target uom
         total_target_uom_sold = 0
+        total_uom_sold = 0
 
-        # Get the sales order quantities for items
-        sales_item_codes = [item['item_code']
-                            for item in matching_sales_order_items]
+        # Sum the sales order items and deduct from total available
+        item_deductions = {}
+        total_uom_sold = 0
+        for ms_item in material_and_sales_items:
+            if ms_item['item_code'] == available_material['name']:
+                # Reset variables
+                item_code = ""
+                items_sold = 0
+                target_uom_sold = 0
 
-        # Sort material and sales items list by order of sales item code
-        # Should print the code column in order like: -001, -002, -003, ...
-        material_and_sales_items = sorted(
-            material_and_sales_items, key=lambda x: x['sales_item_code'])
+                # Total all units sold per sales item
+                item_code = ms_item['sales_item_code']
+                if item_code in sales_item_codes:
+                    # sum the stock qty for all sales order items
+                    order_qtys = [item['stock_qty'] for item in matching_sales_order_items
+                                  if item['item_code'] == ms_item['sales_item_code']]
+                    items_sold = math.floor(sum(order_qtys))
+                else:
+                    items_sold = 0
+
+                # Convert the items sold an amt in the target UOM
+                conversion = ms_item['conversion_factor'][0]['value']
+                target_uom_sold = (
+                    items_sold * ms_item['stock_qty']) / conversion
+
+                # Add sold qty to item_deductions for later use
+                total_uom_sold += target_uom_sold
+                item_deductions[item_code] = target_uom_sold
 
         # We now cross-check, convert and structure our row output.
-        for pair in material_and_sales_items:
-            frappe.msgprint("pair: " + str(pair))
-            if pair['item_code'] == available_material['item_code']:
-                if pair['stock_uom'] != available_material['amount_uom']:
 
                     # Reinitialize variables
                     target_uom_sold = 0
