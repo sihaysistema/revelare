@@ -286,7 +286,7 @@ def get_data(filters):
         material_amount = available_material['amount']
 
         material_amount_html = html_wrap(
-            str(material_amount), ["span", "strong"], quantity_style_plenty_1)
+            str(material_amount), qty_plenty1_strong)
         row_header = {
             "A": estimation_name,
             "B": material_amount_html,
@@ -297,12 +297,12 @@ def get_data(filters):
             "G": ""
         }
         # We add bold style to the subtitles for the headers.
-        col_a = html_wrap(_("Code"), ["strong"])
-        col_b = html_wrap(_("Name"), ["strong"])
-        col_c = html_wrap(_("Possible"), ["strong"])
-        col_d = html_wrap(_("UOM"), ["strong"])
-        col_e = html_wrap(_("Sold"), ["strong"])
-        col_f = html_wrap(_("Available"), ["strong"])
+        col_a = html_wrap(_("Code"), [strong])
+        col_b = html_wrap(_("Name"), [strong])
+        col_c = html_wrap(_("Possible"), [strong])
+        col_d = html_wrap(_("UOM"), [strong])
+        col_e = html_wrap(_("Sold"), [strong])
+        col_f = html_wrap(_("Available"), [strong])
 
         row_sub_header = {
             "A": col_a,
@@ -362,7 +362,6 @@ def get_data(filters):
                 if ms_item['stock_uom'] != available_material['amount_uom']:
 
                     # Reinitialize variables
-                    target_uom_sold = 0
                     item_code = ""
 
                     # find conversion factor , from unit is available material amount_uom - INSERT QUERY CALL HERE
@@ -398,8 +397,9 @@ def get_data(filters):
                         possible_uom = _(ms_item['sales_item_uom'])
 
                         # Add HTML and CSS styles to certain fields
-                        quantity_sales_item_html = html_wrap(str(math.floor(possible_quantity)), [
-                                                             "span", "strong"], quantity_style_plenty_1)
+                        pos_qty = str(math.floor(possible_quantity))
+                        quantity_sales_item_html = html_wrap(
+                            pos_qty, qty_plenty1_strong)
 
                         # Build the item code url
                         item_code = ms_item['sales_item_code']
@@ -419,19 +419,14 @@ def get_data(filters):
 
                         # Add HTML to the sold quantity
                         quantity_sold_html = html_wrap(
-                            str(sold_quantity), ["span", "strong"], quantity_style_sold_1)
+                            str(sold_quantity), qty_sold1_strong)
 
                         # Calculate the difference of possible and sold items
                         available_quantity = int(
                             possible_quantity - sold_quantity)
 
                         available_quantity_html = html_wrap(
-                            str(adjusted_quantity), ["span", "strong"], quantity_style_plenty_1)
-
-                        # Total target uom for this sales item
-                        conversion = ms_item['conversion_factor'][0]['value']
-                        target_uom_sold = (
-                            sold_quantity * ms_item['stock_qty']) / conversion
+                            str(adjusted_quantity), qty_plenty1_strong)
 
                         # Populate the row
                         sales_item_row = {
@@ -445,9 +440,6 @@ def get_data(filters):
                         }
                         data.append(sales_item_row)
 
-                        # modify the header var with the total in the target amt
-                        total_target_uom_sold += target_uom_sold
-
                 else:
                     print('Units are the same, no need for conversion.')
             else:
@@ -455,12 +447,12 @@ def get_data(filters):
 
         # Add the target uom total to the header
         data[header_idx][total_sold_column] = html_wrap(
-            str(total_target_uom_sold), ['span', 'strong'], quantity_style_sold_dk_1)
+            str(total_uom_sold), qty_sold1_dk_strong)
 
         # Add the target uom total difference to the header
-        total_uom_diff = str(material_amount - total_target_uom_sold)
+        total_uom_diff = str(material_amount - total_uom_sold)
         data[header_idx][total_difference_column] = html_wrap(
-            total_uom_diff, ["span", "strong"], quantity_style_estimate_1)
+            total_uom_diff, qty_estimate1_strong)
 
         # We add an empty row after a set of products for easier reading.
         data.append(empty_row)
