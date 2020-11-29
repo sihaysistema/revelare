@@ -161,16 +161,6 @@ def get_data(filters):
       width: 100%;
     """
 
-    quantity_style_sold_dk_1 = """
-      color: white;
-      background-color: darkgreen;
-      display: block;
-      text-align: center;
-      vertical-align: middle;
-      height: 100%;
-      width: 100%;
-    """
-
     quantity_style_plenty_1 = """
       color: black;
       background-color: orange;
@@ -198,6 +188,32 @@ def get_data(filters):
       height: 100%;
       width: 100%;
     """
+
+    quantity_style_sold_dk_1 = """
+      color: white;
+      background-color: darkgreen;
+      display: block;
+      text-align: center;
+      vertical-align: middle;
+      height: 100%;
+      width: 100%;
+    """
+
+    # Tag arrays
+    strong = {"markup": "strong", "style": ""}
+
+    qty_plenty1_strong = [
+        {"markup": "span", "style": quantity_style_plenty_1}, strong]
+
+    qty_estimate1_strong = [
+        {"markup": "span", "style": quantity_style_estimate_1}, strong]
+    
+    qty_sold1_strong = [
+        {"markup": "span", "style": quantity_style_sold_1}, strong]
+
+    qty_sold1_dk_strong = [
+        {"markup": "span", "style": quantity_style_sold_dk_1}, strong]
+    
 
     item_link_open = "<a href='#Form/Item"
     item_link_style = "style='color: #1862AA;'"
