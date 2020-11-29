@@ -22,3 +22,13 @@ def html_wrap(txt: str, tags: list, style: str = "") -> str:
             wrapped = f"<{tag} style='{style}'>{wrapped}</{tag}>"
 
     return wrapped
+def format_style(style: str, replacements: list) -> str:
+  """
+  Remove unwanted characters from the style, such as newlines, tabs and spaces
+  """
+  formatted_style = style
+  if formatted_style:
+      for old, new in replacements.items():
+          formatted_style = formatted_style.replace(old, new)
+  
+  return formatted_style
