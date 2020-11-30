@@ -127,7 +127,7 @@ def get_columns(filters):
             "label": _("F"),
             "fieldname": "F",
             "fieldtype": "Data",
-            "width": 110
+            "width": 130
         },
     ]
 
@@ -201,6 +201,7 @@ def get_data(filters):
 
     # Tag arrays
     strong = {"markup": "strong", "style": ""}
+    strong_gray = {"markup": "strong", "style": "color: darkgray"}
 
     qty_plenty1_strong = [
         {"markup": "span", "style": quantity_style_plenty_1}, strong]
@@ -314,6 +315,18 @@ def get_data(filters):
             "G": ""
         }
 
+        explanation_f = html_wrap(_("Possible - Total Sold"), [strong_gray])
+
+        row_explanation = {
+            "A": "",
+            "B": "",
+            "C": "",
+            "D": "",
+            "E": "",
+            "F": explanation_f,
+            "G": ""
+        }
+
         # Declare the columns where we will place the total sold data
         total_sold_column = "E"
         total_difference_column = "F"
@@ -322,6 +335,7 @@ def get_data(filters):
         data.append(row_header)
         header_idx = len(data) - 1  # track the header index for updates later
         data.append(row_sub_header)
+        data.append(row_explanation)
 
         # Initialize the total sold items in the target uom
         total_target_uom_sold = 0
