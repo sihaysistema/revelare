@@ -15,7 +15,21 @@ import pandas as pd
 import numpy as np
 import math
 
-from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import item_availability_estimates_range, periods_estimated_items, estimation_item_attributes, find_bom_items, find_boms, find_sales_items, find_conversion_factor, find_sales_orders, find_sales_order_items
+from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import (
+    item_availability_estimates_range,
+    periods_estimated_items,
+    estimation_item_attributes,
+    find_bom_items, find_boms,
+    find_sales_items,
+    find_conversion_factor,
+    find_sales_orders,
+    find_sales_order_items,
+    total_item_availability_estimates,
+    total_item_availability_estimate_attributes,
+    total_sales_items
+)
+
+from revelare.revelare.report.sales_item_availability.sales_item_availability_utils import html_wrap
 
 
 def execute(filters=None):
@@ -89,31 +103,31 @@ def get_columns(filters):
             "label": _("B"),
             "fieldname": "B",
             "fieldtype": "Data",
-            "width": 90
+            "width": 120
         },
         {
             "label": _("C"),
             "fieldname": "C",
             "fieldtype": "Data",
-            "width": 90
+            "width": 110
         },
         {
             "label": _("D"),
             "fieldname": "D",
             "fieldtype": "Data",
-            "width": 90
+            "width": 110
         },
         {
             "label": _("E"),
             "fieldname": "E",
             "fieldtype": "Data",
-            "width": 90
+            "width": 110
         },
         {
             "label": _("F"),
             "fieldname": "F",
             "fieldtype": "Data",
-            "width": 90
+            "width": 130
         },
     ]
 
@@ -134,183 +148,156 @@ def get_data(filters):
     # --------- EMPTY ROW ----------
     empty_row = {}
     data = [empty_row]
+
     # --------- STYLES DEIFNITIONS BEGIN ----------
-    quantity_style_plenty_1 = "<span style='color: black; background-color: orange; float: right; text-align: right; vertical-align: middle; height: 100%; width: 100%;'><strong>"
-    quantity_style_plenty_2 = "</strong></span>"
-    quantity_style_few_1 = "<span style='color: black; background-color: blue; float: right; text-align: right; vertical-align: text-top;'><strong>"
-    quantity_style_few_2 = "</strong></span>"
-    quantity_style_sold_1 = "<span style='color: black; background-color: #60A917; float: right; text-align: right; vertical-align: middle; height: 100%; width: 100%;'><strong>"
-    quantity_style_sold_2 = "</strong></span>"
-    item_link_open = "<a href='#Form/Item/' style='color: #1862AA;'"
+    # Styles
+    quantity_style_estimate_1 = """
+      color: white;
+      background-color: darkorange;
+      display: block;
+      text-align: center;
+      vertical-align: middle;
+      height: 100%;
+      width: 100%;
+    """
+
+    quantity_style_plenty_1 = """
+      color: black;
+      background-color: orange;
+      float: right;
+      text-align: right;
+      vertical-align: middle;
+      height: 100%;
+      width: 100%;
+    """
+
+    quantity_style_few_1 = """
+      color: black;
+      background-color: blue;
+      float: right;
+      text-align: right;
+      vertical-align: text-top;
+    """
+
+    quantity_style_sold_1 = """
+      color: black;
+      background-color: #60A917;
+      float: right;
+      text-align: right;
+      vertical-align: middle;
+      height: 100%;
+      width: 100%;
+    """
+
+    quantity_style_sold_dk_1 = """
+      color: white;
+      background-color: darkgreen;
+      display: block;
+      text-align: center;
+      vertical-align: middle;
+      height: 100%;
+      width: 100%;
+    """
+
+    # Tag arrays
+    strong = {"markup": "strong", "style": ""}
+    strong_gray = {"markup": "strong", "style": "color: #686868"}
+
+    qty_plenty1_strong = [
+        {"markup": "span", "style": quantity_style_plenty_1}, strong]
+
+    qty_estimate1_strong = [
+        {"markup": "span", "style": quantity_style_estimate_1}, strong]
+    
+    qty_sold1_strong = [
+        {"markup": "span", "style": quantity_style_sold_1}, strong]
+
+    qty_sold1_dk_strong = [
+        {"markup": "span", "style": quantity_style_sold_dk_1}, strong]
+    
+
+    item_link_open = "<a href='#Form/Item"
+    item_link_style = "style='color: #1862AA;'"
     item_link_open_end = " target='_blank'>"
     item_link_close = "</a>"
 
-    # quantity_material = quantity_style_plenty_1 + \
-    #     str(35) + quantity_style_plenty_2
-    # quantity_sales_item = quantity_style_plenty_1 + \
-    #     str(70) + quantity_style_plenty_2
-    # row1 = {
-    #     "A": "Albahaca",
-    #     "B": quantity_material,
-    #     "C": "Pound",
-    #     "D": "7401168800724",
-    #     "E": "Albahaca 8Oz",
-    #     "F": quantity_sales_item
-    # }
-
     # ----- QUERY # 1 BEGIN -----
-    # Obtain Valid Item Availability Estimates for dates from our query functions.
-    estimates = item_availability_estimates_range(filters)
-
-    # Just the name
-    # estimate_data = estimates[0]['name']
-
-    # en: We create an empty list where we will add Item Availability Estimate doctype names
-    # es-GT: Creamos una lista vacia para luego agregar los nombres de los doctypes de Estimados de Disponibilidad
-    iae_list = []
-    # we now add them
-    for x in estimates:
-        iae_list.append(x['name'])
-    # ----- QUERY # 1 END -----
+    # We now create a list of estimation item attributes
+    # [{'name': 'CULTIVO-0069', 'estimation_name': 'Perejil', 'estimation_uom': 'Pound', 'stock_uom': 'Onza', 'amount':'15.0', 'amount_uom': 'Pound'}]
+    # This list is already "filtered" and curated to include all the REQUESTED estimation item codes and attributes
+    estimated_materials_with_attributes = total_item_availability_estimate_attributes(
+        filters)
 
     # ----- QUERY # 2 BEGIN -----
-    # We are now ready to assemble a list of Material items, for those IAE names that fit date filters.
-    # [{'item_code': 'CULTIVO-0069', 'amount':'15.0', 'amount_uom': 'Pound'}]
-    # since we will do several rounds of list gathering, we need to extend the list, and if there are objects with same item code, we want only ONE object for each item_code, but with the total amount of Item Availability Estimates
-    available_material_list_raw = []
-    for x in iae_list:
-        materials = periods_estimated_items(filters, x)
-        available_material_list_raw.extend(materials)
-    # ----- QUERY # 2 END -----
-
-    # ----- UNIFY ITEM CODES AND ADD UP AMOUNTS BEGIN -----
-    # We want unique item codes and amounts, such that each material item estimate is included only ONCE.
-    available_material_list = sum_and_convert_available_material_list(
-        available_material_list_raw)
-
-    # Cleaning things up.
-    available_material_list_raw.clear()
-    # ----- UNIFY ITEM CODES AND ADD UP AMOUNTS END -----
-
-    # ----- QUERY # 3 BEGIN -----
-    # estimation item attributes
-    # We now create a list of estimation item attributes
-    # [{'name': 'CULTIVO-0069', 'estimation_name': 'Perejil', 'estimation_uom': 'Pound', 'stock_uom': 'Onza'}]
-    # This list is already "filtered" and curated to include all the REQUESTED estimation item codes and attributes
-    available_materials_with_attributes = []
-    for x in available_material_list:
-        item_attributes = estimation_item_attributes(filters, x['item_code'])
-        # we extend the list along with the item attributes, so it is only one list, for each item in the material list.
-        available_materials_with_attributes.extend(item_attributes)
-
-    # ----- QUERY # 3 END -----
-
-    # ----- QUERY # 4 BEGIN -----
     # Now we find the BOM names based on the names of material items in our item_attributes_list
     # [{'item_code': 'CULTIVO-0069', 'parent': 'BOM-7401168802186-001', 'stock_qty': 6.0, 'stock_uom': 'Onza'}]
-    # The assembled object contains
-    bom_names_list = []
-    for x in available_materials_with_attributes:
-        bom_items = find_bom_items(filters, x['name'])
-        bom_names_list.extend(bom_items)
-        '''
-        row = {
-            "material": "Albahaca",
-            "quantity": quantity_material,
-            "uom": "PRUEBA",
-            "item_code": str(bom_names_list),
-            "item_name": "",
-            "possible_quantity": quantity_sales_item
-        }
-        data.append(row)
-        '''
-    # ----- QUERY # 4 END -----
+    bom_items_list = []
+    for material in estimated_materials_with_attributes:
+        material_doctype_name = material['name']
+        bom_items = find_bom_items(filters, material_doctype_name)
+        bom_items_list.extend(bom_items)
 
-    # ----- QUERY # 5 BEGIN -----
+    # ----- QUERY # 3 BEGIN -----
     # we get sales item code, quantity obtained, and uom obtained for each bom parent.
     material_and_sales_items = []
-    for x in bom_names_list:
-        boms = find_boms(filters, x['parent'])
+    for bom_item in bom_items_list:
+        bom_name = bom_item['parent']
+        boms = find_boms(filters, bom_name)
+
         # We rearrange the current dictionary, assigning values from returned keys in this list
         # to new keys in this object.
-        # We also drop the parent key in the existing
-        # x['sales_item_code'] = boms['item']
-        # x['sales_item_qty'] = boms['quantity']
-        # x['sales_item_uom'] = boms['uom']
-        x['sales_item_code'] = boms[0]['item']
-        x['sales_item_qty'] = boms[0]['quantity']
-        x['sales_item_uom'] = boms[0]['uom']
-        x['sales_item_name'] = boms[0]['item_name']
-        x['conversion_factor'] = find_conversion_factor(
-            available_material_list[0]['amount_uom'], x['stock_uom'])
-        x.pop("parent")
-        material_and_sales_items.append(x)
-    '''
-    row = {
-            "A": "Albahaca",
-            "B": quantity_material,
-            "C": "PRUEBA",
-            "D": str(material_and_sales_items),
-            "E": "",
-            "F": quantity_sales_item
-        }
-    '''
+        bom_item['sales_item_code'] = boms[0]['item']
+        bom_item['sales_item_qty'] = boms[0]['quantity']
+        bom_item['sales_item_uom'] = boms[0]['uom']
+        bom_item['sales_item_name'] = boms[0]['item_name']
+        bom_item['conversion_factor'] = find_conversion_factor(
+            estimated_materials_with_attributes[0]['amount_uom'], bom_item['stock_uom'])
+        bom_item.pop("parent")
 
-    # ----- QUERY # 5 END -----
+        # Append it to the list of sales items
+        material_and_sales_items.append(bom_item)
 
-    # ----- QUERY # 6 BEGIN -----
-    # Sales Order query, return all sales order names that fit within the dates in report filter.
-    sales_orders = find_sales_orders(filters)
+    # ----- QUERY # 4 BEGIN -----
+    # Sales Order query, return all sales order names that fit within
+    # the dates in report filter
+    matching_sales_order_items = total_sales_items(filters)
 
-    # en: We create an empty list where we will add Item Availability Estimate doctype names
-    # es-GT: Creamos una lista vacia para luego agregar los nombres de los doctypes de Estimados de Disponibilidad
-    sales_order_list = []
-    # we now add them
-    for sales_order in sales_orders:
-        sales_order_list.append(sales_order['name'])
-    # ----- QUERY # 6 BEGIN -----
+    # Sort material and sales items list by order of sales item code
+    # Should print the code column in order like: -001, -002, -003, ...
+    material_and_sales_items = sorted(
+        material_and_sales_items, key=lambda x: x['sales_item_code'])
 
-    # ----- QUERY # 7 BEGIN -----
-    matching_sales_order_items = []
-    for sales_order in sales_order_list:
-        matching_items = find_sales_order_items(filters, sales_order)
-        matching_sales_order_items.extend(matching_items)
-    # ----- QUERY # 7 BEGIN -----
+    # Get the sales order quantities for items
+    sales_item_codes = [item['item_code']
+                        for item in matching_sales_order_items]
 
     # ----- PROCESS DATA BEGIN -----
-    # en: We begin by
-    # es-GT:
-    for available_material in available_material_list:
-        # en: We add the "grouping row"
-        # we need to find the estimation name
-        estimation_name = ""
-        for x in available_materials_with_attributes:
-            if x['name'] == available_material['item_code']:
-                estimation_name = x['estimation_name']
-                break
-            else:
-                x = None
+    # Iterate over the list of item estimates, including items from matching
+    # sales orders and converting units to the target uom
+    for available_material in estimated_materials_with_attributes:
+        # en: We build and add the "grouping row"
+        estimation_name = available_material['estimation_name']
+        uom_name = available_material["amount_uom"]
+        material_amount = available_material['amount']
 
-        material_amount_html = quantity_style_plenty_1 + \
-            str(available_material['amount']) + quantity_style_plenty_2
+        material_amount_html = html_wrap(
+            str(material_amount), qty_plenty1_strong)
         row_header = {
             "A": estimation_name,
             "B": material_amount_html,
-            "C": _(available_material['amount_uom']),
-            "D": "",
+            "C": _(f"{uom_name}"),
+            "D": _(f"Total {uom_name} Sold"),
             "E": "",
             "F": "",
             "G": ""
         }
         # We add bold style to the subtitles for the headers.
-        bld_start = "<strong>"
-        bld_end = "</strong>"
-        col_a = bld_start + _("Code") + bld_end
-        col_b = bld_start + _("Name") + bld_end
-        col_c = bld_start + _("Possible") + bld_end
-        col_d = bld_start + _("UOM") + bld_end
-        col_e = bld_start + _("Sold") + bld_end
-        col_f = bld_start + _("Available") + bld_end
+        col_a = html_wrap(_("Code"), [strong])
+        col_b = html_wrap(_("Name"), [strong])
+        col_c = html_wrap(_("Possible"), [strong])
+        col_d = html_wrap(_("UOM"), [strong])
+        col_e = html_wrap(_("Sold"), [strong])
+        col_f = html_wrap(_("Available"), [strong])
 
         row_sub_header = {
             "A": col_a,
@@ -321,106 +308,172 @@ def get_data(filters):
             "F": col_f,
             "G": ""
         }
+
+        explanation_f = html_wrap(_("Possible - Total Sold"), [strong_gray])
+
+        row_explanation = {
+            "A": "",
+            "B": "",
+            "C": "",
+            "D": "",
+            "E": "",
+            "F": explanation_f,
+            "G": ""
+        }
+
+        # Declare the columns where we will place the total sold data
+        total_sold_column = "E"
+        total_difference_column = "F"
+
+        # Set the header and subheader values
         data.append(row_header)
+        header_idx = len(data) - 1  # track the header index for updates later
         data.append(row_sub_header)
+        data.append(row_explanation)
 
-        # Get the sales order quantities for items
-        sales_item_codes = [item['item_code']
-                            for item in matching_sales_order_items]
+        # Initialize the total sold items in the target uom
+        total_target_uom_sold = 0
+        total_uom_sold = 0
 
-        # Sort material and sales items list by order of sales item code
-        # Should print the code column in order like: -001, -002, -003, ...
-        material_and_sales_items = sorted(
-            material_and_sales_items, key=lambda x: x['sales_item_code'])
+        # Sum the sales order items and deduct from total available
+        item_deductions = {}
+        total_uom_sold = 0
+        for ms_item in material_and_sales_items:
+            if ms_item['item_code'] == available_material['name']:
+                # Reset variables
+                item_code = ""
+                items_sold = 0
+                target_uom_sold = 0
+
+                # Total all units sold per sales item
+                item_code = ms_item['sales_item_code']
+                if item_code in sales_item_codes:
+                    # sum the stock qty for all sales order items
+                    order_qtys = [item['stock_qty'] for item in matching_sales_order_items
+                                  if item['item_code'] == ms_item['sales_item_code']]
+                    items_sold = math.floor(sum(order_qtys))
+                else:
+                    items_sold = 0
+
+                # Convert the items sold an amt in the target UOM
+                conversion = ms_item['conversion_factor'][0]['value']
+                target_uom_sold = (
+                    items_sold * ms_item['stock_qty']) / conversion
+
+                # Add sold qty to item_deductions for later use
+                total_uom_sold += target_uom_sold
+                item_deductions[item_code] = target_uom_sold
 
         # We now cross-check, convert and structure our row output.
-        for pair in material_and_sales_items:
-            if pair['item_code'] == available_material['item_code']:
-                # code exists, do this
-                # print("item code code exists")
-                # amount_uom is in A
-                # Item stock uom is in B
-                if pair['stock_uom'] != available_material['amount_uom']:
-                    # print('Must convert units!')
+        for ms_item in material_and_sales_items:
+            if ms_item['item_code'] == available_material['name']:
+                if ms_item['stock_uom'] != available_material['amount_uom']:
+
+                    # Reinitialize variables
+                    item_code = ""
+
                     # find conversion factor , from unit is available material amount_uom - INSERT QUERY CALL HERE
                     conversion_factor = find_conversion_factor(
-                        available_material['amount_uom'], pair['stock_uom'])
+                        available_material['amount_uom'], ms_item['stock_uom'])
+                    conversion_factor_reversed = find_conversion_factor(
+                        ms_item['stock_uom'], available_material['amount_uom'])
 
                     # Warn the user if a conversion factor doesn't exist for
-                    # the pair
+                    # the ms_item
                     if not conversion_factor:
                         frappe.msgprint("A UOM conversion factor is required to convert " + str(
-                            available_material['amount_uom']) + " to " + str(pair['stock_uom']))
+                            available_material['amount_uom']) + " to " + str(ms_item['stock_uom']))
+                    elif not conversion_factor_reversed:
+                        frappe.msgprint("A UOM conversion factor is required to convert " + str(
+                            ms_item['stock_uom']) + " to " + str(available_material['amount_uom']))
                     else:
-                        # Convert available_material uom to pair uom, by multiplying available material amount by conversion factor found
+                        # Convert available_material uom to ms_item uom, by multiplying available material amount by conversion factor found
                         av_mat_amt_converted = float(
                             available_material['amount']) * float(conversion_factor[0]['value'])
-                        # print('Available material amount has been converted to stock units in BOM for sales item')
 
-                        # print('Possible amount')
                         # Now, we divide the av_mat_amt_converted by the stock_qty to obtain possible quantity
-                        possible_quantity = av_mat_amt_converted / \
-                            pair['stock_qty']
+                        # Adjusted quantity takes into account aldready sold uom counts
+                        adjusted_amt = float(
+                            available_material['amount']) - total_uom_sold
+                        adjusted_quantity = math.floor((
+                            adjusted_amt * float(conversion_factor[0]['value'])) / ms_item['stock_qty'])
 
-                        if math.floor(possible_quantity) > 1:
-                            possible_uom = _(pair['sales_item_uom'] + 's')
-                        else:
-                            possible_uom = _(pair['sales_item_uom'])
-                        # print(pair['sales_item_code'][-4:] + ' ' + pair['sales_item_name'] + ' ' + str(math.floor(possible_quantity)) + ' ' + possible_uom)
+                        # Possible quantity is the original converted material amount
+                        # without deducting sales
+                        possible_quantity = av_mat_amt_converted / \
+                            ms_item['stock_qty']
+                        possible_uom = _(ms_item['sales_item_uom'])
 
                         # Add HTML and CSS styles to certain fields
-                        quantity_sales_item_html = quantity_style_plenty_1 + \
-                            str(math.floor(possible_quantity)) + \
-                            quantity_style_plenty_2
-                        sales_item_route = item_link_open + \
-                            str(pair['sales_item_code']) + item_link_open_end + \
-                            str(pair['sales_item_code'][-4:]) + item_link_close
+                        pos_qty = str(math.floor(possible_quantity))
+                        quantity_sales_item_html = html_wrap(
+                            pos_qty, qty_plenty1_strong)
 
-                        if pair['sales_item_code'] in sales_item_codes:
+                        # Build the item code url
+                        item_code = ms_item['sales_item_code']
+                        sales_item_route = f"{item_link_open}/{item_code}'" + \
+                            item_link_style + item_link_open_end + \
+                            str(ms_item['sales_item_code']
+                                [-4:]) + item_link_close
+
+                        # Calculate the amount sold
+                        if ms_item['sales_item_code'] in sales_item_codes:
                             # sum the stock qty for all sales order items
                             order_qtys = [item['stock_qty'] for item in matching_sales_order_items
-                                          if item['item_code'] == pair['sales_item_code']]
+                                          if item['item_code'] == ms_item['sales_item_code']]
                             sold_quantity = math.floor(sum(order_qtys))
-
                         else:
                             sold_quantity = 0
-                        quantity_sold_html = quantity_style_sold_1 + \
-                            str(sold_quantity) + quantity_style_sold_2
+
+                        # Add HTML to the sold quantity
+                        quantity_sold_html = html_wrap(
+                            str(sold_quantity), qty_sold1_strong)
 
                         # Calculate the difference of possible and sold items
                         available_quantity = int(
                             possible_quantity - sold_quantity)
-                        available_quantity_html = quantity_style_plenty_1 + \
-                            str(available_quantity) + quantity_style_plenty_2
+
+                        available_quantity_html = html_wrap(
+                            str(adjusted_quantity), qty_plenty1_strong)
 
                         # Populate the row
                         sales_item_row = {
                             "A": sales_item_route,
-                            "B": str(pair['sales_item_name']),
+                            "B": str(ms_item['sales_item_name']),
                             "C": quantity_sales_item_html,
-                            "D": possible_uom,
+                            "D": _(possible_uom),
                             "E": quantity_sold_html,
                             "F": available_quantity_html,
                             "G": ""
                         }
                         data.append(sales_item_row)
+
                 else:
                     print('Units are the same, no need for conversion.')
             else:
                 pass
 
+        # Add the target uom total to the header
+        data[header_idx][total_sold_column] = html_wrap(
+            str(total_uom_sold), qty_sold1_dk_strong)
+
+        # Add the target uom total difference to the header
+        total_uom_diff = str(material_amount - total_uom_sold)
+        data[header_idx][total_difference_column] = html_wrap(
+            total_uom_diff, qty_estimate1_strong)
+
         # We add an empty row after a set of products for easier reading.
         data.append(empty_row)
+
     # ----- PROCESS DATA END -----
     return data
-    # return test_data1
 
 
-def make_list_of_unique_codes(available_material_list):
+def make_list_of_unique_codes(estimated_material_list):
     """Function that makes a list of unique item codes
 
     Args:
-        available_material_list: It expects a list similar to this one:
+        estimated_material_list: It expects a list similar to this one:
         [
             {'item_code': 'CULTIVO-0069', 'amount':'15.0', 'amount_uom': 'Pound'},
             {'item_code': 'CULTIVO-0069', 'amount':'4.0', 'amount_uom': 'Pound'},
@@ -437,7 +490,7 @@ def make_list_of_unique_codes(available_material_list):
     """
     unique_item_codes = []
     only_codes_list = []
-    for available_material in available_material_list:
+    for available_material in estimated_material_list:
         only_codes_list.append(available_material['item_code'])
 
     unique_item_codes.extend(list(dict.fromkeys(only_codes_list)))
@@ -445,13 +498,13 @@ def make_list_of_unique_codes(available_material_list):
     return unique_item_codes
 
 
-def sum_and_convert_available_material_list(available_material_list):
+def sum_and_convert_estimated_material_list(estimated_material_list):
     """Function that finds all item_code values in an object list, and sums their amount value
     together, to return a list with only one unique object based on item code and the amounts of
     same item_code objects added to the unique one.
 
     Args:
-        available_material_list: It expects a list similar to this one:
+        estimated_material_list: It expects a list similar to this one:
         [
             {'item_code': 'CULTIVO-0069', 'amount':'15.0', 'amount_uom': 'Pound'},
             {'item_code': 'CULTIVO-0069', 'amount':'4.0', 'amount_uom': 'Pound'},
@@ -471,7 +524,7 @@ def sum_and_convert_available_material_list(available_material_list):
     new_list = []
     temp_list = []
     new_list.clear()
-    for unique_item_code in make_list_of_unique_codes(available_material_list):
+    for unique_item_code in make_list_of_unique_codes(estimated_material_list):
         temp_dict = {}
         # en: Subtotalizing variable where we will be adding each amount of each available material, after we convert to the first UOM found.
         # es-GT: Variable subtotalizadora en donde iremos sumando cada cantidad de cada material disponible posterior a una conversion a la primer UDM encontrada.
@@ -483,16 +536,16 @@ def sum_and_convert_available_material_list(available_material_list):
 
         available_material_uom = "UOM for unique code not assigned yet"
 
-        # Since we found a unique code, now we can search the available_material_list
-        for available_material in available_material_list:
+        # Since we found a unique code, now we can search the estimated_material_list
+        for available_material in estimated_material_list:
             if available_material["item_code"] == unique_item_code:
                 # en: We get the current list index, because we want the entire value of that index!
                 # es-GT: Obtenemos el indice actual de la lista, porque queremos obtener el valor completo de ese indice!
-                index = available_material_list.index(available_material)
+                index = estimated_material_list.index(available_material)
 
-                # en: Since all the objects from available_material_list are the same, we obtain them each time and replace temp_dict
+                # en: Since all the objects from estimated_material_list are the same, we obtain them each time and replace temp_dict
                 # es-GT: Como todos los objetos del listado de materiales disponibles son lo mismo, los obtenemos cada vez y reemplazamos temp_dict
-                temp_dict = available_material_list[index]
+                temp_dict = estimated_material_list[index]
 
                 # en: A problem arises: We might not have the same units. Therefore we will
                 # es-GT: Como todos los objetos del listado de materiales disponibles son lo mismo, los obtenemos cada vez y reemplazamos temp_dict

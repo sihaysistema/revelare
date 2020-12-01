@@ -5,6 +5,65 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _, _dict, scrub
 
+def total_item_availability_estimates(filters):
+  """
+  Returns a list of dictionaries that contain the sum of item availability
+  estimate name, amounts and uom that fall within a date range
+  """
+  result = frappe.db.sql(
+      f"""
+      SELECT ei.item_code, SUM(ei.amount) as amount, ei.amount_uom
+      FROM `tabItem Availability Estimate` as iae
+      INNER JOIN `tabEstimated Item` as ei 
+      ON iae.name = ei.parent
+      WHERE iae.docstatus = 1 
+      AND ei.docstatus = 1
+      AND (iae.start_date AND iae.end_date 
+           BETWEEN '{filters.from_date}' AND '{filters.to_date}')
+      GROUP BY ei.item_code;
+      """, as_dict=True
+  )
+  return result
+
+def total_item_availability_estimate_attributes(filters):
+  """
+  Returns a list of dictionaries that contain the item availability estimate
+  name, estimation name, estimation uom, stock uom, total amount, amount uom
+  """
+  result = frappe.db.sql(
+    f"""
+    SELECT name, estimation_name, estimation_uom, stock_uom, 
+                 estimate.item_name, estimate.amount, estimate.amount_uom
+    FROM `tabItem` 
+    INNER JOIN 
+      (SELECT ei.item_code, ei.item_name, SUM(ei.amount) as amount, ei.amount_uom
+       FROM `tabItem Availability Estimate` as iae
+       INNER JOIN `tabEstimated Item` as ei 
+       ON iae.name = ei.parent
+       WHERE iae.docstatus = 1 
+       AND ei.docstatus = 1
+       AND (iae.start_date AND iae.end_date 
+            BETWEEN '{filters.from_date}' AND '{filters.to_date}')
+       GROUP BY ei.item_code) as estimate
+    WHERE name=estimate.item_code;
+    """, as_dict=True
+  )
+  return result
+
+def total_sales_items(filters):
+  result = frappe.db.sql(
+    f"""
+    SELECT soi.item_code, soi.delivery_date, 
+	         SUM(soi.stock_qty) as stock_qty, soi.stock_uom 
+    FROM `tabSales Order Item` as soi
+    WHERE soi.parent IN
+      (SELECT so.name FROM `tabSales Order` AS so 
+        WHERE so.docstatus=1 
+        AND (delivery_date BETWEEN '{filters.from_date}' AND '{filters.to_date}'))
+    GROUP BY soi.item_code;
+    """, as_dict=True
+  )
+  return result
 
 def item_availability_estimates_range(filters):
     """Function that returns the name of the submitted Item Availability Estimates
