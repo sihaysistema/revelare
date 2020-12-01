@@ -201,7 +201,7 @@ def get_data(filters):
 
     # Tag arrays
     strong = {"markup": "strong", "style": ""}
-    strong_gray = {"markup": "strong", "style": "color: darkgray"}
+    strong_gray = {"markup": "strong", "style": "color: #686868"}
 
     qty_plenty1_strong = [
         {"markup": "span", "style": quantity_style_plenty_1}, strong]
