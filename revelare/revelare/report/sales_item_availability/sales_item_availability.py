@@ -222,19 +222,13 @@ def get_data(filters):
     item_link_close = "</a>"
 
     # ----- QUERY # 1 BEGIN -----
-    # Obtain Valid Item Availability Estimates for dates from our query functions.
-    # [{'item_code': 'CULTIVO-0069', 'amount':'15.0', 'amount_uom': 'Pound'}]
-    # We want unique item codes and amounts, such that each material item estimate is included only ONCE.
-    estimated_material_list = total_item_availability_estimates(filters)
-
-    # ----- QUERY # 2 BEGIN -----
     # We now create a list of estimation item attributes
     # [{'name': 'CULTIVO-0069', 'estimation_name': 'Perejil', 'estimation_uom': 'Pound', 'stock_uom': 'Onza', 'amount':'15.0', 'amount_uom': 'Pound'}]
     # This list is already "filtered" and curated to include all the REQUESTED estimation item codes and attributes
     estimated_materials_with_attributes = total_item_availability_estimate_attributes(
         filters)
 
-    # ----- QUERY # 3 BEGIN -----
+    # ----- QUERY # 2 BEGIN -----
     # Now we find the BOM names based on the names of material items in our item_attributes_list
     # [{'item_code': 'CULTIVO-0069', 'parent': 'BOM-7401168802186-001', 'stock_qty': 6.0, 'stock_uom': 'Onza'}]
     bom_items_list = []
@@ -243,7 +237,7 @@ def get_data(filters):
         bom_items = find_bom_items(filters, material_doctype_name)
         bom_items_list.extend(bom_items)
 
-    # ----- QUERY # 4 BEGIN -----
+    # ----- QUERY # 3 BEGIN -----
     # we get sales item code, quantity obtained, and uom obtained for each bom parent.
     material_and_sales_items = []
     for bom_item in bom_items_list:
@@ -263,7 +257,7 @@ def get_data(filters):
         # Append it to the list of sales items
         material_and_sales_items.append(bom_item)
 
-    # ----- QUERY # 5 BEGIN -----
+    # ----- QUERY # 4 BEGIN -----
     # Sales Order query, return all sales order names that fit within
     # the dates in report filter
     matching_sales_order_items = total_sales_items(filters)
