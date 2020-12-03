@@ -127,7 +127,10 @@ def find_bom_items(filters, estimation_item_code):
     """
     result = frappe.db.sql(
         f"""
-        SELECT item_code, parent, stock_qty, stock_uom FROM `tabBOM Item` WHERE item_code='{estimation_item_code}';
+        SELECT item_code, parent, stock_qty, stock_uom 
+        FROM `tabBOM Item` 
+        WHERE item_code='{estimation_item_code}'
+        AND docstatus=1;
         """, as_dict=True
     )
     return result
@@ -142,7 +145,10 @@ def find_boms(filters, bom):
     """
     result = frappe.db.sql(
         f"""
-        SELECT item, quantity, uom, item_name FROM `tabBOM` WHERE name='{bom}';
+        SELECT item, quantity, uom, item_name 
+        FROM `tabBOM` 
+        WHERE name='{bom}'
+        AND docstatus=1;
         """, as_dict=True
     )
     return result
