@@ -208,13 +208,12 @@ def get_data(filters):
 
     qty_estimate1_strong = [
         {"markup": "span", "style": quantity_style_estimate_1}, strong]
-    
+
     qty_sold1_strong = [
         {"markup": "span", "style": quantity_style_sold_1}, strong]
 
     qty_sold1_dk_strong = [
         {"markup": "span", "style": quantity_style_sold_dk_1}, strong]
-    
 
     item_link_open = "<a href='#Form/Item"
     item_link_style = "style='color: #1862AA;'"
@@ -240,6 +239,7 @@ def get_data(filters):
     # ----- QUERY # 3 BEGIN -----
     # we get sales item code, quantity obtained, and uom obtained for each bom parent.
     material_and_sales_items = []
+    included_items = set()
     for bom_item in bom_items_list:
         bom_name = bom_item['parent']
         boms = find_boms(filters, bom_name)
@@ -254,8 +254,10 @@ def get_data(filters):
             estimated_materials_with_attributes[0]['amount_uom'], bom_item['stock_uom'])
         bom_item.pop("parent")
 
-        # Append it to the list of sales items
-        material_and_sales_items.append(bom_item)
+        # Append it to the list of sales items if not already included in the report
+        if not boms[0]['item_name'] in included_items:
+            included_items.add(boms[0]['item_name'])
+            material_and_sales_items.append(bom_item)
 
     # ----- QUERY # 4 BEGIN -----
     # Sales Order query, return all sales order names that fit within
