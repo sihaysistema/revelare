@@ -246,18 +246,19 @@ def get_data(filters):
 
         # We rearrange the current dictionary, assigning values from returned keys in this list
         # to new keys in this object.
-        bom_item['sales_item_code'] = boms[0]['item']
-        bom_item['sales_item_qty'] = boms[0]['quantity']
-        bom_item['sales_item_uom'] = boms[0]['uom']
-        bom_item['sales_item_name'] = boms[0]['item_name']
-        bom_item['conversion_factor'] = find_conversion_factor(
-            estimated_materials_with_attributes[0]['amount_uom'], bom_item['stock_uom'])
-        bom_item.pop("parent")
+        if len(boms):
+            bom_item['sales_item_code'] = boms[0]['item']
+            bom_item['sales_item_qty'] = boms[0]['quantity']
+            bom_item['sales_item_uom'] = boms[0]['uom']
+            bom_item['sales_item_name'] = boms[0]['item_name']
+            bom_item['conversion_factor'] = find_conversion_factor(
+                estimated_materials_with_attributes[0]['amount_uom'], bom_item['stock_uom'])
+            bom_item.pop("parent")
 
-        # Append it to the list of sales items if not already included in the report
-        if not boms[0]['item_name'] in included_items:
-            included_items.add(boms[0]['item_name'])
-            material_and_sales_items.append(bom_item)
+            # Append it to the list of sales items if not already included in the report
+            if not boms[0]['item_name'] in included_items:
+                included_items.add(boms[0]['item_name'])
+                material_and_sales_items.append(bom_item)
 
     # ----- QUERY # 4 BEGIN -----
     # Sales Order query, return all sales order names that fit within
