@@ -19,14 +19,13 @@ def crear_registros():
     return 'ok'
 
 @frappe.whitelist()
-def crear_registros_component(direct_cash_flow_component_name, parent_direct_cash_flow_component, cash_effect, is_group):
-
-    registro = frappe.new_doc("Direct Cash Flow Component")
-    registro.direct_cash_flow_component_name = direct_cash_flow_component_name
-    registro.parent_direct_cash_flow_component = parent_direct_cash_flow_component
-    registro.cash_effect = cash_effect
-    registro.old_parent = ''
-    registro.is_group = is_group
-    registro.save()
-
-    return 'ok'
+def get_type_account(account_name=''):
+    try:
+        if frappe.db.exists('Account', {'account_type':'Bank','name':account_name}):
+            return True
+        elif frappe.db.exists('Account', {'account_type':'Cash','name':account_name}):
+            return True
+        else:
+            return False
+    except:
+        return False
