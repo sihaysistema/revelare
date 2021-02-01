@@ -72,3 +72,28 @@ frappe.ui.form.on('Journal Entry', {
         });
     }
 });
+
+frappe.ui.form.on('Journal Entry Account', {
+    account : function(frm, cdt,cdn){
+        let row = frappe.get_doc(cdt, cdn);
+        frappe.call({
+            method: 'revelare.data.get_type_account',
+            args: {
+                account_name: row.account
+            },
+            callback: (r) => {
+                console.log(r.message)
+                if(r.message == true){
+                    var df=frappe.meta.get_docfield("Journal Entry Account", "direct_cash_flow_component",frm.doc.name);
+                    df.hidden=0;
+                    frm.refresh_fields();
+                } else {
+                    var df=frappe.meta.get_docfield("Journal Entry Account", "direct_cash_flow_component",frm.doc.name);
+                    df.hidden=1;
+                    frm.refresh_fields();
+                }
+                
+            }
+        })
+    }
+});
