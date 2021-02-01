@@ -1,5 +1,4 @@
 {
- "allow_copy": 1,
  "allow_import": 1,
  "allow_rename": 1,
  "autoname": "field:direct_cash_flow_component_name",
@@ -35,8 +34,7 @@
    "oldfieldname": "company_name",
    "oldfieldtype": "Link",
    "options": "Company",
-   "remember_last_selected_value": 1,
-   "reqd": 1
+   "remember_last_selected_value": 1
   },
   {
    "fieldname": "cb0",
@@ -93,12 +91,19 @@
    "report_hide": 1
   },
   {
+   "allow_in_quick_entry": 1,
    "default": "Inflow",
    "fieldname": "cash_effect",
    "fieldtype": "Select",
+   "in_filter": 1,
+   "in_global_search": 1,
    "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
    "label": "Cash Effect",
-   "options": "\nInflow\nOutflow"
+   "options": "Group\nInflow\nOutflow",
+   "reqd": 1,
+   "search_index": 1
   },
   {
    "fieldname": "parent_direct_cash_flow_component",
@@ -124,10 +129,11 @@
  ],
  "icon": "fa fa-money",
  "is_tree": 1,
- "modified": "2021-01-27 15:28:25.802611",
+ "modified": "2021-02-01 10:47:54.020622",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Direct Cash Flow Component",
+ "name_case": "Title Case",
  "nsm_parent_field": "parent_direct_cash_flow_component",
  "owner": "Administrator",
  "permissions": [
@@ -176,7 +182,7 @@
    "write": 1
   }
  ],
- "search_fields": "parent_direct_cash_flow_component, is_group",
+ "search_fields": "parent_direct_cash_flow_component,cash_effect",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "ASC"

@@ -2,9 +2,27 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Direct Cash Flow Component', {
-    // refresh: function(frm) {
-
-    // }
+    setup: function (frm) {
+        frm.set_query("parent_direct_cash_flow_component", function () {
+            return {
+                "filters": {
+                    "is_group": 1,
+                    
+                }
+            };
+        });
+    },
+    refresh: function (frm) {
+    },
+    is_group : function(frm){
+        if (frm.doc.is_group == 1){
+            frm.set_value('cash_effect', 'Group');
+            frm.set_df_property('cash_effect', 'options', ['Group'])
+        } else {
+            frm.set_value('cash_effect', 'Inflow')
+            frm.set_df_property('cash_effect', 'options', ['Inflow', 'Outflow'])
+        }
+    }
 });
 
 
@@ -32,3 +50,4 @@ cur_frm.fields_dict['parent_component'].get_query = function(doc,cdt,cdn) {
         ]
     }
 }*/
+

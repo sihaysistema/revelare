@@ -59,3 +59,16 @@ frappe.ui.form.on('UOM Conversion Detail', {
         });
     }
 });
+
+// Validando CustomField Journal Entry Account y Payment Entry
+frappe.ui.form.on('Journal Entry', {
+    setup : function(frm){
+        cur_frm.set_query("direct_cash_flow_component", "accounts", function () {
+            return {
+                "filters": {
+                    "is_group": 0
+                }
+            };
+        });
+    }
+});
