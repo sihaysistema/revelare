@@ -93,9 +93,71 @@ def fill_fixtures():
         ]
     }
 
+    dcf_component = {
+        "dt":"Direct Cash Flow Component", "filters":[
+            "direct_cash_flow_component_name","in",[
+                "Operations",
+                "Cash Payment for Operating Expenses",
+                "Bonus Payroll Payments",
+                "Bonus Payroll Payment",
+                "Standard Payroll Payments",
+                "Cash Payments for Taxes",
+                "Payments for Income Taxes",
+                "Payments for Payroll Taxes",
+                "Payments for Property Taxes",
+                "Payments for Sales Taxes",
+                "Cash Payments to Suppliers",
+                "Payments to Suppliers",
+                "Cash Receipts from Customers",
+                "Receipts from Customers",
+                "Cash Payments for Severance or Retirement",
+                "Payments for Retirement",
+                "Payments for Severance",
+                "Dividends Received",
+                "Dividends Received from Investment",
+                "Investment",
+                "Fixed Asset Cash Flows",
+                "Purchases of fixed assets (Property, Plant & Equipment)",
+                "Sale of fixed assets (Property, Plant & Equipment)",
+                "Long-term Securities Cash Flows",
+                "Investment in long-term securities (stocks or bonds) ",
+                "Sale of long-term securities (stocks or bonds)",
+                "Loans Given to Others",
+                "Money Lent to Individuals",
+                "Money Lent to Institutions",
+                "Cash Payments for Taxes Related to Investing",
+                "Cash Flows of Taxes Related to Investing Activities",
+                "Board Compensation Cash Flows",
+                "Board Compensation from Participation Interest",
+                "Uncategorized Inflows",
+                "Uncategorized Outflows",
+                "Interest Received from Investment",
+                "Financing",
+                "Loans Obtained from Others",
+                "Money Loaned from Individuals",
+                "Money Loaned from Institutions",
+                "Debt Service",
+                "Coupon Payments",
+                "Debt Repayment",
+                "Interest Expenses",
+                "Financial Institution Flows",
+                "Financial Institution Transaction Fees",
+                "Loans Obtained from Others",
+                "Money Loaned from Individuals",
+                "Money Loaned from Institutions",
+                "Stock",
+                "Dividend Payments",
+                "New Stock Issue",
+                "Stock Repurchases",
+                "",
+            ]
+        ]
+    }
+
     # NEW FUNCTIONALITY FOR EXPORTING
     fixtures_fillup.append(custom_field)
     fixtures_fillup.append(translation)
+    fixtures_fillup.append(dcf_component)
     # fixtures_fillup.append(tax_category)
     # fixtures_fillup.append(id_doctype)
 

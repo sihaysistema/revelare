@@ -11,7 +11,6 @@
   "sb0",
   "direct_cash_flow_component_name",
   "parent_direct_cash_flow_component",
-  "company",
   "cb0",
   "cash_effect",
   "is_group",
@@ -24,17 +23,6 @@
   {
    "fieldname": "sb0",
    "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "company",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Company",
-   "oldfieldname": "company_name",
-   "oldfieldtype": "Link",
-   "options": "Company",
-   "remember_last_selected_value": 1
   },
   {
    "fieldname": "cb0",
@@ -129,7 +117,7 @@
  ],
  "icon": "fa fa-money",
  "is_tree": 1,
- "modified": "2021-02-01 10:47:54.020622",
+ "modified": "2021-02-02 12:19:04.392176",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Direct Cash Flow Component",

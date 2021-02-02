@@ -62,7 +62,7 @@ frappe.ui.form.on('UOM Conversion Detail', {
 
 // Validando CustomField Journal Entry Account y Payment Entry
 frappe.ui.form.on('Journal Entry', {
-    setup : function(frm){
+    /*setup : function(frm){
         cur_frm.set_query("direct_cash_flow_component", "accounts", function () {
             return {
                 "filters": {
@@ -70,7 +70,7 @@ frappe.ui.form.on('Journal Entry', {
                 }
             };
         });
-    }
+    }*/
 });
 
 frappe.ui.form.on('Journal Entry Account', {
@@ -90,10 +90,64 @@ frappe.ui.form.on('Journal Entry Account', {
                 } else {
                     var df=frappe.meta.get_docfield("Journal Entry Account", "direct_cash_flow_component",frm.doc.name);
                     df.hidden=1;
+                    row.direct_cash_flow_component = ''
                     frm.refresh_fields();
                 }
-                
             }
         })
+    }, 
+    debit_in_account_currency : function(frm,cdt,cdn){
+        // Si debito es => 0 Filtrar componenete, mostrar solo Inflow
+        let row = frappe.get_doc(cdt, cdn);
+        if(row.debit_in_account_currency > 0){
+            console.log(row.debit_in_account_currency, "Estamos en debito")
+            frm.doc.fields_dict['accounts'].grid.get_field('direct_cash_flow_component').get_query = function(doc, cdt, cdn) {
+                var child = locals[cdt][cdn];
+                //console.log(child);
+                return {    
+                    filters:{
+                        "is_group": 0,
+                        "cash_effect" : "Inflow"
+                    }
+                }
+            }
+            /*
+            cur_frm.set_query("direct_cash_flow_component", "accounts", function () {
+                return {
+                    "filters": {
+                        "is_group": 0,
+                        "cash_effect" : "Inflow"
+                    }
+                };
+            });*/
+            frm.refresh_fields();
+        }
+    },
+    credit_in_account_currency : function(frm,cdt,cdn){
+        // Si credito es => 0 Filtrar componenete, mostrar solo Outflow
+        let row = frappe.get_doc(cdt, cdn);
+        if(row.credit_in_account_currency > 0){
+            console.log(row.credit_in_account_currency, "Estamos en Credito")
+            frm.doc.fields_dict['accounts'].grid.get_field('direct_cash_flow_component').get_query = function(doc, cdt, cdn) {
+                var child = locals[cdt][cdn];
+                //console.log(child);
+                return {    
+                    filters:{
+                        "is_group": 0,
+                        "cash_effect" : "Outflow"
+                    }
+                }
+            }
+            /*
+            cur_frm.set_query("direct_cash_flow_component", "accounts", function () {
+                return {
+                    "filters": {
+                        "is_group": 0,
+                        "cash_effect" : "Outflow"
+                    }
+                };
+            });*/
+            frm.refresh_fields();
+        }
     }
 });
