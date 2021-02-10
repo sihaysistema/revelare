@@ -25,7 +25,10 @@ from revelare.revelare.report.input_material_item_sales_report.input_material_it
 
 from revelare.revelare.report.input_material_item_sales_report.input_material_item_sales_utils import (
     html_wrap,
-    weeks_in_year
+    weeks_in_year,
+    weeks_between,
+    quarter_dates,
+    get_periods
 )
 
 from revelare.revelare.report.input_material_item_sales_report.report_markup_styles import (
@@ -61,44 +64,27 @@ def get_columns(filters):
     # Weekly, Monthly, Quarterly, Yearly"
 
     # The original format
-    old_yearly_columns = [
+    period = filters["period"]
+    freq = {
+        "Weekly": "W",
+        "Monthly": "M",
+        "Quarterly": "Q",
+        "Yearly": "Y"
+    }
+    start_date = filters["from_date"]
+    end_date = filters["to_date"]
+    number_of_columns = get_periods(start_date, end_date, freq[period])
+    frappe.msgprint(str(number_of_columns))
+
+    report_columns = [
         {
-            "label": _("Item"),
-            "fieldname": "A",
-            "fieldtype": "Data",
-            "width": 150
-        },
-        {
-            "label": _("Estimated Per Period"),
-            "fieldname": "B",
-            "fieldtype": "Data",
-            "width": 145
-        },
-        {
-            "label": _("UOM"),
-            "fieldname": "C",
-            "fieldtype": "Data",
-            "width": 90
-        },
-        {
-            "label": _("Total UOM Sold"),
-            "fieldname": "D",
-            "fieldtype": "Data",
-            "width": 120
-        },
-        {
-            "label": _("Sold Per Period"),
-            "fieldname": "E",
-            "fieldtype": "Data",
-            "width": 100
-        },
-        {
-            "label": _("Remainder Available"),
-            "fieldname": "F",
+            "label": str(idx),
+            "fieldname": str(idx),
             "fieldtype": "Data",
             "width": 140
-        },
+        } for idx in range(number_of_columns)
     ]
+    frappe.msgprint(str(report_columns))
 
     # The whole year
     yearly_columns = [
