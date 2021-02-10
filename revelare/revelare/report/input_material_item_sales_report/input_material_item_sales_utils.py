@@ -23,6 +23,9 @@ def html_wrap(txt: str, tags: list) -> str:
     while tags_to_wrap:
         # Grab the tag
         tag = tags_to_wrap.pop()
+        # Sanitize any script tags
+        if "script" in tag.keys():
+            continue
         markup = tag["markup"]
         style = format_style(tag["style"], replacements)
 
