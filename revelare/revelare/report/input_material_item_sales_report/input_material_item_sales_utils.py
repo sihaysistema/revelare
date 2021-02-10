@@ -1,4 +1,9 @@
+import frappe
+from frappe.utils import getdate, get_user_format
 from datetime import date, timedelta
+import pandas as pd
+
+DATE_FORMAT = "%Y-%m-%d"
 
 
 def html_wrap(txt: str, tags: list) -> str:
@@ -55,3 +60,37 @@ def weeks_in_year(year):
     final_week = date(year, 12, 28)
     total_weeks = final_week.isocalendar()[1]
     return total_weeks
+
+
+def days_between(start_date: str, end_date: str) -> int:
+    """Find the number of days between two dates"""
+    start = getdate(start_date)
+    end = getdate(end_date)
+    days = abs(start - end).days
+    return days
+
+
+def weeks_between(start_date: str, end_date: str) -> int:
+    """Find the number of weeks between two dates"""
+    DAYS_PER_WEEK = 7
+    days = days_between(start_date, end_date)
+    return days // DAYS_PER_WEEK
+
+
+def quarter_dates(start_date: str, end_date: str):
+    """Returns an array of quarter start dates"""
+    user_date_format = get_user_format()
+    quarter_dates = (pd.date_range(pd.to_datetime(start_date),
+                                   pd.to_datetime(end_date) + pd.offsets.QuarterBegin(1), freq='Q')
+                     .strftime(user_date_format)
+                     .tolist())
+    return quarter_dates
+
+
+def get_periods(start_date: str, end_date: str, freq: str):
+    """Get periods between two dates"""
+    periods = (pd.date_range(pd.to_datetime(start_date),
+                             pd.to_datetime(end_date), freq=freq)
+               .strftime(DATE_FORMAT)
+               .tolist())
+    return periods
