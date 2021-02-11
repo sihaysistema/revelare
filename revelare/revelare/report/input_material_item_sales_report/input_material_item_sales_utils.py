@@ -94,3 +94,23 @@ def get_periods(start_date: str, end_date: str, freq: str):
                .strftime(DATE_FORMAT)
                .tolist())
     return periods
+
+
+def get_next_day(start_date: str) -> str:
+    """Take a date string and return the date string for one day forward"""
+    date = ((pd.to_datetime(start_date) + pd.to_timedelta(1, unit='d'))
+            .strftime(DATE_FORMAT))
+    return date
+
+
+def get_prior_day(start_date: str) -> str:
+    """Take a date string and return the date string for one day prior"""
+    date = ((pd.to_datetime(start_date) + pd.to_timedelta(-1, unit='d'))
+            .strftime(DATE_FORMAT))
+    return date
+
+
+def get_week_number(date: str) -> int:
+    """Get the ISO week number of a date"""
+    date = pd.to_datetime(date).strftime("%V")
+    return date
