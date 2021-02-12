@@ -31,7 +31,10 @@ from revelare.revelare.report.input_material_item_sales_report.input_material_it
     get_periods,
     get_next_day,
     get_prior_day,
-    get_week_number
+    get_week_number,
+    get_quarter_number,
+    get_month_number,
+    get_year_number
 )
 
 from revelare.revelare.report.input_material_item_sales_report.report_markup_styles import (
@@ -82,6 +85,13 @@ def get_columns(filters):
         "Yearly": "Year"
     }
 
+    period_format = {
+        "Weekly": "%V",
+        "Monthly": "%m",
+        "Quarterly": "%m",
+        "Yearly": "%Y"
+    }
+
     # Using the user's filters, we create an array of dates to build the
     # headers with
     period = filters["period"]
@@ -93,23 +103,16 @@ def get_columns(filters):
     if not dates:
         return [{}]
 
-    # Iterate through the dates and compile the column headers
-    formatted_dates = [(start_date, dates[0])]
-    next_start = get_next_day(dates[0])
-    for date in dates[1:]:
-        formatted_dates.append((next_start, date))
-        next_start = get_next_day(date)
-    frappe.msgprint(str(formatted_dates))
-
     report_columns = [
         {
             "label": f"{label} {idx + 1}",
             "fieldname": str(idx),
             "fieldtype": "Data",
-            "width": 140
-        } for idx, date in enumerate(dates))
+            "height": 100,
+            "width": 200
+        } for idx, date in enumerate(dates)
     ]
-    frappe.msgprint(str(report_columns))
+    # frappe.msgprint(str(report_columns))
 
     # The whole year
     yearly_columns = [
@@ -142,7 +145,7 @@ def get_columns(filters):
         {}
     ]
 
-    return yearly_columns
+    return report_columns
 
 
 def get_data(filters):
@@ -150,15 +153,61 @@ def get_data(filters):
     Accesses and processes the data for the report
     """
     # Empty Row
-    empty_row = {}
-    data = [empty_row]
+    # empty_row = {}
+    # data = [empty_row]
+    data = []
 
-    # Periodicity header
-    period_header = {
-        "A": "",
-        "B": "Year 1",
+    # Using the user's filters, we create an array of dates to build the
+    # headers with
+    freq = {
+        "Weekly": "W",
+        "Monthly": "M",
+        "Quarterly": "Q",
+        "Yearly": "Y"
     }
-    data.append(period_header)
+
+    # We also build a column header mapping based on the periodicity filter
+    period_header = {
+        "Weekly": "Week",
+        "Monthly": "Month",
+        "Quarterly": "Quarter",
+        "Yearly": "Year"
+    }
+
+    period_format = {
+        "Weekly": "%V",
+        "Monthly": "%m",
+        "Quarterly": "%m",
+        "Yearly": "%Y"
+    }
+
+    period_fn = {
+        "Weekly": get_week_number,
+        "Monthly": get_month_number,
+        "Quarterly": get_quarter_number,
+        "Yearly": get_year_number
+    }
+
+    period = filters["period"]
+    start_date = filters["from_date"]
+    end_date = filters["to_date"]
+    label = period_header[period]
+
+    # Iterate through dates and create first row of col headers
+    dates = get_periods(start_date, end_date, freq[period])
+    if not dates:
+        return [{}]
+
+    # Iterate through the dates and compile the column headers
+    formatted_dates = [(start_date, dates[0])]
+    next_start = get_next_day(dates[0])
+    for date in dates[1:]:
+        formatted_dates.append((next_start, date))
+        next_start = get_next_day(date)
+
+    header_subtitle_row = {idx: f"{formatted_dates[idx][0]} - {formatted_dates[idx][1]}"
+                           for idx, date in enumerate(formatted_dates)}
+    data.append(header_subtitle_row)
 
     # Get the estimated amount for all items in the date range
     estimated_materials_with_attributes = total_item_availability_estimate_attributes(
@@ -171,28 +220,28 @@ def get_data(filters):
     # Total the sales for all sales items
     # material_and_sales_items = find_boms_and_conversions(from_uom, filters)
 
-    bom_items_list=[]
+    bom_items_list = []
     for material in estimated_materials_with_attributes:
-        material_doctype_name=material['name']
-        bom_items=find_bom_items(filters, material_doctype_name)
+        material_doctype_name = material['name']
+        bom_items = find_bom_items(filters, material_doctype_name)
         bom_items_list.extend(bom_items)
 
     # ----- QUERY # 3 BEGIN -----
     # we get sales item code, quantity obtained, and uom obtained for each bom parent.
-    material_and_sales_items=[]
-    included_items=set()
+    material_and_sales_items = []
+    included_items = set()
     for bom_item in bom_items_list:
-        bom_name=bom_item['parent']
-        boms=find_boms(filters, bom_name)
+        bom_name = bom_item['parent']
+        boms = find_boms(filters, bom_name)
 
         # We rearrange the current dictionary, assigning values from returned keys in this list
         # to new keys in this object.
         if len(boms):
-            bom_item['sales_item_code']=boms[0]['item']
-            bom_item['sales_item_qty']=boms[0]['quantity']
-            bom_item['sales_item_uom']=boms[0]['uom']
-            bom_item['sales_item_name']=boms[0]['item_name']
-            bom_item['conversion_factor']=find_conversion_factor(
+            bom_item['sales_item_code'] = boms[0]['item']
+            bom_item['sales_item_qty'] = boms[0]['quantity']
+            bom_item['sales_item_uom'] = boms[0]['uom']
+            bom_item['sales_item_name'] = boms[0]['item_name']
+            bom_item['conversion_factor'] = find_conversion_factor(
                 estimated_materials_with_attributes[0]['amount_uom'], bom_item['stock_uom'])
             bom_item.pop("parent")
 
@@ -202,17 +251,17 @@ def get_data(filters):
                 material_and_sales_items.append(bom_item)
 
     # Get the sales items abd codes in the date range
-    sales_item_totals=total_item_bom_sales(filters)
+    sales_item_totals = total_item_bom_sales(filters)
 
     # Get the sales order quantities for items
-    sales_item_codes=[item['item_code'] for item in sales_item_totals]
+    sales_item_codes = [item['item_code'] for item in sales_item_totals]
 
     for available_material in estimated_materials_with_attributes:
-        estimation_name=available_material['estimation_name']
-        uom_name=available_material["amount_uom"]
-        material_amount=available_material['amount']
+        estimation_name = available_material['estimation_name']
+        uom_name = available_material["amount_uom"]
+        material_amount = available_material['amount']
 
-        material_amount_html=html_wrap(
+        material_amount_html = html_wrap(
             str(material_amount), qty_plenty1_strong)
 
         # Initialize the total sold items in the target uom

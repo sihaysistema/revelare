@@ -114,3 +114,21 @@ def get_week_number(date: str) -> int:
     """Get the ISO week number of a date"""
     date = pd.to_datetime(date).strftime("%V")
     return date
+
+
+def get_quarter_number(date: str) -> int:
+    """Get the quarter number for a date"""
+    quarter = ((pd.to_datetime(date).month - 1) // 3) + 1
+    return quarter
+
+
+def get_month_number(date: str) -> int:
+    """Get the month number for a date"""
+    month = pd.to_datetime(date).strftime("%m")
+    return month
+
+
+def get_year_number(date: str) -> int:
+    """Get the year number for a date"""
+    year = pd.to_datetime(date).strftime("%Y")
+    return year
