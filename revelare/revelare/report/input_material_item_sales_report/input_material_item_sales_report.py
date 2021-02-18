@@ -65,155 +65,246 @@ def execute(filters=None):
 
 
 def get_columns(filters):
-    """
+    '''
     Defines the report column structure
-    """
-    # Weekly, Monthly, Quarterly, Yearly"
+    '''
+    # Weekly, Monthly, Quarterly, Yearly'
+    no_data = [{}]
 
     # Frequency mapping user filter selection to pandas.date_range freq values
-    freq = {
-        "Weekly": "W",
-        "Monthly": "M",
-        "Quarterly": "Q",
-        "Yearly": "Y"
+    pandas_freq = {
+        'Weekly': 'W',
+        'Monthly': 'M',
+        'Quarterly': 'Q',
+        'Yearly': 'Y'
     }
 
     # We also build a column header mapping based on the periodicity filter
     period_header = {
-        "Weekly": "Week",
-        "Monthly": "Month",
-        "Quarterly": "Quarter",
-        "Yearly": "Year"
+        'Weekly': 'Week',
+        'Monthly': 'Month',
+        'Quarterly': 'Quarter',
+        'Yearly': 'Year'
     }
 
     period_format = {
-        "Weekly": "%V",
-        "Monthly": "%m",
-        "Quarterly": "%m",
-        "Yearly": "%Y"
+        'Weekly': '%V',
+        'Monthly': '%m',
+        'Quarterly': '%m',
+        'Yearly': '%Y'
+    }
+
+    period_fn = {
+        'Weekly': get_week_number,
+        'Monthly': get_month_number,
+        'Quarterly': get_quarter_number,
+        'Yearly': get_year_number
     }
 
     # Using the user's filters, we create an array of dates to build the
     # headers with
-    period = filters["period"]
-    start_date = filters["from_date"]
-    end_date = filters["to_date"]
+    period = filters.get('period')
+    start_date = filters.get('from_date')
+    end_date = filters.get('to_date')
+    if not period or not start_date or not end_date:
+        return no_data
+
+    date_ranges = get_date_ranges(start_date, end_date, pandas_freq[period])
+    if not date_ranges:
+        return no_data
+
     label = period_header[period]
+    period_num_fn = period_fn[period]
+    period_num = period_num_fn(start_date)
 
-    dates = get_periods(start_date, end_date, freq[period])
-    if not dates:
-        return [{}]
-
-    report_columns = [
+    first_column = [
         {
-            "label": f"{label} {idx + 1}",
-            "fieldname": str(idx),
-            "fieldtype": "Data",
-            "height": 100,
-            "width": 200
-        } for idx, date in enumerate(dates)
-    ]
-    # frappe.msgprint(str(report_columns))
-
-    # The whole year
-    yearly_columns = [
-        {
-            "label": _("A"),
-            "fieldname": "A",
-            "fieldtype": "Data",
-            "width": 140
-        },
-        {
-            "label": _("B"),
-            "fieldname": "B",
-            "fieldtype": "Data",
-            "width": 140
+            'label': 'Type',
+            'fieldname': '0',
+            'fieldtype': 'Data',
+            'height': 100,
+            'width': 200
         }
     ]
 
-    # All 52-53 weeks in the year
-    weekly_columns = [
-        {}
+    report_columns = [
+        {
+            'label': f'{label} {period_num + idx}',
+            'fieldname': str(idx + 1),
+            'fieldtype': 'Data',
+            'height': 100,
+            'width': 200
+        } for idx, date in enumerate(date_ranges)
     ]
 
-    # All 4 quarters in the year
-    quarterly_columns = [
-        {}
-    ]
-
-    # All 12 months in the year
-    monthly_columns = [
-        {}
-    ]
-
-    return report_columns
+    return first_column + report_columns
 
 
 def get_data(filters):
-    """
+    '''
     Accesses and processes the data for the report
-    """
+    '''
     # Empty Row
-    # empty_row = {}
-    # data = [empty_row]
+    empty_row = {}
     data = []
 
     # Using the user's filters, we create an array of dates to build the
     # headers with
-    freq = {
-        "Weekly": "W",
-        "Monthly": "M",
-        "Quarterly": "Q",
-        "Yearly": "Y"
+    pandas_freq = {
+        'Weekly': 'W',
+        'Monthly': 'M',
+        'Quarterly': 'Q',
+        'Yearly': 'Y'
     }
 
     # We also build a column header mapping based on the periodicity filter
     period_header = {
-        "Weekly": "Week",
-        "Monthly": "Month",
-        "Quarterly": "Quarter",
-        "Yearly": "Year"
+        'Weekly': 'Week',
+        'Monthly': 'Month',
+        'Quarterly': 'Quarter',
+        'Yearly': 'Year'
     }
 
     period_format = {
-        "Weekly": "%V",
-        "Monthly": "%m",
-        "Quarterly": "%m",
-        "Yearly": "%Y"
+        'Weekly': '%V',
+        'Monthly': '%m',
+        'Quarterly': '%m',
+        'Yearly': '%Y'
     }
 
     period_fn = {
-        "Weekly": get_week_number,
-        "Monthly": get_month_number,
-        "Quarterly": get_quarter_number,
-        "Yearly": get_year_number
+        'Weekly': get_week_number,
+        'Monthly': get_month_number,
+        'Quarterly': get_quarter_number,
+        'Yearly': get_year_number
     }
 
-    period = filters["period"]
-    start_date = filters["from_date"]
-    end_date = filters["to_date"]
-    label = period_header[period]
+    period = filters.get('period')
+    start_date = filters.get('from_date')
+    end_date = filters.get('to_date')
+    if not period or not start_date or not end_date:
+        return data
 
-    # Iterate through dates and create first row of col headers
-    dates = get_periods(start_date, end_date, freq[period])
+    dates = get_periods(start_date, end_date, pandas_freq[period])
     if not dates:
-        return [{}]
+        return data
 
-    # Iterate through the dates and compile the column headers
-    formatted_dates = [(start_date, dates[0])]
-    next_start = get_next_day(dates[0])
-    for date in dates[1:]:
-        formatted_dates.append((next_start, date))
-        next_start = get_next_day(date)
+    formatted_dates = get_date_ranges(
+        start_date, end_date, pandas_freq[period])
 
-    header_subtitle_row = {idx: f"{formatted_dates[idx][0]} - {formatted_dates[idx][1]}"
-                           for idx, date in enumerate(formatted_dates)}
+    header_subtitle_row = {'0': 'Date Range'}
+    header_subtitle_data = {idx + 1: f'{formatted_dates[idx][0]} - {formatted_dates[idx][1]}'
+                            for idx, date in enumerate(formatted_dates)}
+    header_subtitle_row.update(header_subtitle_data)
     data.append(header_subtitle_row)
+
+    # Get the report data for each date range
+    product_sum_columns = []
+    for idx, (from_date, to_date) in enumerate(formatted_dates):
+        date_filters = filters.copy()
+        date_filters['from_date'] = from_date
+        date_filters['to_date'] = to_date
+        date_filters['column'] = idx
+
+        new_data = get_report_data(date_filters)
+        product_sum_columns += new_data
+
+    # Empty Row
+    empty_row = {}
+    data.append([empty_row])
+
+    # Get the item name list
+    item_names = set()
+    for column in product_sum_columns:
+        if column:
+            item_name = column.get('item_name', '')
+            if len(item_name):
+                item_names.add(item_name)
+
+    # Arrange the item names and totals in html on the grid
+    item_totals = {
+        item_name: {
+            'estimated': {
+                idx + 1: 0 for idx in range(len(formatted_dates))
+            },
+            'sold': {
+                idx + 1: 0 for idx in range(len(formatted_dates))
+            },
+            'difference': {
+                idx + 1: 0 for idx in range(len(formatted_dates))
+            }
+        }
+        for item_name in item_names
+    }
+
+    # Calculate the item sums per period
+    for column in product_sum_columns:
+        '''
+        Items have a shape as shown below:
+        item = {
+             'item_name': 'Butter lettuce',
+             'content': {
+                 'estimated': 5,
+                 'sold': 3,
+                 'difference': 2
+             },
+             'column': 3
+         }
+       '''
+        if column:
+            name = column.get('item_name', '')
+            content = column.get('content', {})
+            column = int(column.get('column', 0))
+            if content:
+                estimated = content.get('estimated', 0)
+                sold = content.get('sold', 0)
+                difference = content.get('difference', 0)
+                if column > 0:
+                    item = item_totals[name]
+                    item["estimated"][column] += estimated
+                    item["sold"][column] += sold
+                    item["difference"][column] += difference
+
+    # Combine the data into rows
+    for item_name in item_names:
+        # Get the items
+        item_data = item_totals[item_name]
+
+        # Get the item totals
+        estimated = item_data["estimated"]
+        sold = item_data["sold"]
+        difference = item_data["difference"]
+
+        # Build the row dictionary
+
+        # Estimated
+        new_row = {'0': f'{item_name} Estimated'}
+        new_row.update(estimated)
+        data.append(new_row)
+
+        # Sold
+        new_row = {'0': f'{item_name} Sold'}
+        new_row.update(sold)
+        data.append(new_row)
+
+        # Difference
+        new_row = {'0': f'{item_name} Remaining'}
+        new_row.update(difference)
+        data.append(new_row)
+
+        # Add an empty row between items
+        data.append(empty_row)
+    return data
+
+
+def get_report_data(filters):
+   # A dictionary that contain an item name, html content, a column number
+    data = []
 
     # Get the estimated amount for all items in the date range
     estimated_materials_with_attributes = total_item_availability_estimate_attributes(
         filters)
-
+    # frappe.msgprint(str(estimated_materials_with_attributes))
     # if estimated_materials_with_attributes:
     # Get the conversion factors for the bom items
     # from_uom = estimated_materials_with_attributes[0]['amount_uom']
@@ -244,7 +335,7 @@ def get_data(filters):
             bom_item['sales_item_name'] = boms[0]['item_name']
             bom_item['conversion_factor'] = find_conversion_factor(
                 estimated_materials_with_attributes[0]['amount_uom'], bom_item['stock_uom'])
-            bom_item.pop("parent")
+            bom_item.pop('parent')
 
             # Append it to the list of sales items if not already included in the report
             if not boms[0]['item_name'] in included_items:
@@ -258,12 +349,19 @@ def get_data(filters):
     sales_item_codes = [item['item_code'] for item in sales_item_totals]
 
     for available_material in estimated_materials_with_attributes:
-        estimation_name = available_material['estimation_name']
-        uom_name = available_material["amount_uom"]
-        material_amount = available_material['amount']
+        material_data = {
+            'item_name': '',
+            'content': {
+                'estimated': 0,
+                'sold': 0,
+                'difference': 0
+            },
+            'column': filters['column']
+        }
 
-        material_amount_html = html_wrap(
-            str(material_amount), qty_plenty1_strong)
+        estimation_name = available_material['estimation_name']
+        uom_name = available_material['amount_uom']
+        material_amount = available_material['amount']
 
         # Initialize the total sold items in the target uom
         total_target_uom_sold = 0
@@ -273,7 +371,7 @@ def get_data(filters):
         for ms_item in material_and_sales_items:
             if ms_item['item_code'] == available_material['name']:
                 # Reset variables
-                item_code = ""
+                item_code = ''
                 items_sold = 0
                 target_uom_sold = 0
 
@@ -297,6 +395,10 @@ def get_data(filters):
 
         item_name = available_material['item_name']
 
+        # Convert amounts to styled HTML
+        material_amount_html = html_wrap(
+            str(material_amount), qty_plenty1_strong)
+
         total_uom_sold_html = html_wrap(
             str(total_uom_sold), qty_sold1_strong)
 
@@ -305,26 +407,33 @@ def get_data(filters):
             str(material_amount - total_uom_sold), qty_estimate1_strong)
 
         # Display the data on the report
+        material_data['item_name'] = item_name
+
         estimated_row = {
-            "A": html_wrap(f'{item_name} Estimated', label_style_item_gray1),
-            "B": material_amount_html
+            'label': html_wrap(f'{item_name} Estimated', label_style_item_gray1),
+            'amount': material_amount,
+            'type': 'estimated'
         }
-        data.append(estimated_row)
+        # material_data['content']['estimated'] = estimated_row
+        material_data['content']['estimated'] = material_amount
 
         sold_row = {
-            "A": html_wrap(f'{item_name} Sold', label_style_item_gray1),
-            "B": total_uom_sold_html,
+            'label': html_wrap(f'{item_name} Sold', label_style_item_gray1),
+            'amount': total_uom_sold,
+            'type': 'sold'
         }
-        data.append(sold_row)
+        # material_data['content']['sold'] = sold_row
+        material_data['content']['sold'] = total_uom_sold
 
         difference_row = {
-            "A": html_wrap(f'{item_name} Available', label_style_item_gray1),
-            "B": difference_html
+            'label': html_wrap(f'{item_name} Available', label_style_item_gray1),
+            'amount': material_amount - total_uom_sold,
+            'type': 'difference'
         }
-        data.append(difference_row)
+        # material_data['content']['difference'] = difference_row
+        material_data['content']['difference'] = material_amount - \
+            total_uom_sold
 
-        # Empty Row
-        empty_row = {}
-        data.append([empty_row])
+        data.append(material_data)
 
     return data
