@@ -133,7 +133,7 @@ def get_prior_day(start_date: str) -> str:
 def get_week_number(date: str) -> int:
     """Get the ISO week number of a date"""
     date = pd.to_datetime(date).strftime("%V")
-    return date
+    return int(date)
 
 
 def get_quarter_number(date: str) -> int:
@@ -145,10 +145,14 @@ def get_quarter_number(date: str) -> int:
 def get_month_number(date: str) -> int:
     """Get the month number for a date"""
     month = pd.to_datetime(date).strftime("%m")
-    return month
+    return int(month)
 
 
 def get_year_number(date: str) -> int:
     """Get the year number for a date"""
     year = pd.to_datetime(date).strftime("%Y")
-    return year
+    return int(year)
+
+
+def copy_dict(dict: dict) -> dict:
+    """Return the contents of dict in a new dict"""
