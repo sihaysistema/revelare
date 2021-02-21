@@ -98,6 +98,29 @@ def total_item_bom_sales(filters):
         GROUP BY tb.item;
         """, as_dict=True
     )
+    # frappe.msgprint(str(result))
+    return result
+
+
+def item_bom_sales(filters):
+    """Returns the individual sales items in the range"""
+    result = frappe.db.sql(
+        f"""
+        SELECT soi.delivery_date, soi.item_code, soi.item_name, soi.parent,  
+               soi.stock_qty as stock_qty, soi.stock_uom 
+        FROM `tabSales Order Item` as soi
+        INNER JOIN
+          (SELECT so.name FROM `tabSales Order` AS so 
+          WHERE so.docstatus=1 
+          AND (delivery_date BETWEEN '{filters.from_date}' AND '{filters.to_date}')) AS soitems
+        ON soitems.name=soi.parent
+        INNER JOIN
+          (SELECT DISTINCT item 
+          FROM `tabBOM`
+          WHERE docstatus=1) AS tb
+        ON soi.item_code=tb.item;
+        """, as_dict=True
+    )
     return result
 
 
