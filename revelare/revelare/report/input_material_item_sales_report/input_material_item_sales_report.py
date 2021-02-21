@@ -188,12 +188,11 @@ def get_data(filters):
     if not period or not start_date or not end_date:
         return data
 
-    dates = get_periods(start_date, end_date, pandas_freq[period])
-    if not dates:
-        return data
-
     formatted_dates = get_date_ranges(
         start_date, end_date, pandas_freq[period])
+
+    if not formatted_dates:
+        return data
 
     header_subtitle_row = {'0': 'Date Range'}
     header_subtitle_data = {idx + 1: f'{formatted_dates[idx][0]} - {formatted_dates[idx][1]}'
@@ -201,157 +200,142 @@ def get_data(filters):
     header_subtitle_row.update(header_subtitle_data)
     data.append(header_subtitle_row)
 
-    # Get the report data for each date range
-    product_sum_columns = []
-    for idx, (from_date, to_date) in enumerate(formatted_dates):
-        date_filters = filters.copy()
-        date_filters['from_date'] = from_date
-        date_filters['to_date'] = to_date
-        date_filters['column'] = idx
+    # Get the estimated amount for all items in the date range
+    estimated_materials = item_availability_estimate_attributes(filters)
 
-        new_data = get_report_data(date_filters)
-        product_sum_columns += new_data
+    # Get the sales data for the range, individually listed by date
+    sales_items = get_sales_data(filters)
+
+    # Get the report data for each date range
+    # product_sum_columns = []
+    # for idx, (from_date, to_date) in enumerate(formatted_dates):
+    #     date_filters = filters.copy()
+    #     date_filters['from_date'] = from_date
+    #     date_filters['to_date'] = to_date
+    #     date_filters['column'] = idx
+
+    #     new_data = get_report_data(date_filters, estimated_materials)
+    #     product_sum_columns += new_data
+
+    # Divide the data into date range buckets
+    estimated_date_props = ('start_date', 'end_date')
+    estimated_ranges = group_data(dates=formatted_dates,
+                                  data=estimated_materials,
+                                  date_props=estimated_date_props)
+
+    sold_date_props = ('delivery_date', 'delivery_date')
+    sold_ranges = group_data(dates=formatted_dates,
+                             data=sales_items,
+                             date_props=sold_date_props)
 
     # Empty Row
     empty_row = {}
     data.append([empty_row])
 
-    # Get the item name list
-    item_names = set()
-    for column in product_sum_columns:
-        if column:
-            item_name = column.get('item_name', '')
-            if len(item_name):
-                item_names.add(item_name)
+    # # Get the item name list
+    # item_names = set()
+    # for column in product_sum_columns:
+    #     if column:
+    #         item_name = column.get('item_name', '')
+    #         if len(item_name):
+    #             item_names.add(item_name)
 
-    # Arrange the item names and totals in html on the grid
-    item_totals = {
-        item_name: {
-            'estimated': {
-                idx + 1: 0 for idx in range(len(formatted_dates))
-            },
-            'sold': {
-                idx + 1: 0 for idx in range(len(formatted_dates))
-            },
-            'difference': {
-                idx + 1: 0 for idx in range(len(formatted_dates))
-            }
-        }
-        for item_name in item_names
-    }
+    # # Arrange the item names and totals in html on the grid
+    # item_totals = {
+    #     item_name: {
+    #         'estimated': {
+    #             idx + 1: 0 for idx in range(len(formatted_dates))
+    #         },
+    #         'sold': {
+    #             idx + 1: 0 for idx in range(len(formatted_dates))
+    #         },
+    #         'difference': {
+    #             idx + 1: 0 for idx in range(len(formatted_dates))
+    #         }
+    #     }
+    #     for item_name in item_names
+    # }
 
-    # Calculate the item sums per period
-    for column in product_sum_columns:
-        '''
-        Items have a shape as shown below:
-        item = {
-             'item_name': 'Butter lettuce',
-             'content': {
-                 'estimated': 5,
-                 'sold': 3,
-                 'difference': 2
-             },
-             'column': 3
-         }
-       '''
-        if column:
-            name = column.get('item_name', '')
-            content = column.get('content', {})
-            column = int(column.get('column', 0))
-            if content:
-                estimated = content.get('estimated', 0)
-                sold = content.get('sold', 0)
-                difference = content.get('difference', 0)
-                if column > 0:
-                    item = item_totals[name]
-                    item["estimated"][column] += estimated
-                    item["sold"][column] += sold
-                    item["difference"][column] += difference
+    # # Calculate the item sums per period
+    # for column in product_sum_columns:
+    #     '''
+    #     Items have a shape as shown below:
+    #     item = {
+    #          'item_name': 'Butter lettuce',
+    #          'content': {
+    #              'estimated': 5,
+    #              'sold': 3,
+    #              'difference': 2
+    #          },
+    #          'column': 3
+    #      }
+    #    '''
+    #     if column:
+    #         name = column.get('item_name', '')
+    #         content = column.get('content', {})
+    #         column = int(column.get('column', 0))
+    #         if content:
+    #             estimated = content.get('estimated', 0)
+    #             sold = content.get('sold', 0)
+    #             difference = content.get('difference', 0)
+    #             if column > 0:
+    #                 item = item_totals[name]
+    #                 item["estimated"][column] += estimated
+    #                 item["sold"][column] += sold
+    #                 item["difference"][column] += difference
 
-    # Combine the data into rows
-    for item_name in item_names:
-        # Get the items
-        item_data = item_totals[item_name]
+    # # Combine the data into rows
+    # for item_name in item_names:
+    #     # Get the items
+    #     item_data = item_totals[item_name]
 
-        # Get the item totals
-        estimated = item_data["estimated"]
-        sold = item_data["sold"]
-        difference = item_data["difference"]
+    #     # Get the item totals
+    #     estimated = item_data["estimated"]
+    #     sold = item_data["sold"]
+    #     difference = item_data["difference"]
 
-        # Build the row dictionary
+    #     # Build the row dictionary
 
-        # Estimated
-        new_row = {'0': f'{item_name} Estimated'}
-        new_row.update(estimated)
-        data.append(new_row)
+    #     # Estimated
+    #     new_row = {'0': f'{item_name} Estimated'}
+    #     new_row.update(estimated)
+    #     data.append(new_row)
 
-        # Sold
-        new_row = {'0': f'{item_name} Sold'}
-        new_row.update(sold)
-        data.append(new_row)
+    #     # Sold
+    #     new_row = {'0': f'{item_name} Sold'}
+    #     new_row.update(sold)
+    #     data.append(new_row)
 
-        # Difference
-        new_row = {'0': f'{item_name} Remaining'}
-        new_row.update(difference)
-        data.append(new_row)
+    #     # Difference
+    #     new_row = {'0': f'{item_name} Remaining'}
+    #     new_row.update(difference)
+    #     data.append(new_row)
 
-        # Add an empty row between items
-        data.append(empty_row)
+    #     # Add an empty row between items
+    #     data.append(empty_row)
     return data
 
 
-def get_report_data(filters):
+def get_report_data(filters, material_items):
    # A dictionary that contain an item name, html content, a column number
     data = []
 
+    # Track sales items that may not have a corresponding estimate
+    estimated_sales_items = set()
+
     # Get the estimated amount for all items in the date range
-    estimated_materials_with_attributes = total_item_availability_estimate_attributes(
-        filters)
-    # frappe.msgprint(str(estimated_materials_with_attributes))
-    # if estimated_materials_with_attributes:
-    # Get the conversion factors for the bom items
-    # from_uom = estimated_materials_with_attributes[0]['amount_uom']
+    estimated_materials = total_item_availability_estimate_attributes(filters)
 
-    # Total the sales for all sales items
-    # material_and_sales_items = find_boms_and_conversions(from_uom, filters)
+    # Get sales unit conversion data
+    material_and_sales_items = get_bom_data(filters, estimated_materials)
 
-    bom_items_list = []
-    for material in estimated_materials_with_attributes:
-        material_doctype_name = material['name']
-        bom_items = find_bom_items(filters, material_doctype_name)
-        bom_items_list.extend(bom_items)
-
-    # ----- QUERY # 3 BEGIN -----
-    # we get sales item code, quantity obtained, and uom obtained for each bom parent.
-    material_and_sales_items = []
-    included_items = set()
-    for bom_item in bom_items_list:
-        bom_name = bom_item['parent']
-        boms = find_boms(filters, bom_name)
-
-        # We rearrange the current dictionary, assigning values from returned keys in this list
-        # to new keys in this object.
-        if len(boms):
-            bom_item['sales_item_code'] = boms[0]['item']
-            bom_item['sales_item_qty'] = boms[0]['quantity']
-            bom_item['sales_item_uom'] = boms[0]['uom']
-            bom_item['sales_item_name'] = boms[0]['item_name']
-            bom_item['conversion_factor'] = find_conversion_factor(
-                estimated_materials_with_attributes[0]['amount_uom'], bom_item['stock_uom'])
-            bom_item.pop('parent')
-
-            # Append it to the list of sales items if not already included in the report
-            if not boms[0]['item_name'] in included_items:
-                included_items.add(boms[0]['item_name'])
-                material_and_sales_items.append(bom_item)
-
-    # Get the sales items abd codes in the date range
+    # Get the sales items in the date range
     sales_item_totals = total_item_bom_sales(filters)
 
-    # Get the sales order quantities for items
+    # List the codes for sales order summation later
     sales_item_codes = [item['item_code'] for item in sales_item_totals]
 
-    for available_material in estimated_materials_with_attributes:
+    for available_material in estimated_materials:
         material_data = {
             'item_name': '',
             'content': {
@@ -366,35 +350,9 @@ def get_report_data(filters):
         uom_name = available_material['amount_uom']
         material_amount = available_material['amount']
 
-        # Initialize the total sold items in the target uom
-        total_target_uom_sold = 0
-        total_uom_sold = 0
-
-        # Sum the sales order items and deduct from total available
-        for ms_item in material_and_sales_items:
-            if ms_item['item_code'] == available_material['name']:
-                # Reset variables
-                item_code = ''
-                items_sold = 0
-                target_uom_sold = 0
-
-                # Total all units sold per sales item
-                item_code = ms_item['sales_item_code']
-                if item_code in sales_item_codes:
-                    # sum the stock qty for all sales order items
-                    order_qtys = [item['stock_qty'] for item in sales_item_totals
-                                  if item['item_code'] == ms_item['sales_item_code']]
-                    items_sold = math.floor(sum(order_qtys))
-                else:
-                    items_sold = 0
-
-                # Convert the items sold an amt in the target UOM
-                conversion = ms_item['conversion_factor'][0]['value']
-                target_uom_sold = (
-                    items_sold * ms_item['stock_qty']) / conversion
-
-                # Add sold qty to item_deductions for later use
-                total_uom_sold += target_uom_sold
+        # Calculate the total items sales in this period
+        total_uom_sold = sum_sales_data(
+            material_and_sales_items, available_material, sales_item_codes)
 
         item_name = available_material['item_name']
 
@@ -405,7 +363,6 @@ def get_report_data(filters):
         total_uom_sold_html = html_wrap(
             str(total_uom_sold), qty_sold1_strong)
 
-        # Compute the difference
         difference_html = html_wrap(
             str(material_amount - total_uom_sold), qty_estimate1_strong)
 
