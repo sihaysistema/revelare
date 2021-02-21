@@ -16,11 +16,13 @@ import math
 
 from revelare.revelare.report.input_material_item_sales_report.input_material_item_sales_queries import (
     total_item_availability_estimate_attributes,
+    item_availability_estimate_attributes,
     total_item_bom_sales,
     find_boms_and_conversions,
     find_conversion_factor,
     find_bom_items,
-    find_boms
+    find_boms,
+    item_bom_sales
 )
 
 from revelare.revelare.report.input_material_item_sales_report.input_material_item_sales_utils import (
@@ -35,7 +37,8 @@ from revelare.revelare.report.input_material_item_sales_report.input_material_it
     get_week_number,
     get_quarter_number,
     get_month_number,
-    get_year_number
+    get_year_number,
+    group_data
 )
 
 from revelare.revelare.report.input_material_item_sales_report.report_markup_styles import (
