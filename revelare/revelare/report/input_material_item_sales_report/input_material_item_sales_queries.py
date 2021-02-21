@@ -32,6 +32,31 @@ def total_item_availability_estimate_attributes(filters):
     return result
 
 
+def item_availability_estimate_attributes(filters):
+    """Returns the individual item availability name, dates, uoms and amounts
+       in the date range in filters"""
+    result = frappe.db.sql(
+        f"""
+        SELECT estimate.start_date, estimate.end_date, estimation_name, estimation_uom, stock_uom,
+            estimate.item_name, estimate.amount, estimate.amount_uom
+        FROM `tabItem`
+        INNER JOIN
+          (SELECT iae.start_date, iae.end_date, ei.item_code, ei.item_name, 
+                  ei.amount as amount, ei.amount_uom
+          FROM `tabItem Availability Estimate` as iae
+          INNER JOIN `tabEstimated Item` as ei
+          ON iae.name = ei.parent
+          WHERE iae.docstatus = 1
+          AND ei.docstatus = 1
+          AND (iae.start_date AND iae.end_date
+            BETWEEN '{filters.from_date}' AND '{filters.to_date}')
+          ) as estimate
+        WHERE name=estimate.item_code;
+        """, as_dict=True
+    )
+    return result
+
+
 def total_sales_items(filters):
     """
     Returns the sales item totals for each sales item code
