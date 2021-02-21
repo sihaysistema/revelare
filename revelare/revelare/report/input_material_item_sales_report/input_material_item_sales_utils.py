@@ -161,3 +161,34 @@ def get_year_number(date: str) -> int:
 
 def copy_dict(dict: dict) -> dict:
     """Return the contents of dict in a new dict"""
+
+
+def group_data(dates, data, date_props):
+    """Group data into date bins and return a dictionary of grouped data
+       Args:
+          dates: A list of date iterables in form (start, end)
+          data: An array of dictionary objects to be filtered on their date
+                property
+          date_prop: The date property keys on the object in form (start, end)
+    """
+    (prop_start, prop_end) = date_props
+    buckets = {}
+
+    # Place objects in buckets based on their dates
+    for date in dates:
+        matches = []
+        for obj in data:
+            (start, end) = date
+            start_date = obj[prop_start]
+            end_date = obj[prop_end]
+            if to_date(start_date) >= start and to_date(end_date) <= end:
+                matches.append(obj)
+        buckets[date] = matches
+    frappe.msgprint(str(data))
+    frappe.msgprint(str(buckets))
+    return buckets
+
+
+def to_date(date_str):
+    """Returns a datetime object for the date string"""
+    return pd.to_datetime(date_str).strftime(DATE_FORMAT)
