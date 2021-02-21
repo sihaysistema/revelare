@@ -397,6 +397,14 @@ def get_report_data(filters, material_items):
         data.append(material_data)
 
     return data
+
+
+def get_sales_data(filters):
+    """Returns the sale data for the range in filters"""
+    sales_data = item_bom_sales(filters)
+    return sales_data
+
+
 def get_bom_data(filters, estimated_materials):
     """Get the bom information that is necessary to convert sales item uoms"""
 
@@ -429,3 +437,40 @@ def get_bom_data(filters, estimated_materials):
                 material_and_sales_items.append(bom_item)
 
     return material_and_sales_items
+
+
+def sum_sales_data(sales_data, material_data, sales_item_codes):
+    """Sum the totals for sales items in the range"""
+    # Initialize the total sold items in the target uom
+    total_target_uom_sold = 0
+    total_uom_sold = 0
+
+    # Sum the sales order items and deduct from total available
+    for ms_item in sales_data:
+        if ms_item['item_code'] == material_data['name']:
+            frappe.msgprint(str(ms_item))
+            # Reset variables
+            item_code = ''
+            items_sold = 0
+            target_uom_sold = 0
+
+            # Total all units sold per sales item
+            item_code = ms_item['sales_item_code']
+            if item_code in sales_item_codes:
+                # sum the stock qty for all sales order items
+                order_qtys = [item['stock_qty'] for item in sl
+                              if item['item_code'] == ms_item['sales_item_code']]
+                frappe.msgprint(str(order_qtys))
+                items_sold = math.floor(sum(order_qtys))
+            else:
+                items_sold = 0
+
+            # Convert the items sold an amt in the target UOM
+            conversion = ms_item['conversion_factor'][0]['value']
+            target_uom_sold = (
+                items_sold * ms_item['stock_qty']) / conversion
+
+            # Add sold qty to item_deductions for later use
+            total_uom_sold += target_uom_sold
+    frappe.msgprint(str(total_uom_sold))
+    return total_uom_sold
