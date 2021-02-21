@@ -98,21 +98,26 @@ def get_periods(start_date: str, end_date: str, freq: str):
 
 def get_date_ranges(start_date: str, end_date: str, freq: str):
     """Get date range tuples for a period"""
+    # if start_date > end_date:
+    #     return []
+    frappe.msgprint("hello")
     dates = get_periods(start_date, end_date, freq)
 
-    # Iterate through the dates and compile the column header
-    date_ranges = [(start_date, dates[0])]
-    next_start = get_next_day(dates[0])
-    for date in dates[1:]:
-        date_ranges.append((next_start, date))
-        next_start = get_next_day(date)
+    if dates:
+        # Iterate through the dates and compile the column header
+        date_ranges = [(start_date, dates[0])]
+        next_start = get_next_day(dates[0])
+        for date in dates[1:]:
+            date_ranges.append((next_start, date))
+            next_start = get_next_day(date)
 
-    # Account for partial end range
-    last_date = date_ranges[-1][1]
-    if pd.to_datetime(end_date) > pd.to_datetime(last_date):
-        next_start = get_next_day(last_date)
-        date_ranges.append((next_start, end_date))
-
+        # Account for partial end range
+        last_date = date_ranges[-1][1]
+        if pd.to_datetime(end_date) > pd.to_datetime(last_date):
+            next_start = get_next_day(last_date)
+            date_ranges.append((next_start, end_date))
+    else:
+        date_ranges = [(start_date, end_date)]
     return date_ranges
 
 
