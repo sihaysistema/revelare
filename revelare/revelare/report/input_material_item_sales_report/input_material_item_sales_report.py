@@ -397,3 +397,35 @@ def get_report_data(filters, material_items):
         data.append(material_data)
 
     return data
+def get_bom_data(filters, estimated_materials):
+    """Get the bom information that is necessary to convert sales item uoms"""
+
+    # Obtain conversion units for sales items from BOM items
+    # bom_items contains the stock_uom, which is the number of units of
+    # the parent item, for instance, 12oz or 5lbs
+    bom_items_list = []
+    for material in estimated_materials:
+        material_doctype_name = material['name']
+        bom_items = find_bom_items(filters, material_doctype_name)
+        bom_items_list.extend(bom_items)
+
+    # Get the sales order item names and conversion factors from the BOMs
+    # We use this later to total the sales in the target uom
+    material_and_sales_items = []
+    included_items = set()
+    for bom_item in bom_items_list:
+        bom_name = bom_item['parent']
+        boms = find_boms(filters, bom_name)
+
+        if len(boms):
+            bom_item['sales_item_code'] = boms[0]['item']
+            bom_item['conversion_factor'] = find_conversion_factor(
+                estimated_materials[0]['amount_uom'], bom_item['stock_uom'])
+            bom_item.pop('parent')
+
+            # Append it to the list of sales items if not already included in the report
+            if not boms[0]['item_name'] in included_items:
+                included_items.add(boms[0]['item_name'])
+                material_and_sales_items.append(bom_item)
+
+    return material_and_sales_items
