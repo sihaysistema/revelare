@@ -72,12 +72,12 @@ def get_data(filters=None):
             period = get_period(end_date, filters)
             period = scrub(period)
             # Agregando entradas de diario por categoria
-            if set_journal_entry(start_date, end_date, period,root['direct_cash_flow_component_name']) != []:
-                journal_entry[root['direct_cash_flow_component_name']] = set_journal_entry(start_date, end_date, period,root['direct_cash_flow_component_name'])
+            if set_journal_entry(start_date, end_date, root['direct_cash_flow_component_name']) != []:
+                journal_entry[root['direct_cash_flow_component_name']] = set_journal_entry(start_date, end_date, root['direct_cash_flow_component_name'])
 
             # Agregando entradas de pago por categoria
-            if set_payment_entry(start_date, end_date, period,root['direct_cash_flow_component_name']) != []:
-                payment_entry[root['direct_cash_flow_component_name']] = set_payment_entry(start_date, end_date, period, root['direct_cash_flow_component_name'])
+            if set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name']) != []:
+                payment_entry[root['direct_cash_flow_component_name']] = set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name'])
 
     # Uniendo journal_entry y payment_entry
     data_by_categories = merging_dictionaries(journal_entry,payment_entry)
@@ -88,12 +88,14 @@ def get_data(filters=None):
     # Normalizando y uniendo categorias con journal_entry y payment_entry
     data_and_categories = formatting_data(data_by_categories, categories_by_name, ranges, filters)
 
-    # Sumando la data del reporte
-    data = accumulate_values_into_parents(data_and_categories, ranges, filters)
-
-    dicToJSON('data',data)
     # Agregando datos a las columnas vacías
-    data = adding_columns_to_data(data, ranges, filters)
+    data = adding_columns_to_data(data_and_categories, ranges, filters)
+    dicToJSON('data1',data)
+    dicToJSON('ranges',ranges)
+    dicToJSON('filters',filters)
+
+    # Sumando la data del reporte
+    data = accumulate_values_into_parents(data, ranges, filters)
 
     return data 
 
@@ -177,7 +179,7 @@ def filter_categories(categories, depth=10):
     return categories_by_name
 
 #Obteniendo entradas de diario por categorias
-def set_journal_entry(from_date, to_date, period, root):
+def set_journal_entry(from_date, to_date, root):
     """Returns a dict like { "Jorunal Entry": [gl entries], ... }"""
     entry = []
     entry = frappe.db.sql(f'''
@@ -195,13 +197,13 @@ def set_journal_entry(from_date, to_date, period, root):
 
     for en in entry:
         if en['debit'] > 0 and en['inflow_component'] != None:
-            en[period] =  en['debit']
+            en['amount'] =  en['debit']
         elif en['credit'] > 0 and en['outflow_component'] != None:
-            en[period] =  en['credit']
+            en['amount'] =  en['credit']
     return entry or []
 
 #Obteniendo entradas de diario por categorias
-def set_payment_entry(from_date, to_date, period, root):
+def set_payment_entry(from_date, to_date, root):
     """Returns a dict like { "paymets": [gl entries], ... }"""
     payments = []
     payments = frappe.db.sql(f'''
@@ -211,7 +213,7 @@ def set_payment_entry(from_date, to_date, period, root):
         ''', as_dict=True)
 
     for pay in payments:
-        pay[period] = pay['paid_amount']
+        pay['amount'] = pay['paid_amount']
 
 
     return payments or []
@@ -280,14 +282,6 @@ def formatting_data(data_by_categories, categories_by_name, ranges, filters):
     for key, data_categories in data_by_categories.items():
         for values in data_categories:
 
-            #Veficiacmos a que periodo corresponde el monto del documento
-            key_date = ''
-            for from_date, to_date in ranges:
-                period = get_period(to_date, filters)
-                period = scrub(period)
-                if values.get(period, None) != None:
-                    key_date = period
-
             data.append({
                 'name':values['lb_name'],
                 'posting_date':values['posting_date'],
@@ -295,9 +289,10 @@ def formatting_data(data_by_categories, categories_by_name, ranges, filters):
                 'cash_effect':'',
                 'is_group': 0,
                 'indent': 0,
-                key_date:values.get(key_date)
+                'amount':values.get('amount')
             })
-            
+
+
     # Agregando data a categorias
     categories_and_data = []
     for name, categori in categories_by_name.items():
@@ -306,26 +301,21 @@ def formatting_data(data_by_categories, categories_by_name, ranges, filters):
             'parent_direct_cash_flow_component': categori['parent_direct_cash_flow_component'],
             'cash_effect':categori['cash_effect'],
             'is_group':categori['is_group'],
-            'indent':categori['indent']
+            'indent':categori['indent'],
+            'amount' : 0
             })
         # Verificamos si hay documentos para agregar le de data
         for items in data:
             if items['parent_direct_cash_flow_component'] == name:
 
-                #Veficiacmos a que periodo corresponde el monto del documento
-                key_date = ''
-                for from_date, to_date in ranges:
-                    period = get_period(to_date, filters)
-                    period = scrub(period)
-                    if values.get(period, None) != None:
-                        key_date = period
                 categories_and_data.append({
                     'name' : items['name'],
+                    'posting_date':items['posting_date'],
                     'parent_direct_cash_flow_component': categori['name'],
                     'cash_effect':items['cash_effect'],
                     'is_group':items['is_group'],
                     'indent':categori['indent'] + 1,
-                    key_date:values.get(key_date)
+                    'amount':values.get('amount')
                     })
 
     return categories_and_data or []
@@ -333,73 +323,78 @@ def formatting_data(data_by_categories, categories_by_name, ranges, filters):
 # Calculando los totales de las categorias
 def accumulate_values_into_parents(data_and_categories, ranges, filters):
     """accumulate children's values in parent category"""
+    # fecha_dt = datetime.strptime(una_fecha, '%d/%m/%Y')
     
     for item in reversed(data_and_categories):
         
         # Sumamos los documentos para en las categorias padre
         if item['is_group'] == 0 and item['cash_effect'] == '':
+            
+            for date_colum in ranges:
 
-            #Veficiacmos a que periodo corresponde el monto del documento
-            key_date = ''
-            for from_date, to_date in ranges:
-                period = get_period(to_date, filters)
+                period = get_period(date_colum[1], filters)
                 period = scrub(period)
-                if item.get(period, None) != None:
-                    key_date = period
 
+                if item.get(period) > 0:
                     # Obtenemos el nombre de componente padre y el monto
-                    component = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component')
+                    component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component')
                     amount = item.get(period)
 
                     # Buscamos en toda la lista, el compoente padre
                     for dictionary in reversed(data_and_categories):
                         cash_effect = dictionary['cash_effect']
-                        if dictionary['name'] == component:
-                            
-                            try:
-                                # Sumamos o restamos el documento dependiendo del tipo de flujo del padre
-                                if cash_effect == 'Inflow':
-                                    dictionary[key_date] += amount
-                                elif cash_effect == 'Outflow':
-                                    dictionary[key_date] -= amount
+                        if dictionary['name'] == component_parent:
+
+                            #try:
+                            # Sumamos o restamos el documento dependiendo del tipo de flujo del padre
+                            if cash_effect == 'Inflow':
+                                dictionary[period] += amount
+                            elif cash_effect == 'Outflow':
+                                dictionary[period] -= amount
+                            '''
                             except:
                                 if cash_effect == 'Inflow':
-                                    dictionary[key_date] = amount
+                                    dictionary[period] = amount
                                 elif cash_effect == 'Outflow':
-                                    dictionary[key_date] = amount
+                                    dictionary[period] = amount'''
 
         else:
-            #Veficiacmos a que periodo corresponde el monto del documento
-            key_date = ''
-            for from_date, to_date in ranges:
-                period = get_period(to_date, filters)
+            for date_colum in ranges:
+
+                period = get_period(date_colum[1], filters)
                 period = scrub(period)
-                if item.get(period, None) != None:
-                    key_date = period
-                    
-                    component = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component','')
-                    amount = item.get(key_date)
+
+                if item.get(period) > 0:
+                    component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component','')
+                    amount = item.get(period)
 
                     # Buscamos en toda la lista, el compoente padre
                     for dictionary in reversed(data_and_categories):
-                        print(dictionary)
-                        try: 
-                            # Sumamos la categoria hija en la categoria padre
-                            if dictionary['name'] == component:
-                                dictionary[key_date] += amount
+                        # try: 
+                        # Sumamos la categoria hija en la categoria padre
+                        if dictionary['name'] == component_parent:
+                            dictionary[period] += amount
+                        '''
                         except:
                             # Sumamos la categoria hija en la categoria padre
-                            if dictionary['name'] == component:
-                                dictionary[key_date] = amount
+                            if dictionary['name'] == component_parent:
+                                dictionary[period] = amount'''
             
     return data_and_categories
 
 def adding_columns_to_data(data, ranges, filters):
     for d in data:
+        period_amount = ''
+        if d.get('posting_date', None) != None:
+            period_amount = get_period(d.get('posting_date'), filters)
+            period_amount = scrub(period_amount)
+
         for from_date, to_date in ranges:
             period = get_period(to_date, filters)
             period = scrub(period)
-            if d.get(period, None) == None:
+            if period_amount == period:
+                d[period] = d.get('amount')
+            else:
                 d[period] = 0
 
     return data
