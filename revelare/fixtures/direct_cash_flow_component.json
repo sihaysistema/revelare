@@ -1,13 +1,13 @@
 [
  {
-  "cash_effect": "Inflow",
+  "cash_effect": "Group",
   "direct_cash_flow_component_name": "Operations",
   "disabled": 0,
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
   "lft": 2,
-  "modified": "2021-02-02 13:26:18.548510",
+  "modified": "2021-02-03 11:47:49.485546",
   "name": "Operations",
   "old_parent": "Company",
   "parent": "Company",
