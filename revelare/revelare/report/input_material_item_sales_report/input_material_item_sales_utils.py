@@ -192,3 +192,8 @@ def group_data(dates, data, date_props):
 def to_date(date_str):
     """Returns a datetime object for the date string"""
     return pd.to_datetime(date_str).strftime(DATE_FORMAT)
+def convert_uom(total_sold, stock_qty, conversion_factor):
+    """Convert quantities from original uom to target uom"""
+    # Convert the items sold an amt in the target UOM
+    target_quantity = (total_sold * stock_qty) / conversion_factor
+    return target_quantity
