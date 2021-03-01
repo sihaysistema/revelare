@@ -231,6 +231,16 @@ def get_data(filters):
     empty_row = {}
     data.append([empty_row])
 
+    # Get the item name list
+    # Ensure it is unique by using sets
+    # This is used to display the estimation items on the far left column
+    item_names = set()
+    for date_range, estimate_array in estimated_ranges.items():
+        if estimate_array:
+            for estimate in estimate_array:
+                item_name = estimate.get('estimation_name', '')
+                if len(item_name):
+                    item_names.add(item_name)
     return data
 
 
