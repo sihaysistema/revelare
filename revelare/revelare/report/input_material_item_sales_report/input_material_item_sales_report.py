@@ -303,6 +303,39 @@ def get_data(filters):
 
         # Continue to the next column of data
         column += 1
+
+    # Construct rows for each item with item totals across the columns
+    for item_name in item_names:
+        # Get the items
+        item_data = item_totals[item_name]
+        item_metadata = estimated_materials
+        item_uom = item_metadata['estimation_uom']
+
+        # Get the item totals
+        estimated = item_data['estimated']
+        sold = item_data['sold']
+        difference = item_data['difference']
+
+        # Build the row dictionary
+
+        # Estimated
+        new_row = {'0': f'{item_name} Estimated ({item_uom})'}
+        new_row.update(estimated)
+        data.append(new_row)
+
+        # Sold
+        new_row = {'0': f'{item_name} Sold ({item_uom})'}
+        new_row.update(sold)
+        data.append(new_row)
+
+        # Difference
+        new_row = {'0': f'{item_name} Remaining ({item_uom})'}
+        new_row.update(difference)
+        data.append(new_row)
+
+        # Add an empty row between items
+        data.append(empty_row)
+
     return data
 
 
