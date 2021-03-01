@@ -241,6 +241,68 @@ def get_data(filters):
                 item_name = estimate.get('estimation_name', '')
                 if len(item_name):
                     item_names.add(item_name)
+
+    # Arrange the item names and totals to later iteratively add them
+    # To their respective rows for each items
+    item_totals = {
+        item_name: {
+            'estimated': {
+                idx + 1: 0 for idx in range(len(formatted_dates))
+            },
+            'sold': {
+                idx + 1: 0 for idx in range(len(formatted_dates))
+            },
+            'difference': {
+                idx + 1: 0 for idx in range(len(formatted_dates))
+            }
+        }
+        for item_name in item_names
+    }
+
+    # Sum the sales data
+    # convert_uom
+    column = 1
+    for date_range in estimated_ranges.keys():
+        # Estimation items
+        estimated_items = estimated_ranges.get(date_range, [])
+        if estimated_items:
+            for item in estimated_items:
+                # Get the estimated quantity
+                quantity = item.get('amount', 0)
+
+                # Add it to the totals for that item in item_totals
+                item_name = item.get('name', '')
+                if len(item_name):
+                    estimated_total = item_totals[item_name]['estimated']
+                    estimated_total[column] += int(quantity)
+
+        # Sales items
+        sold_items = sold_ranges.get(date_range, [])
+        if sold_items:
+            for item in sold_items:
+                # Get the sold quantity
+                quantity = item.get('stock_qty', 0)
+
+                # Get the sales item code for association with boms_data
+                # to perform the conversion to the target uom
+                item_code = item.get('item_code', '')
+                conversion_data = conversions.get(item_code, {})
+                conversion_factor = conversion_data.get('conversion_factor', 1)
+                conversion_stock_qty = conversion_data.get('stock_qty', 0)
+                converted_qty = convert_uom(total_sold=quantity,
+                                            stock_qty=conversion_stock_qty,
+                                            conversion_factor=conversion_factor)
+
+                # Add it to the totals for that item in item_totals
+                item_bom_data = bom_data.get(item_code, '')
+                # not the sales item code
+                parent_item_name = item_bom_data['item_code']
+                if len(parent_item_name):
+                    sold_total = item_totals[parent_item_name]['sold']
+                    sold_total[column] += int(quantity)
+
+        # Continue to the next column of data
+        column += 1
     return data
 
 
