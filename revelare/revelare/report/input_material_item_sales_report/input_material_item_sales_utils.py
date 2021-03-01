@@ -184,16 +184,19 @@ def group_data(dates, data, date_props):
             if to_date(start_date) >= start and to_date(end_date) <= end:
                 matches.append(obj)
         buckets[date] = matches
-    frappe.msgprint(str(data))
-    frappe.msgprint(str(buckets))
     return buckets
 
 
-def to_date(date_str):
-    """Returns a datetime object for the date string"""
-    return pd.to_datetime(date_str).strftime(DATE_FORMAT)
 def convert_uom(total_sold, stock_qty, conversion_factor):
     """Convert quantities from original uom to target uom"""
     # Convert the items sold an amt in the target UOM
     target_quantity = (total_sold * stock_qty) / conversion_factor
     return target_quantity
+
+
+def filter_dictionaries(list_of_dicts, key, value):
+    """Return the first dictionary in list_of_dicts w/ matching key,value pair"""
+    for dictionary in list_of_dicts:
+        if dictionary[key] == value:
+            return dictionary
+    return None
