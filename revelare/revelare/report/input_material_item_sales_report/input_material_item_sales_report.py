@@ -423,13 +423,13 @@ def get_report_data(filters, material_items):
 
 
 def get_sales_data(filters):
-    """Returns the sale data for the range in filters"""
+    '''Returns the sale data for the range in filters'''
     sales_data = item_bom_sales(filters)
     return sales_data
 
 
 def get_bom_data(filters, estimated_materials):
-    """Get the bom information that is necessary to convert sales item uoms"""
+    '''Get the bom information that is necessary to convert sales item uoms'''
 
     # Obtain conversion units for sales items from BOM items
     # bom_items contains the stock_uom, which is the number of units of
@@ -452,6 +452,8 @@ def get_bom_data(filters, estimated_materials):
             bom_item['sales_item_code'] = boms[0]['item']
             bom_item['conversion_factor'] = find_conversion_factor(
                 estimated_materials[0]['amount_uom'], bom_item['stock_uom'])
+            bom_item['conversion_backwards'] = find_conversion_factor(
+                bom_item['stock_uom'], estimated_materials[0]['amount_uom'])
             bom_item.pop('parent')
 
             # Append it to the list of sales items if not already included in the report
@@ -462,38 +464,41 @@ def get_bom_data(filters, estimated_materials):
     return material_and_sales_items
 
 
-def sum_sales_data(sales_data, material_data, sales_item_codes):
-    """Sum the totals for sales items in the range"""
+def sum_sales_data(sales_data, material_data):
+    '''Sum the totals for sales items in the range'''
     # Initialize the total sold items in the target uom
     total_target_uom_sold = 0
     total_uom_sold = 0
 
     # Sum the sales order items and deduct from total available
-    for ms_item in sales_data:
-        if ms_item['item_code'] == material_data['name']:
-            frappe.msgprint(str(ms_item))
-            # Reset variables
-            item_code = ''
-            items_sold = 0
-            target_uom_sold = 0
-
-            # Total all units sold per sales item
-            item_code = ms_item['sales_item_code']
-            if item_code in sales_item_codes:
-                # sum the stock qty for all sales order items
-                order_qtys = [item['stock_qty'] for item in sl
-                              if item['item_code'] == ms_item['sales_item_code']]
-                frappe.msgprint(str(order_qtys))
-                items_sold = math.floor(sum(order_qtys))
-            else:
+    for material in material_data:
+        for ms_item in sales_data:
+            frappe.msgprint(str(ms_item), str(material))
+            if ms_item['item_code'] == material['name']:
+                # frappe.msgprint(str(ms_item))
+                # Reset variables
+                item_code = ''
                 items_sold = 0
+                target_uom_sold = 0
 
-            # Convert the items sold an amt in the target UOM
-            conversion = ms_item['conversion_factor'][0]['value']
-            target_uom_sold = (
-                items_sold * ms_item['stock_qty']) / conversion
+                # Total all units sold per sales item
+                item_code = ms_item['sales_item_code']
+                if item_code in sales_item_codes:
+                    # sum the stock qty for all sales order items
+                    # order_qtys = [item['stock_qty'] for item in material_data
+                    #              if item['item_code'] == ms_item['sales_item_code']]
+                    order_qtys = 0
+                    # frappe.msgprint(str(order_qtys))
+                    items_sold = math.floor(sum(order_qtys))
+                else:
+                    items_sold = 0
 
-            # Add sold qty to item_deductions for later use
-            total_uom_sold += target_uom_sold
-    frappe.msgprint(str(total_uom_sold))
+                # Convert the items sold an amt in the target UOM
+                conversion = ms_item['conversion_factor'][0]['value']
+                target_uom_sold = (
+                    items_sold * ms_item['stock_qty']) / conversion
+
+                # Add sold qty to item_deductions for later use
+                total_uom_sold += target_uom_sold
+
     return total_uom_sold
