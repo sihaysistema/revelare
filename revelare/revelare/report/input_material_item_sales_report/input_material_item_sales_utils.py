@@ -100,7 +100,6 @@ def get_date_ranges(start_date: str, end_date: str, freq: str):
     """Get date range tuples for a period"""
     # if start_date > end_date:
     #     return []
-    frappe.msgprint("hello")
     dates = get_periods(start_date, end_date, freq)
 
     if dates:
@@ -159,8 +158,9 @@ def get_year_number(date: str) -> int:
     return int(year)
 
 
-def copy_dict(dict: dict) -> dict:
-    """Return the contents of dict in a new dict"""
+def to_date(date_str):
+    """Returns a datetime object for the date string"""
+    return pd.to_datetime(date_str).strftime(DATE_FORMAT)
 
 
 def group_data(dates, data, date_props):
