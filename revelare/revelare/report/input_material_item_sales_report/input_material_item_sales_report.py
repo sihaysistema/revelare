@@ -38,7 +38,9 @@ from revelare.revelare.report.input_material_item_sales_report.input_material_it
     get_quarter_number,
     get_month_number,
     get_year_number,
-    group_data
+    group_data,
+    convert_uom,
+    filter_dictionaries
 )
 
 from revelare.revelare.report.input_material_item_sales_report.report_markup_styles import (
@@ -202,26 +204,23 @@ def get_data(filters):
 
     # Get the estimated amount for all items in the date range
     estimated_materials = item_availability_estimate_attributes(filters)
+    frappe.msgprint(str(estimated_materials))
 
     # Get the sales data for the range, individually listed by date
     sales_items = get_sales_data(filters)
+    frappe.msgprint(str(sales_items))
 
-    # Get the report data for each date range
-    # product_sum_columns = []
-    # for idx, (from_date, to_date) in enumerate(formatted_dates):
-    #     date_filters = filters.copy()
-    #     date_filters['from_date'] = from_date
-    #     date_filters['to_date'] = to_date
-    #     date_filters['column'] = idx
-
-    #     new_data = get_report_data(date_filters, estimated_materials)
-    #     product_sum_columns += new_data
+    # Get sales unit conversion data
+    bom_data = get_bom_data(filters, estimated_materials)
+    conversions = {item['sales_item_code']: item for item in bom_data}
+    frappe.msgprint(str(conversions))
 
     # Divide the data into date range buckets
     estimated_date_props = ('start_date', 'end_date')
     estimated_ranges = group_data(dates=formatted_dates,
                                   data=estimated_materials,
                                   date_props=estimated_date_props)
+    # frappe.msgprint(str(estimated_ranges))
 
     sold_date_props = ('delivery_date', 'delivery_date')
     sold_ranges = group_data(dates=formatted_dates,
