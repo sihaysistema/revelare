@@ -14,7 +14,7 @@ def total_item_availability_estimate_attributes(filters):
     result = frappe.db.sql(
         f"""
         SELECT name, estimation_name, estimation_uom, stock_uom,
-                    estimate.item_name, estimate.amount, estimate.amount_uom
+               estimate.item_name, estimate.amount, estimate.amount_uom
         FROM `tabItem`
         INNER JOIN
           (SELECT ei.item_code, ei.item_name, SUM(ei.amount) as amount, ei.amount_uom
@@ -37,7 +37,7 @@ def item_availability_estimate_attributes(filters):
        in the date range in filters"""
     result = frappe.db.sql(
         f"""
-        SELECT estimate.start_date, estimate.end_date, estimation_name, estimation_uom, stock_uom,
+        SELECT name, estimate.start_date, estimate.end_date, estimation_name, estimation_uom, stock_uom,
             estimate.item_name, estimate.amount, estimate.amount_uom
         FROM `tabItem`
         INNER JOIN
@@ -141,7 +141,7 @@ def find_conversion_factor(from_uom, to_uom):
     """
     result = frappe.db.sql(
         f"""
-        SELECT from_uom, to_uom, value FROM `tabUOM Conversion Factor` 
+        SELECT from_uom, to_uom, value as "divide_by" FROM `tabUOM Conversion Factor` 
         WHERE from_uom='{from_uom}' AND to_uom='{to_uom}';
         """, as_dict=True
     )
