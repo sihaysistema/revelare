@@ -22,7 +22,9 @@ from revelare.revelare.report.input_material_item_sales_report.input_material_it
     find_conversion_factor,
     find_bom_items,
     find_boms,
-    item_bom_sales
+    item_bom_sales,
+    find_boms_by_item_code,
+    find_bom_items_by_item_code
 )
 
 from revelare.revelare.report.input_material_item_sales_report.input_material_item_sales_utils import (

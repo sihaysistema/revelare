@@ -202,6 +202,19 @@ def find_boms(filters, bom):
     return result
 
 
+def find_boms_by_item_code(filters, item_code):
+    """Find boms for a sales item"""
+    result = frappe.db.sql(
+        f"""
+        SELECT name, item, quantity, uom, item_name 
+        FROM `tabBOM` 
+        WHERE item='{item_code}'
+        AND docstatus=1;
+        """, as_dict=True
+    )
+    return result
+
+
 def find_boms_and_items(item_code, filters):
     result = frappe.db.sql(
         f"""
