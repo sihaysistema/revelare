@@ -168,6 +168,22 @@ def find_bom_items(filters, estimation_item_code):
     return result
 
 
+def find_bom_items_by_item_code(filters, item_code):
+    """Find the bom items for the name of a sales item bom"""
+    result = frappe.db.sql(
+        f"""
+        SELECT bom_item.item_code, bom_item.parent, bom_item.stock_qty, 
+               bom_item.stock_uom, estimated_item.amount_uom
+        FROM `tabBOM Item` as bom_item
+        INNER JOIN `tabEstimated Item` as estimated_item
+        ON estimated_item.item_code = bom_item.item_code
+        WHERE bom_item.parent = '{item_code}' 
+        AND bom_item.docstatus=1;
+        """, as_dict=True
+    )
+    return result
+
+
 def find_boms(filters, bom):
     """Function that returns the item, quantity and uom to obtain from this bom, such that we may go find Sales Items.
 
