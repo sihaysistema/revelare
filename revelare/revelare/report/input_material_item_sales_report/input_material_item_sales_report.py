@@ -531,9 +531,9 @@ def sum_sales_data(sales_data, material_data):
     # Sum the sales order items and deduct from total available
     for material in material_data:
         for ms_item in sales_data:
-            frappe.msgprint(str(ms_item), str(material))
+            #frappe.msgprint(str(ms_item), str(material))
             if ms_item['item_code'] == material['name']:
-                # frappe.msgprint(str(ms_item))
+                # #frappe.msgprint(str(ms_item))
                 # Reset variables
                 item_code = ''
                 items_sold = 0
@@ -546,7 +546,7 @@ def sum_sales_data(sales_data, material_data):
                     # order_qtys = [item['stock_qty'] for item in material_data
                     #              if item['item_code'] == ms_item['sales_item_code']]
                     order_qtys = 0
-                    # frappe.msgprint(str(order_qtys))
+                    # #frappe.msgprint(str(order_qtys))
                     items_sold = math.floor(sum(order_qtys))
                 else:
                     items_sold = 0
