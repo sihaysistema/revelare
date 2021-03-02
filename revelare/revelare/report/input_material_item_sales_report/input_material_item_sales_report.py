@@ -338,10 +338,7 @@ def get_data(filters):
     data.append([empty_row])
 
     # Build the remainder of the row data using the item totals
-    for item_name, item_code in item_pairs:
-        frappe.msgprint(str((item_name, item_code)))
-        frappe.msgprint(str(estimated_materials))
-        # Get the items
+    for item_name, item_code in item_pairs:  # Get the items
         item_data = item_totals[item_code]
         item_metadata = filter_dictionaries(
             estimated_materials, {'name': item_code})
