@@ -322,11 +322,11 @@ def get_data(filters):
                 # not the sales item code
                 bom_data = filter_dictionaries(
                     bom_data_array, {'sales_item_code': item_code})
-                # frappe.msgprint(str(bom_data))
-                parent_item_code = bom_data.get('item_code', '')
-                if len(parent_item_code):
-                    sold_total = item_totals[parent_item_code]['sold']
-                    sold_total[column] += float(converted_qty)
+                if bom_data:
+                    parent_item_code = bom_data.get('item_code', '')
+                    if len(parent_item_code):
+                        sold_total = item_totals[parent_item_code]['sold']
+                        sold_total[column] += float(converted_qty)
 
         # Continue to the next column of data
         column += 1
