@@ -390,7 +390,8 @@ def get_bom_item_data(filters, sales_items):
     for sales_item in sales_items:
         sales_item_code = sales_item['item_code']
         boms = find_boms_by_item_code(filters, sales_item_code)
-        boms_list.append(boms)
+        if boms:  # boms are an array
+            boms_list += boms
 
     # Get the estimation BOM name for the sales items by linking through
     # to them using the name property on the bom, which should match the
