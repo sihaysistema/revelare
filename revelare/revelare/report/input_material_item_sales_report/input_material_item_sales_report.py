@@ -275,7 +275,7 @@ def get_data(filters):
                 idx + 1: 0 for idx in range(len(formatted_dates))
             }
         }
-        for item_name in item_names
+        for item_code in item_codes
     }
 
     # Sum the sales data
@@ -298,7 +298,7 @@ def get_data(filters):
 
         # Sales items
         sold_items = sold_ranges.get(date_range, [])
-        frappe.msgprint(str(sold_items))
+
         if sold_items:
             for item in sold_items:
                 # Get the sold quantity
@@ -318,26 +318,33 @@ def get_data(filters):
                                             stock_qty=conversion_stock_qty,
                                             conversion_factor=conversion_factor)
 
-                # Add it to the totals for that item in item_totals
+                # Add it to the totals for that item in item_totals,
                 # not the sales item code
                 bom_data = filter_dictionaries(
                     bom_data_array, {'sales_item_code': item_code})
-                frappe.msgprint(str(bom_data))
-                parent_item_code = bom_data.get(item_code, '')
-                frappe.msgprint(str(parent_item_code))
+                # frappe.msgprint(str(bom_data))
+                parent_item_code = bom_data.get('item_code', '')
                 if len(parent_item_code):
                     sold_total = item_totals[parent_item_code]['sold']
-                    sold_total[column] += float(quantity)
+                    sold_total[column] += float(converted_qty)
 
         # Continue to the next column of data
         column += 1
 
     # Construct rows for each item with item totals across the columns
-    for item_name in item_names:
+
+    # Start with an empty Row
+    empty_row = {}
+    data.append([empty_row])
+
+    # Build the remainder of the row data using the item totals
+    for item_name, item_code in item_pairs:
+        frappe.msgprint(str((item_name, item_code)))
+        frappe.msgprint(str(estimated_materials))
         # Get the items
-        item_data = item_totals[item_name]
+        item_data = item_totals[item_code]
         item_metadata = filter_dictionaries(
-            estimated_materials, {'name': item_name})
+            estimated_materials, {'name': item_code})
         item_uom = item_metadata['estimation_uom']
 
         # Get the item totals

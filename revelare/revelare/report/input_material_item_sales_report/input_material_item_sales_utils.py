@@ -190,7 +190,7 @@ def group_data(dates, data, date_props):
 def convert_uom(total_sold, stock_qty, conversion_factor):
     """Convert quantities from original uom to target uom"""
     # Convert the items sold an amt in the target UOM
-    target_quantity = (total_sold * stock_qty) / conversion_factor
+    target_quantity = float((total_sold * stock_qty) / conversion_factor)
     return target_quantity
 
 
