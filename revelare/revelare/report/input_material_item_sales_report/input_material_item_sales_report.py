@@ -443,6 +443,49 @@ def get_sales_data(filters):
     return sales_data
 
 
+def get_bom_item_data(filters, sales_items):
+    """Get the bom information this necessary to convert sales item uoms, but
+    starting from the sales items rather than from the estimation items. This
+    is necessary to prevent situations where there are no estimation items
+    for a range or none selected in the filters"""
+    sales_items = []
+
+    # Obtain the boms for the sales items
+    boms_list = []
+    for sales_item in sales_items:
+        sales_item_code = sales_item['item_code']
+        boms = find_boms_by_item_code(filters, sales_item_code)
+        boms_list.append(boms)
+
+    # Get the estimation BOM name for the sales items by linking through
+    # to them using the name property on the bom, which should match the
+    # parent column on the `tabBom Item` table
+    bom_items_list = []
+    included_items = set()
+    for bom in boms_list:
+        bom_name = bom['name']
+        bom_items = find_bom_items_by_item_code(filters, bom_name)
+        bom_items_list.append(bom_items)
+
+    # Add columns from the bom table to the bom items data
+    for bom_item in bom_items_list:
+        if len(boms_list):
+            first_bom = boms_list[0]
+            bom_item['sales_item_code'] = first_bom['item']
+            bom_item['conversion_factor'] = find_conversion_factor(
+                bom_item['amount_uom'], bom_item['stock_uom'])
+            bom_item['conversion_backwards'] = find_conversion_factor(
+                bom_item['stock_uom'], bom_item['amount_uom'])
+            bom_item.pop('parent')
+
+            # Append it to the list of sales items if not already included in the report
+            if not first_bom['item_name'] in included_items:
+                included_items.add(first_bom['item_name'])
+                sales_items.append(bom_item)
+
+    return sales_items
+
+
 def get_bom_data(filters, estimated_materials):
     '''Get the bom information that is necessary to convert sales item uoms'''
 
