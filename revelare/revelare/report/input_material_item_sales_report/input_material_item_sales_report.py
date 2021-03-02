@@ -400,24 +400,23 @@ def get_bom_item_data(filters, sales_items):
     for bom in boms_list:
         bom_name = bom['name']
         bom_items = find_bom_items_by_item_code(filters, bom_name)
-        bom_items_list.append(bom_items)
+        if bom_items:  # bom_items is an array
+            bom_items_list += bom_items
 
     # Add columns from the bom table to the bom items data
     for bom_item in bom_items_list:
-        if len(boms_list):
-            first_bom = boms_list[0]
-            bom_item['sales_item_code'] = first_bom['item']
-            bom_item['conversion_factor'] = find_conversion_factor(
-                bom_item['amount_uom'], bom_item['stock_uom'])
-            bom_item['conversion_backwards'] = find_conversion_factor(
-                bom_item['stock_uom'], bom_item['amount_uom'])
-            bom_item.pop('parent')
+        first_bom = boms_list[0]
+        bom_item['sales_item_code'] = first_bom['item']
+        bom_item['conversion_factor'] = find_conversion_factor(
+            bom_item['amount_uom'], bom_item['stock_uom'])
+        bom_item['conversion_backwards'] = find_conversion_factor(
+            bom_item['stock_uom'], bom_item['amount_uom'])
+        bom_item.pop('parent')
 
-            # Append it to the list of sales items if not already included in the report
-            if not first_bom['item_name'] in included_items:
-                included_items.add(first_bom['item_name'])
-                material_and_sales_items.append(bom_item)
-
+        # Append it to the list of sales items if not already included in the report
+        if not bom_item['item_name'] in included_items:
+            included_items.add(bom_item['item_name'])
+            material_and_sales_items.append(bom_item)
     return material_and_sales_items
 
 
