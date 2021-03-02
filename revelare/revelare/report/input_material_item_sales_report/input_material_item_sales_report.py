@@ -308,7 +308,7 @@ def get_data(filters):
                 # to perform the conversion to the target uom
                 item_code = item.get('item_code', '')
                 conversion = conversions.get(item_code, {})
-                conversion_data = conversion.get('conversion_factor', 1)
+                conversion_data = conversion.get('conversion_factor', [{}])
                 if conversion_data:
                     conversion_factor_data = conversion_data[0]
                     conversion_factor = int(
