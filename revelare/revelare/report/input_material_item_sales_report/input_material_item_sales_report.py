@@ -206,51 +206,65 @@ def get_data(filters):
 
     # Get the estimated amount for all items in the date range
     estimated_materials = item_availability_estimate_attributes(filters)
-    # frappe.msgprint(str(estimated_materials))
 
     # Get the sales data for the range, individually listed by date
     sales_items = get_sales_data(filters)
-    # frappe.msgprint(str(sales_items))
 
     # Get sales unit conversion data
     bom_data = {}
-    bom_data_array = get_bom_data(filters, estimated_materials)
-    # frappe.msgprint(str(bom_data_array))
+    if estimated_materials:
+        bom_data_array = get_bom_data(filters, estimated_materials)
+    elif sales_items:
+        bom_data_array = get_bom_item_data(filters, sales_items)
+    else:
+        bom_data_array = []
     conversions = {item['sales_item_code']: item for item in bom_data_array}
-    # frappe.msgprint(str(conversions))
 
     # Divide the data into date range buckets
     estimated_date_props = ('start_date', 'end_date')
     estimated_ranges = group_data(dates=formatted_dates,
                                   data=estimated_materials,
                                   date_props=estimated_date_props)
-    # #frappe.msgprint(str(estimated_ranges))
 
     sold_date_props = ('delivery_date', 'delivery_date')
     sold_ranges = group_data(dates=formatted_dates,
                              data=sales_items,
                              date_props=sold_date_props)
 
-    # Empty Row
-    empty_row = {}
-    data.append([empty_row])
-
     # Get the item name list
     # Ensure it is unique by using sets
     # This is used to display the estimation items on the far left column
+    # We go to lengths to make this available even when there are only sales
     item_names = set()
-    for date_range, estimate_array in estimated_ranges.items():
-        if estimate_array:
-            for estimate in estimate_array:
-                #item_name = estimate.get('estimation_name', '')
-                item_name = estimate.get('name', '')
-                if len(item_name):
-                    item_names.add(item_name)
+    item_codes = set()
+    item_pairs = set()
+    if estimated_ranges:
+        # if estimated_ranges exists
+        for date_range, estimate_array in estimated_ranges.items():
+            if estimate_array:
+                for estimate in estimate_array:
+                    item_name = estimate.get('estimation_name', '')
+                    item_code = estimate.get('name', '')
+                    if len(item_name):
+                        item_names.add(item_name)
+                    if len(item_code):
+                        item_codes.add(item_code)
+                    item_pairs.add((item_name, item_code))
+    elif sold_ranges:
+        # If sold_ranges exists and estimated_ranges doesn't
+        for bom_item in bom_data_array:
+            item_name = bom_item.get('item_name', '')
+            item_code = bom_item.get('name')
+            if len(item_name):
+                item_names.add(item_name)
+            if len(item_code):
+                item_codes.add(item_code)
+            item_pairs.add((item_name, item_code))
 
     # Arrange the item names and totals to later iteratively add them
     # To their respective rows for each items
     item_totals = {
-        item_name: {
+        item_code: {
             'estimated': {
                 idx + 1: 0 for idx in range(len(formatted_dates))
             },
