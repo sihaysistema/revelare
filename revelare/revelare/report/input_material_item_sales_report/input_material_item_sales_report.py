@@ -448,7 +448,7 @@ def get_bom_item_data(filters, sales_items):
     starting from the sales items rather than from the estimation items. This
     is necessary to prevent situations where there are no estimation items
     for a range or none selected in the filters"""
-    sales_items = []
+    material_and_sales_items = []
 
     # Obtain the boms for the sales items
     boms_list = []
@@ -481,9 +481,9 @@ def get_bom_item_data(filters, sales_items):
             # Append it to the list of sales items if not already included in the report
             if not first_bom['item_name'] in included_items:
                 included_items.add(first_bom['item_name'])
-                sales_items.append(bom_item)
+                material_and_sales_items.append(bom_item)
 
-    return sales_items
+    return material_and_sales_items
 
 
 def get_bom_data(filters, estimated_materials):
