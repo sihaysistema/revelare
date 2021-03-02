@@ -212,10 +212,10 @@ def get_data(filters):
 
     # Get sales unit conversion data
     bom_data = {}
-    if estimated_materials:
-        bom_data_array = get_bom_data(filters, estimated_materials)
-    elif sales_items:
+    if sales_items:
         bom_data_array = get_bom_item_data(filters, sales_items)
+    elif estimated_materials:
+        bom_data_array = get_bom_data(filters, estimated_materials)
     else:
         bom_data_array = []
     conversions = {item['sales_item_code']: item for item in bom_data_array}
@@ -238,7 +238,17 @@ def get_data(filters):
     item_names = set()
     item_codes = set()
     item_pairs = set()
-    if estimated_ranges:
+    if sold_ranges:
+        # If sold_ranges exists and estimated_ranges doesn't
+        for bom_item in bom_data_array:
+            item_name = bom_item.get('item_name', '')
+            item_code = bom_item.get('item_code', '')
+            if len(item_name):
+                item_names.add(item_name)
+            if len(item_code):
+                item_codes.add(item_code)
+            item_pairs.add((item_name, item_code))
+    elif estimated_ranges:
         # if estimated_ranges exists
         for date_range, estimate_array in estimated_ranges.items():
             if estimate_array:
@@ -250,16 +260,6 @@ def get_data(filters):
                     if len(item_code):
                         item_codes.add(item_code)
                     item_pairs.add((item_name, item_code))
-    elif sold_ranges:
-        # If sold_ranges exists and estimated_ranges doesn't
-        for bom_item in bom_data_array:
-            item_name = bom_item.get('item_name', '')
-            item_code = bom_item.get('name')
-            if len(item_name):
-                item_names.add(item_name)
-            if len(item_code):
-                item_codes.add(item_code)
-            item_pairs.add((item_name, item_code))
 
     # Arrange the item names and totals to later iteratively add them
     # To their respective rows for each items
