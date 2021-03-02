@@ -173,7 +173,8 @@ def find_bom_items_by_item_code(filters, item_code):
     result = frappe.db.sql(
         f"""
         SELECT bom_item.item_code, bom_item.parent, bom_item.stock_qty, 
-               bom_item.stock_uom, estimated_item.amount_uom
+               bom_item.stock_uom, estimated_item.amount_uom, 
+               estimated_item.item_name
         FROM `tabBOM Item` as bom_item
         INNER JOIN `tabEstimated Item` as estimated_item
         ON estimated_item.item_code = bom_item.item_code
