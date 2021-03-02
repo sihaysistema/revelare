@@ -206,23 +206,25 @@ def get_data(filters):
 
     # Get the estimated amount for all items in the date range
     estimated_materials = item_availability_estimate_attributes(filters)
-    frappe.msgprint(str(estimated_materials))
+    # frappe.msgprint(str(estimated_materials))
 
     # Get the sales data for the range, individually listed by date
     sales_items = get_sales_data(filters)
-    frappe.msgprint(str(sales_items))
+    # frappe.msgprint(str(sales_items))
 
     # Get sales unit conversion data
-    bom_data = get_bom_data(filters, estimated_materials)
-    conversions = {item['sales_item_code']: item for item in bom_data}
-    frappe.msgprint(str(conversions))
+    bom_data = {}
+    bom_data_array = get_bom_data(filters, estimated_materials)
+    # frappe.msgprint(str(bom_data_array))
+    conversions = {item['sales_item_code']: item for item in bom_data_array}
+    # frappe.msgprint(str(conversions))
 
     # Divide the data into date range buckets
     estimated_date_props = ('start_date', 'end_date')
     estimated_ranges = group_data(dates=formatted_dates,
                                   data=estimated_materials,
                                   date_props=estimated_date_props)
-    # frappe.msgprint(str(estimated_ranges))
+    # #frappe.msgprint(str(estimated_ranges))
 
     sold_date_props = ('delivery_date', 'delivery_date')
     sold_ranges = group_data(dates=formatted_dates,
@@ -240,7 +242,8 @@ def get_data(filters):
     for date_range, estimate_array in estimated_ranges.items():
         if estimate_array:
             for estimate in estimate_array:
-                item_name = estimate.get('estimation_name', '')
+                #item_name = estimate.get('estimation_name', '')
+                item_name = estimate.get('name', '')
                 if len(item_name):
                     item_names.add(item_name)
 
@@ -273,13 +276,15 @@ def get_data(filters):
                 quantity = item.get('amount', 0)
 
                 # Add it to the totals for that item in item_totals
+                #item_name = item.get('item_name', '')
                 item_name = item.get('name', '')
                 if len(item_name):
                     estimated_total = item_totals[item_name]['estimated']
-                    estimated_total[column] += int(quantity)
+                    estimated_total[column] += float(quantity)
 
         # Sales items
         sold_items = sold_ranges.get(date_range, [])
+        frappe.msgprint(str(sold_items))
         if sold_items:
             for item in sold_items:
                 # Get the sold quantity
@@ -288,20 +293,27 @@ def get_data(filters):
                 # Get the sales item code for association with boms_data
                 # to perform the conversion to the target uom
                 item_code = item.get('item_code', '')
-                conversion_data = conversions.get(item_code, {})
-                conversion_factor = conversion_data.get('conversion_factor', 1)
-                conversion_stock_qty = conversion_data.get('stock_qty', 0)
+                conversion = conversions.get(item_code, {})
+                conversion_data = conversion.get('conversion_factor', 1)
+                if conversion_data:
+                    conversion_factor_data = conversion_data[0]
+                    conversion_factor = int(
+                        conversion_factor_data.get('divide_by', 1))
+                conversion_stock_qty = conversion.get('stock_qty', 0)
                 converted_qty = convert_uom(total_sold=quantity,
                                             stock_qty=conversion_stock_qty,
                                             conversion_factor=conversion_factor)
 
                 # Add it to the totals for that item in item_totals
-                item_bom_data = bom_data.get(item_code, '')
                 # not the sales item code
-                parent_item_name = item_bom_data['item_code']
-                if len(parent_item_name):
-                    sold_total = item_totals[parent_item_name]['sold']
-                    sold_total[column] += int(quantity)
+                bom_data = filter_dictionaries(
+                    bom_data_array, {'sales_item_code': item_code})
+                frappe.msgprint(str(bom_data))
+                parent_item_code = bom_data.get(item_code, '')
+                frappe.msgprint(str(parent_item_code))
+                if len(parent_item_code):
+                    sold_total = item_totals[parent_item_code]['sold']
+                    sold_total[column] += float(quantity)
 
         # Continue to the next column of data
         column += 1
@@ -310,7 +322,8 @@ def get_data(filters):
     for item_name in item_names:
         # Get the items
         item_data = item_totals[item_name]
-        item_metadata = estimated_materials
+        item_metadata = filter_dictionaries(
+            estimated_materials, {'name': item_name})
         item_uom = item_metadata['estimation_uom']
 
         # Get the item totals
