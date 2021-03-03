@@ -332,17 +332,13 @@ def get_data(filters):
         column += 1
 
     # Calculate the remaining quantity
-    frappe.msgprint(str(item_totals))
     for item_code, item_data in item_totals.items():
         estimated = item_data.get('estimated', [])
         sold = item_data.get('sold', [])
         difference = item_data.get('difference', [])
-        frappe.msgprint(f'estimated: {estimated}')
-        frappe.msgprint(f'sold: {sold}')
 
         # Update the difference in each column
         for idx in range(1, len(difference.keys()) + 1):
-            frappe.msgprint(f'diff: {estimated[idx] - sold[idx]}')
             difference[idx] = estimated[idx] - sold[idx]
 
     # Construct rows for each item with item totals across the columns
