@@ -350,15 +350,21 @@ def get_data(filters):
 
     # Build the remainder of the row data using the item totals
     for item_name, item_code in item_pairs:  # Get the items
-        item_data = item_totals[item_code]
-        item_metadata = filter_dictionaries(
-            estimated_materials, {'name': item_code})
-        item_uom = item_metadata['estimation_uom']
+        item_data = item_totals.get(item_code, {})
+        item_uom = ''
+        if estimated_materials:
+            item_metadata = filter_dictionaries(
+                estimated_materials, {'name': item_code})
+            item_uom = item_metadata.get('estimation_uom', '')
+        elif sales_items:
+            item_metadata = filter_dictionaries(
+                bom_data_array, {'item_code': item_code})
+            item_uom = item_metadata.get('amount_uom', '')
 
         # Get the item totals
-        estimated = item_data['estimated']
-        sold = item_data['sold']
-        difference = item_data['difference']
+        estimated = item_data.get('estimated', {})
+        sold = item_data.get('sold', {})
+        difference = item_data.get('difference', {})
 
         # Build the row dictionary
 
