@@ -294,7 +294,8 @@ def get_data(filters):
                 item_name = item.get('name', '')
                 if len(item_name):
                     estimated_total = item_totals[item_name]['estimated']
-                    estimated_total[column] += float(quantity)
+                    new_qty = estimated_total[column] + float(quantity)
+                    estimated_total[column] = round(new_qty, 2)
 
         # Sales items
         sold_items = sold_ranges.get(date_range, [])
@@ -326,7 +327,8 @@ def get_data(filters):
                     parent_item_code = bom_data.get('item_code', '')
                     if len(parent_item_code):
                         sold_total = item_totals[parent_item_code]['sold']
-                        sold_total[column] += float(converted_qty)
+                        new_qty = sold_total[column] + float(converted_qty)
+                        sold_total[column] = round(new_qty, 2)
 
         # Continue to the next column of data
         column += 1
@@ -339,7 +341,7 @@ def get_data(filters):
 
         # Update the difference in each column
         for idx in range(1, len(difference.keys()) + 1):
-            difference[idx] = estimated[idx] - sold[idx]
+            difference[idx] = round(estimated[idx] - sold[idx], 2)
 
     # Construct rows for each item with item totals across the columns
     # Start with an empty Row
