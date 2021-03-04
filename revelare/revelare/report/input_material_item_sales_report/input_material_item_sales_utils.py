@@ -87,6 +87,7 @@ def quarter_dates(start_date: str, end_date: str):
     return quarter_dates
 
 
+@frappe.whitelist()
 def get_periods(start_date: str, end_date: str, freq: str):
     """Get periods between two dates"""
     periods = (pd.date_range(pd.to_datetime(start_date),
@@ -96,6 +97,7 @@ def get_periods(start_date: str, end_date: str, freq: str):
     return periods
 
 
+@frappe.whitelist()
 def get_date_ranges(start_date: str, end_date: str, freq: str):
     """Get date range tuples for a period"""
     # if start_date > end_date:
