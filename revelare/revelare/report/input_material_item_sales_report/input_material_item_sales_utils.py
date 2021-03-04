@@ -202,4 +202,4 @@ def filter_dictionaries(list_of_dicts, configuration):
         for key, val in configuration.items():
             if dictionary.get(key, {}) == val:
                 return dictionary
-    return None
+    return {}
