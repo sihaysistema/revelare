@@ -177,7 +177,7 @@ def get_columns(filters):
 
     report_columns = [
         {
-            'label': f'{label} {period_num + idx}',
+            'label': period_headers[idx + 1],
             'fieldname': str(idx + 1),
             'fieldtype': 'Data',
             'height': 100,
@@ -259,6 +259,7 @@ def get_data(filters):
         bom_data_array = get_bom_data(filters, estimated_materials)
     else:
         bom_data_array = []
+
     conversions = {item['sales_item_code']: item for item in bom_data_array}
 
     # Divide the data into date range buckets
@@ -390,7 +391,6 @@ def get_data(filters):
     # Start with an empty Row
     empty_row = {}
     data.append([empty_row])
-
     # Build the remainder of the row data using the item totals
     for item_name, item_code in item_pairs:  # Get the items
         item_data = item_totals.get(item_code, {})
@@ -466,18 +466,18 @@ def get_bom_item_data(filters, sales_items):
 
     # Add columns from the bom table to the bom items data
     for bom_item in bom_items_list:
-        first_bom = boms_list[0]
-        bom_item['sales_item_code'] = first_bom['item']
-        bom_item['conversion_factor'] = find_conversion_factor(
-            bom_item['amount_uom'], bom_item['stock_uom'])
-        bom_item['conversion_backwards'] = find_conversion_factor(
-            bom_item['stock_uom'], bom_item['amount_uom'])
-        bom_item.pop('parent')
-
         # Append it to the list of sales items if not already included in the report
         if not bom_item['item_name'] in included_items:
             included_items.add(bom_item['item_name'])
+
+            parent = bom_item.get('parent', '')
+            matching_bom = filter_dictionaries(boms_list, {'name': parent})
+            bom_item['sales_item_code'] = matching_bom['item']
+            bom_item['conversion_factor'] = find_conversion_factor(
+                bom_item['amount_uom'], bom_item['stock_uom'])
+
             material_and_sales_items.append(bom_item)
+
     return material_and_sales_items
 
 

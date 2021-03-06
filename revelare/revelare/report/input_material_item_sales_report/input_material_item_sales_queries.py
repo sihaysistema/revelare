@@ -98,7 +98,7 @@ def total_item_bom_sales(filters):
         GROUP BY tb.item;
         """, as_dict=True
     )
-    # frappe.msgprint(str(result))
+
     return result
 
 
