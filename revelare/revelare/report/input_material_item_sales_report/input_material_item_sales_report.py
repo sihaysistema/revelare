@@ -349,27 +349,29 @@ def get_data(filters):
                 # Get the sales item code for association with boms_data
                 # to perform the conversion to the target uom
                 item_code = item.get('item_code', '')
-                conversion = conversions.get(item_code, {})
-                conversion_data = conversion.get('conversion_factor', [{}])
+                conversion_item = conversions.get(item_code, {})
+                conversion_data = conversion_item.get(
+                    'conversion_factor', [])
+
                 if conversion_data:
                     conversion_factor_data = conversion_data[0]
                     conversion_factor = int(
                         conversion_factor_data.get('divide_by', 1))
-                conversion_stock_qty = conversion.get('stock_qty', 0)
-                converted_qty = convert_uom(total_sold=quantity,
-                                            stock_qty=conversion_stock_qty,
-                                            conversion_factor=conversion_factor)
+                    conversion_stock_qty = conversion_item.get('stock_qty', 0)
+                    converted_qty = convert_uom(total_sold=quantity,
+                                                stock_qty=conversion_stock_qty,
+                                                conversion_factor=conversion_factor)
 
-                # Add it to the totals for that item in item_totals,
-                # not the sales item code
-                bom_data = filter_dictionaries(
-                    bom_data_array, {'sales_item_code': item_code})
-                if bom_data:
-                    parent_item_code = bom_data.get('item_code', '')
-                    if len(parent_item_code):
-                        sold_total = item_totals[parent_item_code]['sold']
-                        new_qty = sold_total[column] + float(converted_qty)
-                        sold_total[column] = round(new_qty, 2)
+                    # Add it to the totals for that item in item_totals,
+                    # not the sales item code
+                    bom_data = filter_dictionaries(
+                        bom_data_array, {'sales_item_code': item_code})
+                    if bom_data:
+                        parent_item_code = bom_data.get('item_code', '')
+                        if len(parent_item_code):
+                            sold_total = item_totals[parent_item_code]['sold']
+                            new_qty = sold_total[column] + float(converted_qty)
+                            sold_total[column] = round(new_qty, 2)
 
         # Continue to the next column of data
         column += 1
