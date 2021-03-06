@@ -45,14 +45,7 @@ def get_columns(filters):
 def get_data(filters=None):
     # Obtenemos el listado de periodos a mostrar
     ranges = get_period_date_ranges(filters)
-    columns = []
-    for dummy, end_date in ranges:
-        period = get_period(end_date, filters)
-        columns.append({
-            "label": _(period),
-            "fieldname":scrub(period),
-        })
-    
+
     # Obtenemos el arbol de categorias
     categories = get_categories()
     if not categories:
@@ -66,18 +59,16 @@ def get_data(filters=None):
     journal_entry = {}
     payment_entry = {}
 
+    start_date = filters.from_date
+    end_date = filters.to_date
     for root in categories_child:
+        # Agregando entradas de diario por categoria
+        if set_journal_entry(start_date, end_date, root['direct_cash_flow_component_name']) != []:
+            journal_entry[root['direct_cash_flow_component_name']] = set_journal_entry(start_date, end_date, root['direct_cash_flow_component_name'])
 
-        for start_date, end_date in ranges:
-            period = get_period(end_date, filters)
-            period = scrub(period)
-            # Agregando entradas de diario por categoria
-            if set_journal_entry(start_date, end_date, root['direct_cash_flow_component_name']) != []:
-                journal_entry[root['direct_cash_flow_component_name']] = set_journal_entry(start_date, end_date, root['direct_cash_flow_component_name'])
-
-            # Agregando entradas de pago por categoria
-            if set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name']) != []:
-                payment_entry[root['direct_cash_flow_component_name']] = set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name'])
+        # Agregando entradas de pago por categoria
+        if set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name']) != []:
+            payment_entry[root['direct_cash_flow_component_name']] = set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name'])
 
     # Uniendo journal_entry y payment_entry
     data_by_categories = merging_dictionaries(journal_entry,payment_entry)
@@ -90,9 +81,6 @@ def get_data(filters=None):
 
     # Agregando datos a las columnas vacías
     data = adding_columns_to_data(data_and_categories, ranges, filters)
-    dicToJSON('data1',data)
-    dicToJSON('ranges',ranges)
-    dicToJSON('filters',filters)
 
     # Sumando la data del reporte
     data = accumulate_values_into_parents(data, ranges, filters)
