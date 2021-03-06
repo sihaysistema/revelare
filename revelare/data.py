@@ -17,3 +17,15 @@ def crear_registros():
     registro.save()
 
     return 'ok'
+
+@frappe.whitelist()
+def get_type_account(account_name=''):
+    try:
+        if frappe.db.exists('Account', {'account_type':'Bank','name':account_name}):
+            return True
+        elif frappe.db.exists('Account', {'account_type':'Cash','name':account_name}):
+            return True
+        else:
+            return False
+    except:
+        return False
