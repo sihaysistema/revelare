@@ -122,7 +122,48 @@ def get_columns(filters):
 
     label = period_header[period]
     period_num_fn = period_fn[period]
+
+    # Get the period numbers for each date range
     period_num = period_num_fn(start_date)
+    multi_year_range = False
+    yearly_period_fn = period_fn["Yearly"]
+
+    first_year = yearly_period_fn(date_ranges[0][0])
+    last_year = yearly_period_fn(date_ranges[-1][0])
+    if first_year != last_year:
+        multi_year_range = True
+
+    # Create a dictionary of header labels based on periodicty
+    period_headers = {}
+    header_text = ''
+    header_column = 1  # The first column is unique and is not populated iteratively
+    for start, end in date_ranges:
+        period_name = period_header[period]
+        period_number = period_fn[period](start)
+        separator_char = '/'
+
+        # Handle the multi-year Yearly periodicity differently
+        # to avoid duplicating 'Year' in the label content
+        if multi_year_range and period != 'Yearly':
+            # Determine if there are 2+ years in this date range tuple
+            # If it has 2+ years then we'll separate them with a char
+            start_year = yearly_period_fn(start)
+            end_year = yearly_period_fn(end)
+            if start_year != end_year:
+                # Two or more years in this range slice
+                # e.g., 2020/2021
+                year = f'{start_year}{separator_char}{end_year}'
+            else:
+                # Only one year in the range
+                year = first_year
+                header_text = f'Year {year}, {period_name} {period_number}'
+        else:
+            header_text = f'{period_name} {period_number}'
+
+        # Assign the period header text to the appropriate header slot
+        # Increment by columns in the header
+        period_headers[header_column] = header_text
+        header_column += 1
 
     first_column = [
         {
