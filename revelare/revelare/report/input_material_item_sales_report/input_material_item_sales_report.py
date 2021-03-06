@@ -137,10 +137,11 @@ def get_columns(filters):
     period_headers = {}
     header_text = ''
     header_column = 1  # The first column is unique and is not populated iteratively
+    separator_char = '/'
+    final_weeks = [52, 53]
     for start, end in date_ranges:
         period_name = period_header[period]
-        period_number = period_fn[period](start)
-        separator_char = '/'
+        period_number = period_fn[period](end)
 
         # Handle the multi-year Yearly periodicity differently
         # to avoid duplicating 'Year' in the label content
@@ -149,14 +150,14 @@ def get_columns(filters):
             # If it has 2+ years then we'll separate them with a char
             start_year = yearly_period_fn(start)
             end_year = yearly_period_fn(end)
-            if start_year != end_year:
+            if start_year != end_year and period_number not in final_weeks:
                 # Two or more years in this range slice
                 # e.g., 2020/2021
                 year = f'{start_year}{separator_char}{end_year}'
             else:
                 # Only one year in the range
-                year = first_year
-                header_text = f'Year {year}, {period_name} {period_number}'
+                year = start_year
+            header_text = f'Year {year}, {period_name} {period_number}'
         else:
             header_text = f'{period_name} {period_number}'
 
