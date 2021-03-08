@@ -178,7 +178,7 @@ def set_journal_entry(from_date, to_date, root):
             JEC.debit AS debit, JEC.credit AS credit
             FROM `tabJournal Entry` AS JE
             JOIN `tabJournal Entry Account` AS JEC ON JEC.parent = JE.name
-            WHERE JEC.inflow_component = '{root}' 
+            WHERE JEC.inflow_component = '{root}' AND JE.docstatus = 1
             OR JEC.outflow_component = '{root}'
             AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}' 
             ''', as_dict=True)
@@ -196,8 +196,8 @@ def set_payment_entry(from_date, to_date, root):
     payments = []
     payments = frappe.db.sql(f'''
         SELECT name AS lb_name, posting_date, direct_cash_flow_component, paid_amount
-        FROM `tabPayment Entry` WHERE direct_cash_flow_component = '{root}'
-        AND posting_date BETWEEN '{from_date}' AND '{to_date}' 
+        FROM `tabPayment Entry` WHERE direct_cash_flow_component = '{root}' 
+        AND posting_date BETWEEN '{from_date}' AND '{to_date}' AND docstatus = 1
         ''', as_dict=True)
 
     for pay in payments:
