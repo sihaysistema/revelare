@@ -96,7 +96,7 @@ frappe.ui.form.on('Journal Entry Account', {
             callback: (r) => {
                 console.log(r.message)
                 if(r.message == true){
-                    
+
                     if(frm.credit_in_account_currency > 0){
 
                         // Hacemos visible el campo outflow_component
@@ -137,7 +137,8 @@ frappe.ui.form.on('Journal Entry Account', {
                     var df2=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
                     df2.hidden=1;
 
-                    row.direct_cash_flow_component = ''
+                    row.inflow_component = ''
+                    row.outflow_component = ''
                     frm.refresh_fields();
                 }
             }
@@ -145,8 +146,11 @@ frappe.ui.form.on('Journal Entry Account', {
     },
     party_type : function(frm, cdt,cdn){
         let row = frappe.get_doc(cdt, cdn);
-        if(row.party_type == 'Customer'):
-            //cur_frm.set_value('')
+        if(row.party_type == 'Customer'){
+            // Dandode el valor al campo respecto a Party Type
+            cur_frm.set_value(row.inflow_component,'Receipts from Customers');
+        }
+        frm.refresh();
     }, 
     debit_in_account_currency : function(frm,cdt,cdn){
         // Si debito es => 0 Filtrar componenete, mostrar solo Inflow
