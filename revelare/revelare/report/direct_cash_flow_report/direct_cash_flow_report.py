@@ -333,18 +333,18 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
                         cash_effect = dictionary['cash_effect']
                         if dictionary['name'] == component_parent:
 
-                            #try:
-                            # Sumamos o restamos el documento dependiendo del tipo de flujo del padre
-                            if cash_effect == 'Inflow':
-                                dictionary[period] += amount
-                            elif cash_effect == 'Outflow':
-                                dictionary[period] -= amount
-                            '''
+                            try:
+                                # Sumamos o restamos el documento dependiendo del tipo de flujo del padre
+                                if cash_effect == 'Inflow':
+                                    dictionary[period] += amount
+                                elif cash_effect == 'Outflow':
+                                    dictionary[period] -= amount
+                            
                             except:
                                 if cash_effect == 'Inflow':
                                     dictionary[period] = amount
                                 elif cash_effect == 'Outflow':
-                                    dictionary[period] = amount'''
+                                    dictionary[period] = amount
 
         else:
             for date_colum in ranges:
