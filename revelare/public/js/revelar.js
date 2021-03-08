@@ -142,6 +142,11 @@ frappe.ui.form.on('Journal Entry Account', {
                 }
             }
         })
+    },
+    party_type : function(frm, cdt,cdn){
+        let row = frappe.get_doc(cdt, cdn);
+        if(row.party_type == 'Customer'):
+            //cur_frm.set_value('')
     }, 
     debit_in_account_currency : function(frm,cdt,cdn){
         // Si debito es => 0 Filtrar componenete, mostrar solo Inflow

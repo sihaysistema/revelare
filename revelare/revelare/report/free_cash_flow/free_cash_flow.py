@@ -94,6 +94,6 @@ def adding_columns_to_data(data, ranges, filters):
         for from_date, to_date in ranges:
             period = get_period(to_date, filters)
             period = scrub(period)
-                d[period] = 0
+            d[period] = 0
 
     return data
