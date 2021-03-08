@@ -50,7 +50,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Direct Cash Flow Component",
-					"link": "Direct Cash Flow Component",
+					"link": "Tree/Direct Cash Flow Component",
 					"description": _("Manage Categories Group Tree."),
 					"onboard": 1
 				},
