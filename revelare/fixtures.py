@@ -101,7 +101,6 @@ def fill_fixtures():
         "dt": "Direct Cash Flow Component", "filters": [
             [
                 "direct_cash_flow_component_name", "in", [
-                    "Company",
                     "Operations",
                     "Cash Payment for Operating Expenses",
                     "Bonus Payroll Payments",
@@ -154,7 +153,8 @@ def fill_fixtures():
                     "Stock",
                     "Dividend Payments",
                     "New Stock Issue",
-                    "Stock Repurchases"
+                    "Stock Repurchases",
+                    "Company"
                 ]
             ]
         ]
