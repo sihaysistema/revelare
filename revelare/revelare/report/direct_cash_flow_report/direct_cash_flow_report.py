@@ -166,9 +166,9 @@ def filter_categories(categories, depth=10):
 
     return categories_by_name
 
-#Obteniendo entradas de diario por categorias
+# es-GT: Obteniendo entradas de diario por categorias
 def set_journal_entry(from_date, to_date, root):
-    """Returns a dict like { "Jorunal Entry": [gl entries], ... }"""
+    """Returns a dict like { "Journal Entry": [gl entries], ... }"""
     entry = []
     entry = frappe.db.sql(f'''
             SELECT JE.posting_date AS posting_date, 
