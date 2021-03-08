@@ -1,23 +1,6 @@
 [
     {
         "cash_effect": "Group",
-        "direct_cash_flow_component_name": "Company",
-        "disabled": 0,
-        "docstatus": 0,
-        "doctype": "Direct Cash Flow Component",
-        "is_group": 1,
-        "lft": 1,
-        "modified": "2021-02-03 11:47:49.485546",
-        "name": "Company",
-        "old_parent": null,
-        "parent": null,
-        "parent_direct_cash_flow_component": "Company",
-        "parentfield": null,
-        "parenttype": null,
-        "rgt": 104
-    },
-    {
-        "cash_effect": "Group",
         "direct_cash_flow_component_name": "Operations",
         "disabled": 0,
         "docstatus": 0,
