@@ -1,7 +1,7 @@
 [
     {
-        "cash_effect": "",
-        "direct_cash_flow_component_name": null,
+        "cash_effect": "Group",
+        "direct_cash_flow_component_name": "Company",
         "disabled": 0,
         "docstatus": 0,
         "doctype": "Direct Cash Flow Component",
