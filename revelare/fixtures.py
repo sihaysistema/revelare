@@ -153,7 +153,8 @@ def fill_fixtures():
                     "Stock",
                     "Dividend Payments",
                     "New Stock Issue",
-                    "Stock Repurchases"
+                    "Stock Repurchases",
+                    "Company"
                 ]
             ]
         ]
