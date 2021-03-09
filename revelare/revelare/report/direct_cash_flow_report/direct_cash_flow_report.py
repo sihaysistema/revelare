@@ -37,7 +37,7 @@ def get_columns(filters):
         columns.append({
             "label": _(period),
             "fieldname":scrub(period),
-            "fieldtype": "Float",
+            "fieldtype": "Data",
             "width": 120
         })
     return columns
@@ -84,6 +84,8 @@ def get_data(filters=None):
 
     # Sumando la data del reporte
     data = accumulate_values_into_parents(data, ranges, filters)
+
+    data = adding_color_to_data(data, ranges, filters)
 
     return data 
 
@@ -180,8 +182,10 @@ def set_journal_entry(from_date, to_date, root):
             JOIN `tabJournal Entry Account` AS JEC ON JEC.parent = JE.name
             WHERE JEC.inflow_component = '{root}' AND JE.docstatus = 1
             OR JEC.outflow_component = '{root}'
-            AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}' 
+            AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
+            AND JE.docstatus = 1
             ''', as_dict=True)
+            
 
     for en in entry:
         if en['debit'] > 0 and en['inflow_component'] != None:
@@ -196,8 +200,9 @@ def set_payment_entry(from_date, to_date, root):
     payments = []
     payments = frappe.db.sql(f'''
         SELECT name AS lb_name, posting_date, direct_cash_flow_component, paid_amount
-        FROM `tabPayment Entry` WHERE direct_cash_flow_component = '{root}' 
-        AND posting_date BETWEEN '{from_date}' AND '{to_date}' AND docstatus = 1
+        FROM `tabPayment Entry` WHERE direct_cash_flow_component = '{root}'
+        AND posting_date BETWEEN '{from_date}' AND '{to_date}' 
+        AND docstatus = 1
         ''', as_dict=True)
 
     for pay in payments:
@@ -275,7 +280,7 @@ def formatting_data(data_by_categories, categories_by_name, ranges, filters):
                 'posting_date':values['posting_date'],
                 'parent_direct_cash_flow_component': key,
                 'cash_effect':'',
-                'is_group': 0,
+                'is_group': '',
                 'indent': 0,
                 'amount':values.get('amount')
             })
@@ -311,65 +316,79 @@ def formatting_data(data_by_categories, categories_by_name, ranges, filters):
 # Calculando los totales de las categorias
 def accumulate_values_into_parents(data_and_categories, ranges, filters):
     """accumulate children's values in parent category"""
-    # fecha_dt = datetime.strptime(una_fecha, '%d/%m/%Y')
     
     for item in reversed(data_and_categories):
-        
+
         # Sumamos los documentos para en las categorias padre
-        if item['is_group'] == 0 and item['cash_effect'] == '':
+        if item['is_group'] == '':
             
             for date_colum in ranges:
-
                 period = get_period(date_colum[1], filters)
                 period = scrub(period)
-
+                
                 if item.get(period) > 0:
                     # Obtenemos el nombre de componente padre y el monto
                     component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component')
                     amount = item.get(period)
 
                     # Buscamos en toda la lista, el compoente padre
-                    for dictionary in reversed(data_and_categories):
+                    for dictionary in data_and_categories:
                         cash_effect = dictionary['cash_effect']
+
                         if dictionary['name'] == component_parent:
 
                             try:
                                 # Sumamos o restamos el documento dependiendo del tipo de flujo del padre
                                 if cash_effect == 'Inflow':
                                     dictionary[period] += amount
+
                                 elif cash_effect == 'Outflow':
                                     dictionary[period] -= amount
-                            
+
                             except:
                                 if cash_effect == 'Inflow':
                                     dictionary[period] = amount
+                                    
                                 elif cash_effect == 'Outflow':
                                     dictionary[period] = amount
 
-        else:
+        elif item['is_group'] == 0:
+                
             for date_colum in ranges:
-
                 period = get_period(date_colum[1], filters)
                 period = scrub(period)
-
-                if item.get(period) > 0:
+                
+                if item.get(period, 0) != 0:
                     component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component','')
                     amount = item.get(period)
 
                     # Buscamos en toda la lista, el compoente padre
-                    for dictionary in reversed(data_and_categories):
-                        # try: 
+                    for dictionary in data_and_categories:
+                        
                         # Sumamos la categoria hija en la categoria padre
                         if dictionary['name'] == component_parent:
                             dictionary[period] += amount
-                        '''
-                        except:
-                            # Sumamos la categoria hija en la categoria padre
-                            if dictionary['name'] == component_parent:
-                                dictionary[period] = amount'''
-            
+                    
+        elif item['is_group'] == 1:
+            for date_colum in ranges:
+                period = get_period(date_colum[1], filters)
+                period = scrub(period)
+
+                if item.get(period, 0) != 0:
+                    component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component','')
+                    amount = item.get(period)
+                    
+                    # Buscamos en toda la lista, el compoente padre
+                    for dictionary in data_and_categories:
+
+                        # Sumamos la categoria hija en la categoria padre
+                        if dictionary['name'] == component_parent:
+                            dictionary[period] += amount
+
+
     return data_and_categories
 
+# Agregando datos a las columnas que no tienen
 def adding_columns_to_data(data, ranges, filters):
     for d in data:
         period_amount = ''
@@ -385,6 +404,51 @@ def adding_columns_to_data(data, ranges, filters):
             else:
                 d[period] = 0
 
+    return data
+
+def adding_color_to_data(data, ranges, filters):
+    """Agrega color a los datos al momento de mostrar los en el reporte
+    Args:
+        data ([list]): {Fila por cada item}
+        ranges ([list]): {Tangos de fechas en los que se opera}
+        filters ([list]): {Delimitan los rangos de fechas}
+    return: diccionario
+    """    
+
+    # --------- STYLES DEIFNITIONS BEGIN ----------
+    positive_values_1 = "<span style='color: #00FF40; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    positive_values_2 = "</strong></span>"
+    negative_values_1 = "<span style='color: red; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    negative_values_2 = "</strong></span>"
+    neutral_values_1 = "<span style='color: black; background-color: #FFFFFF; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    neutral_values_2 = "</strong></span>"
+
+    quantity_style_few_1 = "<span style='color: black; background-color: blue; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    quantity_style_few_2 = "</strong></span>"
+    item_link_open = "<a href='#Form/Item/"
+    item_link_open_end = "' target='_blank'>"
+    item_link_close = "</a>"
+
+    # Obtenemos cada fila de la data
+    for row_item in data:
+
+        # Por cada fila le agregara un color dependiendo del valor
+        for date_colum in ranges:
+            period = get_period(date_colum[1], filters)
+            period = scrub(period)
+            row_item[period] = "{:.2f}".format(
+                float(row_item[period]))
+            if float(row_item[period]) > 0:
+                row_item[period] = positive_values_1 + \
+                    str(row_item[period])+positive_values_2
+
+            elif float(row_item[period]) == 0:
+                row_item[period] = neutral_values_1 + \
+                    str(row_item[period])+neutral_values_2
+
+            else:
+                row_item[period] = negative_values_1 + \
+                    str(row_item[period])+negative_values_2
     return data
 
 
