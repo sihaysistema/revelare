@@ -37,7 +37,7 @@ def get_columns(filters):
         columns.append({
             "label": _(period),
             "fieldname":scrub(period),
-            "fieldtype": "Float",
+            "fieldtype": "Data",
             "width": 120
         })
     return columns
@@ -81,11 +81,11 @@ def get_data(filters=None):
 
     # Agregando datos a las columnas vacías
     data = adding_columns_to_data(data_and_categories, ranges, filters)
-    dicToJSON('data_and_categories',data_and_categories)
-    dicToJSON('ranges',ranges)
-    dicToJSON('filters',filters)
+
     # Sumando la data del reporte
     data = accumulate_values_into_parents(data, ranges, filters)
+
+    data = adding_color_to_data(data, ranges, filters)
 
     return data 
 
@@ -182,9 +182,10 @@ def set_journal_entry(from_date, to_date, root):
             JOIN `tabJournal Entry Account` AS JEC ON JEC.parent = JE.name
             WHERE JEC.inflow_component = '{root}' 
             OR JEC.outflow_component = '{root}'
+            AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
             AND JE.docstatus = 1
-            AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}' 
             ''', as_dict=True)
+            
 
     for en in entry:
         if en['debit'] > 0 and en['inflow_component'] != None:
@@ -386,6 +387,7 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
 
     return data_and_categories
 
+# Agregando datos a las columnas que no tienen
 def adding_columns_to_data(data, ranges, filters):
     for d in data:
         period_amount = ''
@@ -401,6 +403,51 @@ def adding_columns_to_data(data, ranges, filters):
             else:
                 d[period] = 0
 
+    return data
+
+def adding_color_to_data(data, ranges, filters):
+    """Agrega color a los datos al momento de mostrar los en el reporte
+    Args:
+        data ([list]): {Fila por cada item}
+        ranges ([list]): {Tangos de fechas en los que se opera}
+        filters ([list]): {Delimitan los rangos de fechas}
+    return: diccionario
+    """    
+
+    # --------- STYLES DEIFNITIONS BEGIN ----------
+    positive_values_1 = "<span style='color: #00FF40; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    positive_values_2 = "</strong></span>"
+    negative_values_1 = "<span style='color: red; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    negative_values_2 = "</strong></span>"
+    neutral_values_1 = "<span style='color: black; background-color: #FFFFFF; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    neutral_values_2 = "</strong></span>"
+
+    quantity_style_few_1 = "<span style='color: black; background-color: blue; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    quantity_style_few_2 = "</strong></span>"
+    item_link_open = "<a href='#Form/Item/"
+    item_link_open_end = "' target='_blank'>"
+    item_link_close = "</a>"
+
+    # Obtenemos cada fila de la data
+    for row_item in data:
+
+        # Por cada fila le agregara un color dependiendo del valor
+        for date_colum in ranges:
+            period = get_period(date_colum[1], filters)
+            period = scrub(period)
+            row_item[period] = "{:.2f}".format(
+                float(row_item[period]))
+            if float(row_item[period]) > 0:
+                row_item[period] = positive_values_1 + \
+                    str(row_item[period])+positive_values_2
+
+            elif float(row_item[period]) == 0:
+                row_item[period] = neutral_values_1 + \
+                    str(row_item[period])+neutral_values_2
+
+            else:
+                row_item[period] = negative_values_1 + \
+                    str(row_item[period])+negative_values_2
     return data
 
 
