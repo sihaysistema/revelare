@@ -168,7 +168,7 @@ def filter_categories(categories, depth=10):
 
     return categories_by_name
 
-#Obteniendo entradas de diario por categorias
+# es-GT: Obteniendo entradas de diario por categorias
 def set_journal_entry(from_date, to_date, root):
     """Returns a dict like { "Journal Entry": [gl entries], ... }"""
     entry = []
@@ -180,7 +180,7 @@ def set_journal_entry(from_date, to_date, root):
             JEC.debit AS debit, JEC.credit AS credit
             FROM `tabJournal Entry` AS JE
             JOIN `tabJournal Entry Account` AS JEC ON JEC.parent = JE.name
-            WHERE JEC.inflow_component = '{root}' 
+            WHERE JEC.inflow_component = '{root}' AND JE.docstatus = 1
             OR JEC.outflow_component = '{root}'
             AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
             AND JE.docstatus = 1
@@ -336,14 +336,15 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
                         cash_effect = dictionary['cash_effect']
 
                         if dictionary['name'] == component_parent:
-                            
+
                             try:
                                 # Sumamos o restamos el documento dependiendo del tipo de flujo del padre
                                 if cash_effect == 'Inflow':
                                     dictionary[period] += amount
-                                    
+
                                 elif cash_effect == 'Outflow':
                                     dictionary[period] -= amount
+
                             except:
                                 if cash_effect == 'Inflow':
                                     dictionary[period] = amount
