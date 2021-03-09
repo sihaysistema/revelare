@@ -81,7 +81,9 @@ def get_data(filters=None):
 
     # Agregando datos a las columnas vacías
     data = adding_columns_to_data(data_and_categories, ranges, filters)
-
+    dicToJSON('data_and_categories',data_and_categories)
+    dicToJSON('ranges',ranges)
+    dicToJSON('filters',filters)
     # Sumando la data del reporte
     data = accumulate_values_into_parents(data, ranges, filters)
 
@@ -168,7 +170,7 @@ def filter_categories(categories, depth=10):
 
 #Obteniendo entradas de diario por categorias
 def set_journal_entry(from_date, to_date, root):
-    """Returns a dict like { "Jorunal Entry": [gl entries], ... }"""
+    """Returns a dict like { "Journal Entry": [gl entries], ... }"""
     entry = []
     entry = frappe.db.sql(f'''
             SELECT JE.posting_date AS posting_date, 
@@ -180,6 +182,7 @@ def set_journal_entry(from_date, to_date, root):
             JOIN `tabJournal Entry Account` AS JEC ON JEC.parent = JE.name
             WHERE JEC.inflow_component = '{root}' 
             OR JEC.outflow_component = '{root}'
+            AND JE.docstatus = 1
             AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}' 
             ''', as_dict=True)
 
@@ -198,6 +201,7 @@ def set_payment_entry(from_date, to_date, root):
         SELECT name AS lb_name, posting_date, direct_cash_flow_component, paid_amount
         FROM `tabPayment Entry` WHERE direct_cash_flow_component = '{root}'
         AND posting_date BETWEEN '{from_date}' AND '{to_date}' 
+        AND docstatus = 1
         ''', as_dict=True)
 
     for pay in payments:
@@ -275,7 +279,7 @@ def formatting_data(data_by_categories, categories_by_name, ranges, filters):
                 'posting_date':values['posting_date'],
                 'parent_direct_cash_flow_component': key,
                 'cash_effect':'',
-                'is_group': 0,
+                'is_group': '',
                 'indent': 0,
                 'amount':values.get('amount')
             })
@@ -311,63 +315,75 @@ def formatting_data(data_by_categories, categories_by_name, ranges, filters):
 # Calculando los totales de las categorias
 def accumulate_values_into_parents(data_and_categories, ranges, filters):
     """accumulate children's values in parent category"""
-    # fecha_dt = datetime.strptime(una_fecha, '%d/%m/%Y')
     
     for item in reversed(data_and_categories):
-        
+
         # Sumamos los documentos para en las categorias padre
-        if item['is_group'] == 0 and item['cash_effect'] == '':
+        if item['is_group'] == '':
             
             for date_colum in ranges:
-
                 period = get_period(date_colum[1], filters)
                 period = scrub(period)
-
+                
                 if item.get(period) > 0:
                     # Obtenemos el nombre de componente padre y el monto
                     component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component')
                     amount = item.get(period)
 
                     # Buscamos en toda la lista, el compoente padre
-                    for dictionary in reversed(data_and_categories):
+                    for dictionary in data_and_categories:
                         cash_effect = dictionary['cash_effect']
-                        if dictionary['name'] == component_parent:
 
-                            #try:
-                            # Sumamos o restamos el documento dependiendo del tipo de flujo del padre
-                            if cash_effect == 'Inflow':
-                                dictionary[period] += amount
-                            elif cash_effect == 'Outflow':
-                                dictionary[period] -= amount
-                            '''
+                        if dictionary['name'] == component_parent:
+                            
+                            try:
+                                # Sumamos o restamos el documento dependiendo del tipo de flujo del padre
+                                if cash_effect == 'Inflow':
+                                    dictionary[period] += amount
+                                    
+                                elif cash_effect == 'Outflow':
+                                    dictionary[period] -= amount
                             except:
                                 if cash_effect == 'Inflow':
                                     dictionary[period] = amount
+                                    
                                 elif cash_effect == 'Outflow':
-                                    dictionary[period] = amount'''
+                                    dictionary[period] = amount
 
-        else:
+        elif item['is_group'] == 0:
+                
             for date_colum in ranges:
-
                 period = get_period(date_colum[1], filters)
                 period = scrub(period)
-
-                if item.get(period) > 0:
+                
+                if item.get(period, 0) != 0:
                     component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component','')
                     amount = item.get(period)
 
                     # Buscamos en toda la lista, el compoente padre
-                    for dictionary in reversed(data_and_categories):
-                        # try: 
+                    for dictionary in data_and_categories:
+                        
                         # Sumamos la categoria hija en la categoria padre
                         if dictionary['name'] == component_parent:
                             dictionary[period] += amount
-                        '''
-                        except:
-                            # Sumamos la categoria hija en la categoria padre
-                            if dictionary['name'] == component_parent:
-                                dictionary[period] = amount'''
-            
+                    
+        elif item['is_group'] == 1:
+            for date_colum in ranges:
+                period = get_period(date_colum[1], filters)
+                period = scrub(period)
+
+                if item.get(period, 0) != 0:
+                    component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component','')
+                    amount = item.get(period)
+                    
+                    # Buscamos en toda la lista, el compoente padre
+                    for dictionary in data_and_categories:
+
+                        # Sumamos la categoria hija en la categoria padre
+                        if dictionary['name'] == component_parent:
+                            dictionary[period] += amount
+
+
     return data_and_categories
 
 def adding_columns_to_data(data, ranges, filters):
