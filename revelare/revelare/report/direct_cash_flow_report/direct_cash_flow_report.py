@@ -70,7 +70,6 @@ def get_data(filters=None):
         if set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name']) != []:
             payment_entry[root['direct_cash_flow_component_name']] = set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name'])
 
-    dicToJSON('journal_entry',journal_entry)
     # Uniendo journal_entry y payment_entry
     data_by_categories = merging_dictionaries(journal_entry,payment_entry)
 
@@ -178,13 +177,16 @@ def set_journal_entry(from_date, to_date, root):
             JEC.account AS lb_name,
             JEC.inflow_component AS inflow_component, 
             JEC.outflow_component AS outflow_component, 
-            JEC.debit AS debit, JEC.credit AS credit
+            sum(JEC.debit) AS debit, sum(JEC.credit) AS credit,
+            sum(JEC.debit_in_account_currency) AS debit_in_account_currency,
+            sum(JEC.credit_in_account_currency) AS credit_in_account_currency,
+            JEC.account_currency AS acconut_currency
             FROM `tabJournal Entry` AS JE
             JOIN `tabJournal Entry Account` AS JEC ON JEC.parent = JE.name
             WHERE JEC.inflow_component = '{root}'
             OR JEC.outflow_component = '{root}'
             AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
-            AND JE.docstatus = 0
+            AND JE.docstatus = 0 GROUP BY JEC.account
             ''', as_dict=True)
             
 
