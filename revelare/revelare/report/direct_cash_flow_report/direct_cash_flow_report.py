@@ -70,6 +70,7 @@ def get_data(filters=None):
         if set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name']) != []:
             payment_entry[root['direct_cash_flow_component_name']] = set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name'])
 
+    dicToJSON('journal_entry',journal_entry)
     # Uniendo journal_entry y payment_entry
     data_by_categories = merging_dictionaries(journal_entry,payment_entry)
 
@@ -180,10 +181,10 @@ def set_journal_entry(from_date, to_date, root):
             JEC.debit AS debit, JEC.credit AS credit
             FROM `tabJournal Entry` AS JE
             JOIN `tabJournal Entry Account` AS JEC ON JEC.parent = JE.name
-            WHERE JEC.inflow_component = '{root}' AND JE.docstatus = 1
+            WHERE JEC.inflow_component = '{root}'
             OR JEC.outflow_component = '{root}'
             AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
-            AND JE.docstatus = 1
+            AND JE.docstatus = 0
             ''', as_dict=True)
             
 
@@ -202,7 +203,7 @@ def set_payment_entry(from_date, to_date, root):
         SELECT name AS lb_name, posting_date, direct_cash_flow_component, paid_amount
         FROM `tabPayment Entry` WHERE direct_cash_flow_component = '{root}'
         AND posting_date BETWEEN '{from_date}' AND '{to_date}' 
-        AND docstatus = 1
+        AND docstatus = 0
         ''', as_dict=True)
 
     for pay in payments:
@@ -329,28 +330,31 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
                 if item.get(period) > 0:
                     # Obtenemos el nombre de componente padre y el monto
                     component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component')
-                    amount = item.get(period)
-
-                    # Buscamos en toda la lista, el compoente padre
+                    # Buscamos en toda la lista, el componente padre
                     for dictionary in data_and_categories:
                         cash_effect = dictionary['cash_effect']
 
                         if dictionary['name'] == component_parent:
-
+                            
                             try:
+
                                 # Sumamos o restamos el documento dependiendo del tipo de flujo del padre
                                 if cash_effect == 'Inflow':
-                                    dictionary[period] += amount
-
-                                elif cash_effect == 'Outflow':
-                                    dictionary[period] -= amount
-
-                            except:
-                                if cash_effect == 'Inflow':
-                                    dictionary[period] = amount
+                                    dictionary[period] += item.get(period)
                                     
                                 elif cash_effect == 'Outflow':
-                                    dictionary[period] = amount
+                                    # haciendo negativo el hijo
+                                    item[period] = (item.get(period)*-1)
+                                    
+                                    dictionary[period] += item.get(period)
+                            except:
+                                if cash_effect == 'Inflow':
+                                    dictionary[period] = item.get(period)
+                                    
+                                elif cash_effect == 'Outflow':
+                                    item[period] = (item.get(period)*-1)
+                                    dictionary[period] = item.get(period)
+
 
         elif item['is_group'] == 0:
                 
@@ -416,9 +420,9 @@ def adding_color_to_data(data, ranges, filters):
     """    
 
     # --------- STYLES DEIFNITIONS BEGIN ----------
-    positive_values_1 = "<span style='color: #00FF40; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    positive_values_1 = "<span style='color: #006600; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
     positive_values_2 = "</strong></span>"
-    negative_values_1 = "<span style='color: red; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    negative_values_1 = "<span style='color: #CC0000; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
     negative_values_2 = "</strong></span>"
     neutral_values_1 = "<span style='color: black; background-color: #FFFFFF; float: right; text-align: right; vertical-align: text-top;'><strong>"
     neutral_values_2 = "</strong></span>"
