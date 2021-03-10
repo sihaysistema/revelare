@@ -186,7 +186,7 @@ def set_journal_entry(from_date, to_date, root):
             WHERE JEC.inflow_component = '{root}'
             OR JEC.outflow_component = '{root}'
             AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
-            AND JE.docstatus = 0 GROUP BY JEC.account
+            AND JE.docstatus = 1 GROUP BY JEC.account
             ''', as_dict=True)
             
 
@@ -205,7 +205,7 @@ def set_payment_entry(from_date, to_date, root):
         SELECT name AS lb_name, posting_date, direct_cash_flow_component, paid_amount
         FROM `tabPayment Entry` WHERE direct_cash_flow_component = '{root}'
         AND posting_date BETWEEN '{from_date}' AND '{to_date}' 
-        AND docstatus = 0
+        AND docstatus = 1
         ''', as_dict=True)
 
     for pay in payments:
