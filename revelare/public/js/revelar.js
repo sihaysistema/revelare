@@ -79,7 +79,68 @@ frappe.ui.form.on('Journal Entry', {
                 }
             };
         });
-    }
+    },
+    onload:function(frm){ 
+        $.each(frm.doc.child_table_name, function(idx, row){
+            // Validamos con un booleano si desde python el tipo de cuenta es 'cash' o 'bank'
+            frappe.call({
+                method: 'revelare.data.get_type_account',
+                args: {
+                    account_name: row.account
+                },
+                callback: (r) => {
+                    console.log(r.message)
+                    if(r.message == true){
+
+                        if(frm.credit_in_account_currency > 0){
+
+                            // Hacemos visible el campo outflow_component
+                            var df=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
+                            df.hidden=0;
+
+                            // Y ocultamos el campo inflow_component
+                            var df2=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
+                            df2.hidden=1;
+                            frm.refresh_fields();
+                        } else if(frm.debit_in_account_currency > 0){
+
+                            // Hacemos visible el campo inflow_component
+                            var df=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
+                            df.hidden=0;
+
+                            // Y ocultamos el campo outflow_component
+                            var df2=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
+                            df2.hidden=1;
+                            frm.refresh_fields();
+                        } else {
+
+                            // Hacemos visible el campo inflow_component
+                            var df=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
+                            df.hidden=0;
+
+                            // Y ocultamos el campo outflow_component
+                            var df2=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
+                            df2.hidden=1;
+                            frm.refresh_fields();
+                        }
+                    } else {
+
+                        // Ocultamos el campo inflow_component
+                        var df=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
+                        df.hidden=1;
+
+                        // Ocultamos el campo direct_cash_flow_component
+                        var df2=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
+                        df2.hidden=1;
+
+                        row.inflow_component = ''
+                        row.outflow_component = ''
+                        frm.refresh_fields();
+                    }
+                }
+            })
+        })
+        }
 });
 
 // Funcionalidad sobre tabla hija en Journal Entry
@@ -98,7 +159,7 @@ frappe.ui.form.on('Journal Entry Account', {
                 if(r.message == true){
 
                     if(frm.credit_in_account_currency > 0){
-                        //frappe.msgprint("Credit es > 0")
+
                         // Hacemos visible el campo outflow_component
                         var df=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
                         df.hidden=0;
@@ -108,7 +169,7 @@ frappe.ui.form.on('Journal Entry Account', {
                         df2.hidden=1;
                         frm.refresh_fields();
                     } else if(frm.debit_in_account_currency > 0){
-                        //frappe.msgprint("debit es > 0")
+
                         // Hacemos visible el campo inflow_component
                         var df=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
                         df.hidden=0;
@@ -118,7 +179,7 @@ frappe.ui.form.on('Journal Entry Account', {
                         df2.hidden=1;
                         frm.refresh_fields();
                     } else {
-                        //frappe.msgprint("Default, debit y credit = 0")
+
                         // Hacemos visible el campo inflow_component
                         var df=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
                         df.hidden=0;
@@ -129,7 +190,7 @@ frappe.ui.form.on('Journal Entry Account', {
                         frm.refresh_fields();
                     }
                 } else {
-                    //frappe.msgprint("Campos ocultados")
+
                     // Ocultamos el campo inflow_component
                     var df=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
                     df.hidden=1;
@@ -148,7 +209,6 @@ frappe.ui.form.on('Journal Entry Account', {
     party_type : function(frm, cdt,cdn){
         let row = frappe.get_doc(cdt, cdn);
         if(row.party_type == 'Customer'){
-            //frappe.msgprint("Fijando valor inflow component")
             // Dandode el valor al campo respecto a Party Type
             cur_frm.set_value(row.inflow_component,'Receipts from Customers');
         }
@@ -166,31 +226,47 @@ frappe.ui.form.on('Journal Entry Account', {
             callback: (r) => {
                 console.log(r.message)
                 if(r.message == true){
-
-                    // Si debito es => 0 Filtrar componenete, mostrar solo Inflow
-                    let row = frappe.get_doc(cdt, cdn);
-                    if(row.debit_in_account_currency > 0){
-                        //frappe.msgprint("Debit trigger; debit > 0")
-                        // Hacemos visible el campo inflow_component
-                        var df=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
-                        df.hidden=0;
-
-                        // Y ocultamos el campo outflow_component
-                        var df2=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
-                        df2.hidden=1;
-                    } else {
-                        //frappe.msgprint("Debit trigger; debit > 0")
+                    if(row.credit_in_account_currency > 0 && row.debit_in_account_currency == 0){
                         // Hacemos visible el campo outflow_component
                         var df=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
                         df.hidden=0;
-
+            
                         // Y ocultamos el campo inflow_component
                         var df2=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
                         df2.hidden=1;
+                    }else if(row.debit_in_account_currency > 0 && row.credit_in_account_currency == 0){
+                        // Hacemos visible el campo inflow_component
+                        var df=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
+                        df.hidden=0;
+            
+                        // Y ocultamos el campo outflow_component
+                        var df2=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
+                        df2.hidden=1;
+                    } else if(row.debit_in_account_currency > 0 && row.credit_in_account_currency > 0){
+                        // Ocultamos los dos campos
+                        var df=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
+                        df.hidden=1;
+
+                        var df2=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
+                        df2.hidden=1;
+                        frappe.show_alert({
+                            indicator: 'Red',
+                            message: __('One of the two fields must have 0, debit or credit.')
+                        });
+                    }else{
+                        // Ocultamos los dos campos
+                        var df=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
+                        df.hidden=1;
+
+                        var df2=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
+                        df2.hidden=1;
+                        frappe.show_alert({
+                            indicator: 'Red',
+                            message: __('One of the fields debit or credit must have at least one value')
+                        });
                     }
                     frm.refresh();
                 } else {
-                    //frappe.msgprint("Campos ocultados")
                     // Ocultamos el campo inflow_component
                     var df=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
                     df.hidden=1;
@@ -218,7 +294,7 @@ frappe.ui.form.on('Journal Entry Account', {
             callback: (r) => {
                 console.log(r.message)
                 if(r.message == true){
-                    if(row.credit_in_account_currency > 0){
+                    if(row.credit_in_account_currency > 0 && row.debit_in_account_currency == 0){
                         // Hacemos visible el campo outflow_component
                         var df=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
                         df.hidden=0;
@@ -226,7 +302,7 @@ frappe.ui.form.on('Journal Entry Account', {
                         // Y ocultamos el campo inflow_component
                         var df2=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
                         df2.hidden=1;
-                    }else {
+                    }else if(row.debit_in_account_currency > 0 && row.credit_in_account_currency == 0){
                         // Hacemos visible el campo inflow_component
                         var df=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
                         df.hidden=0;
@@ -234,6 +310,28 @@ frappe.ui.form.on('Journal Entry Account', {
                         // Y ocultamos el campo outflow_component
                         var df2=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
                         df2.hidden=1;
+                    } else if(row.debit_in_account_currency > 0 && row.credit_in_account_currency > 0){
+                        // Ocultamos los dos campos
+                        var df=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
+                        df.hidden=1;
+
+                        var df2=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
+                        df2.hidden=1;
+                        frappe.show_alert({
+                            indicator: 'Red',
+                            message: __('One of the two fields must have 0, debit or credit.')
+                        });
+                    }else{
+                        // Ocultamos los dos campos
+                        var df=frappe.meta.get_docfield("Journal Entry Account", "inflow_component",frm.doc.name);
+                        df.hidden=1;
+
+                        var df2=frappe.meta.get_docfield("Journal Entry Account", "outflow_component",frm.doc.name);
+                        df2.hidden=1;
+                        frappe.show_alert({
+                            indicator: 'Red',
+                            message: __('One of the fields debit or credit must have at least one value')
+                        });
                     }
                     frm.refresh();
                 } else {
