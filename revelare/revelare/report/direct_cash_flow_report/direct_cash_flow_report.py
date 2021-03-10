@@ -171,16 +171,26 @@ def filter_categories(categories, depth=10):
 # es-GT: Obteniendo entradas de diario por categorias
 def set_journal_entry(from_date, to_date, root):
     """Returns a dict like { "Journal Entry": [gl entries], ... }"""
+    """
+    Obtiene todas las partidas de diario, que tengan que ver
+    con flujo de efectivo.
+
+    Returns:
+        lista de diccionarios: [{cuenta, cagoria, ...},{cuenta, cagoria, ...}]
+    """    
     entry = []
     entry = frappe.db.sql(f'''
             SELECT JE.posting_date AS posting_date, 
             JEC.account AS lb_name,
             JEC.inflow_component AS inflow_component, 
             JEC.outflow_component AS outflow_component, 
-            JEC.debit AS debit, JEC.credit AS credit
+            JEC.debit AS debit, JEC.credit AS credit,
+            JEC.debit_in_account_currency AS debit_in_account_currency,
+            JEC.credit_in_account_currency AS credit_in_account_currency,
+            JEC.account_currency AS acconut_currency
             FROM `tabJournal Entry` AS JE
             JOIN `tabJournal Entry Account` AS JEC ON JEC.parent = JE.name
-            WHERE JEC.inflow_component = '{root}' AND JE.docstatus = 1
+            WHERE JEC.inflow_component = '{root}'
             OR JEC.outflow_component = '{root}'
             AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
             AND JE.docstatus = 1
@@ -194,9 +204,15 @@ def set_journal_entry(from_date, to_date, root):
             en['amount'] =  en['credit']
     return entry or []
 
-#Obteniendo entradas de diario por categorias
+#Obteniendo pagos por categorias
 def set_payment_entry(from_date, to_date, root):
-    """Returns a dict like { "paymets": [gl entries], ... }"""
+    """
+    Obtiene todos los pagos, que tengan que ver
+    con flujo de efectivo.
+
+    Returns:
+        lista de diccionarios: [{cuenta, cagoria, ...},{cuenta, cagoria, ...}]
+    """    
     payments = []
     payments = frappe.db.sql(f'''
         SELECT name AS lb_name, posting_date, direct_cash_flow_component, paid_amount
@@ -207,7 +223,6 @@ def set_payment_entry(from_date, to_date, root):
 
     for pay in payments:
         pay['amount'] = pay['paid_amount']
-
 
     return payments or []
 
@@ -230,7 +245,6 @@ def merging_dictionaries(journal_entry,payment_entry):
     for category, detail in payment_entry.items():
         if data.get(category):
             data[category].extend(detail)
-            print(f'esta categoria ya esta {category}')
         else:
             data[category] = detail
         
@@ -269,6 +283,21 @@ def calculate_values(categories_by_name, data_by_categories, peirod_list=None):
 
 # Normaliza los datos en una sola lista de diccionarios
 def formatting_data(data_by_categories, categories_by_name, ranges, filters):
+    """
+    Devuelve los datos con el siguiente formato.
+    {
+        'name':'name',
+        'posting_date':'posting_date',
+        'parent_direct_cash_flow_component':'parent',
+        'cash_effect':'cash_effect',
+        'is_group':'is_group',
+        'indent':'indent',
+        'amount':'amount'
+    }
+
+    Returns:
+        [type]: [description]
+    """    
 
     # Obteniendo campos necesarios para el reporte desde la data
     data = []
@@ -297,18 +326,19 @@ def formatting_data(data_by_categories, categories_by_name, ranges, filters):
             'indent':categori['indent'],
             'amount' : 0
             })
+
         # Verificamos si hay documentos para agregar le de data
         for items in data:
             if items['parent_direct_cash_flow_component'] == name:
 
                 categories_and_data.append({
                     'name' : items['name'],
-                    'posting_date':items['posting_date'],
-                    'parent_direct_cash_flow_component': categori['name'],
-                    'cash_effect':items['cash_effect'],
-                    'is_group':items['is_group'],
-                    'indent':categori['indent'] + 1,
-                    'amount':values.get('amount')
+                    'posting_date' : items['posting_date'],
+                    'parent_direct_cash_flow_component' : categori['name'],
+                    'cash_effect' : items['cash_effect'],
+                    'is_group' : items['is_group'],
+                    'indent' : categori['indent'] + 1,
+                    'amount' : values.get('amount')
                     })
 
     return categories_and_data or []
@@ -329,28 +359,30 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
                 if item.get(period) > 0:
                     # Obtenemos el nombre de componente padre y el monto
                     component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component')
-                    amount = item.get(period)
-
-                    # Buscamos en toda la lista, el compoente padre
-                    for dictionary in data_and_categories:
+                    # Buscamos en toda la lista, el componente padre
+                    for dictionary in reversed(data_and_categories):
                         cash_effect = dictionary['cash_effect']
 
                         if dictionary['name'] == component_parent:
 
                             try:
+
                                 # Sumamos o restamos el documento dependiendo del tipo de flujo del padre
                                 if cash_effect == 'Inflow':
-                                    dictionary[period] += amount
+                                    dictionary[period] += item.get(period)
 
                                 elif cash_effect == 'Outflow':
-                                    dictionary[period] -= amount
+                                    # haciendo negativo el hijo
+                                    item[period] = (item.get(period)*-1)
+                                    dictionary[period] += item.get(period)
 
                             except:
                                 if cash_effect == 'Inflow':
-                                    dictionary[period] = amount
-                                    
+                                    dictionary[period] = item.get(period)
+
                                 elif cash_effect == 'Outflow':
-                                    dictionary[period] = amount
+                                    item[period] = (item.get(period)*-1)
+                                    dictionary[period] = item.get(period)
 
         elif item['is_group'] == 0:
                 
@@ -363,7 +395,7 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
                     amount = item.get(period)
 
                     # Buscamos en toda la lista, el compoente padre
-                    for dictionary in data_and_categories:
+                    for dictionary in reversed(data_and_categories):
                         
                         # Sumamos la categoria hija en la categoria padre
                         if dictionary['name'] == component_parent:
@@ -379,7 +411,7 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
                     amount = item.get(period)
                     
                     # Buscamos en toda la lista, el compoente padre
-                    for dictionary in data_and_categories:
+                    for dictionary in reversed(data_and_categories):
 
                         # Sumamos la categoria hija en la categoria padre
                         if dictionary['name'] == component_parent:
@@ -415,13 +447,23 @@ def adding_color_to_data(data, ranges, filters):
     return: diccionario
     """    
 
-    # --------- STYLES DEIFNITIONS BEGIN ----------
-    positive_values_1 = "<span style='color: #00FF40; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
-    positive_values_2 = "</strong></span>"
-    negative_values_1 = "<span style='color: red; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
-    negative_values_2 = "</strong></span>"
-    neutral_values_1 = "<span style='color: black; background-color: #FFFFFF; float: right; text-align: right; vertical-align: text-top;'><strong>"
-    neutral_values_2 = "</strong></span>"
+    # --------- Valores Positivos ----------
+    positive_values_strong_1 = "<span style='color: #006600; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    positive_values_strong_2 = "</strong></span>"
+    positive_values_1 = "<span style='color: #006600; background-color: white; float: right; text-align: right; vertical-align: text-top;'>"
+    positive_values_2 = "</span>"
+
+    # --------- Valores Negativos ----------
+    negative_values_strong_1 = "<span style='color: #CC0000; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    negative_values_strong_2 = "</strong></span>"
+    negative_values_1 = "<span style='color: #CC0000; background-color: white; float: right; text-align: right; vertical-align: text-top;'>"
+    negative_values_2 = "</span>"
+
+    # --------- Valores nulos ----------
+    neutral_values_strong_1 = "<span style='color: black; background-color: #FFFFFF; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    neutral_values_strong_2 = "</strong></span>"
+    neutral_values_1 = "<span style='color: black; background-color: #FFFFFF; float: right; text-align: right; vertical-align: text-top;'>"
+    neutral_values_2 = "</span>"
 
     quantity_style_few_1 = "<span style='color: black; background-color: blue; float: right; text-align: right; vertical-align: text-top;'><strong>"
     quantity_style_few_2 = "</strong></span>"
@@ -439,16 +481,27 @@ def adding_color_to_data(data, ranges, filters):
             row_item[period] = "{:.2f}".format(
                 float(row_item[period]))
             if float(row_item[period]) > 0:
-                row_item[period] = positive_values_1 + \
-                    str(row_item[period])+positive_values_2
+                if row_item['is_group'] == '':
+                    row_item[period] = positive_values_1 + \
+                        str(row_item[period])+positive_values_2
+                else:
+                    row_item[period] = positive_values_strong_1 + \
+                        str(row_item[period])+positive_values_strong_2
 
             elif float(row_item[period]) == 0:
-                row_item[period] = neutral_values_1 + \
-                    str(row_item[period])+neutral_values_2
-
+                if row_item['is_group'] == '':
+                    row_item[period] = neutral_values_1 + \
+                        str(row_item[period])+neutral_values_2
+                else:
+                    row_item[period] = neutral_values_strong_1 + \
+                        str(row_item[period])+neutral_values_strong_2
             else:
-                row_item[period] = negative_values_1 + \
-                    str(row_item[period])+negative_values_2
+                if row_item['is_group'] == '':
+                    row_item[period] = negative_values_1 + \
+                        str(row_item[period])+negative_values_2
+                else: 
+                    row_item[period] = negative_values_strong_1 + \
+                        str(row_item[period])+negative_values_strong_2
     return data
 
 
