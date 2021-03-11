@@ -89,7 +89,7 @@ def get_data(filters=None):
 
     # Cuando se maneje consolidado el flujo de caja se va a indicar el nombre de la compania en esta celda
     # Y se le agregara un totalizador
-    data = rename_categori(data)
+    data = rename_category(data)
 
     return data 
 
@@ -217,6 +217,9 @@ def set_payment_entry(from_date, to_date, root):
     Returns:
         lista de diccionarios: [{cuenta, cagoria, ...},{cuenta, cagoria, ...}]
     """    
+
+    # Para filtrar si un documento esta validado o no, el digito debe estar como string
+    # Ej: docstatus '1'
     payments = []
     payments = frappe.db.sql(f'''
         SELECT name AS lb_name, posting_date, direct_cash_flow_component, paid_amount
