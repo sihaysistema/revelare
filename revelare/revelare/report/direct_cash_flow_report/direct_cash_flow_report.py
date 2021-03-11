@@ -193,12 +193,10 @@ def set_journal_entry(from_date, to_date, root):
             JEC.credit_in_account_currency AS credit_in_account_currency,
             JEC.account_currency AS acconut_currency
             FROM `tabJournal Entry` AS JE
-            JOIN `tabJournal Entry Account` AS JEC ON JEC.parent = JE.name
+            JOIN `tabJournal Entry Account` AS JEC ON JEC.parent = JE.name AND JE.docstatus = 1 AND JEC.docstatus = 1
             WHERE JEC.inflow_component = '{root}'
             OR JEC.outflow_component = '{root}'
             AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
-            AND JEC.docstatus IN ('1') AND JEC.docstatus NOT IN ('0','2')
-            AND JE.docstatus IN ('1') AND JE.docstatus NOT IN ('0','2')
             ''', as_dict=True)
             
 
