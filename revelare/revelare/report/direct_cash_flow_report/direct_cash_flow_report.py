@@ -26,7 +26,7 @@ def get_columns(filters):
             "label": _("Components"),
             "fieldname": "name",
             "fieldtype": "Data",
-            "width": 200
+            "width": 365
         }
     ]
 
