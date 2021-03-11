@@ -197,7 +197,7 @@ def set_journal_entry(from_date, to_date, root):
             WHERE JEC.inflow_component = '{root}'
             OR JEC.outflow_component = '{root}'
             AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
-            AND JE.docstatus = '1' AND JE.docstatus != '0' AND JE.docstatus != '2'
+            AND JEC.docstatus = '1' AND JEC.docstatus != '0' AND JEC.docstatus != '2'
             ''', as_dict=True)
             
 
