@@ -87,6 +87,10 @@ def get_data(filters=None):
 
     data = adding_color_to_data(data, ranges, filters)
 
+    # Cuando se maneje consolidado el flujo de caja se va a indicar el nombre de la compania en esta celda
+    # Y se le agregara un totalizador
+    data = rename_categori(data)
+
     return data 
 
 def get_period_date_ranges(filters):
@@ -193,7 +197,7 @@ def set_journal_entry(from_date, to_date, root):
             WHERE JEC.inflow_component = '{root}'
             OR JEC.outflow_component = '{root}'
             AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
-            AND JE.docstatus = 1
+            AND JE.docstatus = 1 AND JE.docstatus != 0 AND JE.docstatus != 2
             ''', as_dict=True)
             
 
@@ -218,7 +222,7 @@ def set_payment_entry(from_date, to_date, root):
         SELECT name AS lb_name, posting_date, direct_cash_flow_component, paid_amount
         FROM `tabPayment Entry` WHERE direct_cash_flow_component = '{root}'
         AND posting_date BETWEEN '{from_date}' AND '{to_date}' 
-        AND docstatus = 1
+        AND docstatus = 1 AND docstatus != 2 AND docstatus != 0
         ''', as_dict=True)
 
     for pay in payments:
@@ -416,7 +420,7 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
                         # Sumamos la categoria hija en la categoria padre
                         if dictionary['name'] == component_parent:
                             dictionary[period] += amount
-
+    
 
     return data_and_categories
 
@@ -502,6 +506,10 @@ def adding_color_to_data(data, ranges, filters):
                 else: 
                     row_item[period] = negative_values_strong_1 + \
                         str(row_item[period])+negative_values_strong_2
+    return data
+
+def rename_categori(data):
+    data[0]['name']='Total cash flow'
     return data
 
 
