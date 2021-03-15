@@ -28,10 +28,11 @@ def fill_fixtures():
                     "Item-column_break_estimations",
                     "Item-estimation_uom",
                     "Item-estimation_name",
-                    "Payment Entry-direct_cash_flow_component",
                     "Payment Entry-cash_flow",
                     "Journal Entry Account-inflow_component",
-                    "Journal Entry Account-outflow_component"
+                    "Journal Entry Account-outflow_component",
+                    "Payment Entry-inflow_component",
+                    "Payment Entry-outflow_component"
                 ]
             ]
         ]
