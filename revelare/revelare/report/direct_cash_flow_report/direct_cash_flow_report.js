@@ -16,14 +16,14 @@ frappe.query_reports["Direct Cash Flow Report"] = {
             fieldname: "from_date",
             label: __("From Date"),
             fieldtype: "Date",
-            default: frappe.defaults.get_global_default("year_start_date"),
+            default: get_start_date(),
             reqd: 1
         },
         {
             fieldname: "to_date",
             label: __("To Date"),
             fieldtype: "Date",
-            default: frappe.defaults.get_global_default("year_end_date"),
+            default: get_end_date(),
             reqd: 1
         },
         {
@@ -40,4 +40,18 @@ frappe.query_reports["Direct Cash Flow Report"] = {
             reqd: 1
         }
     ],
+};
+
+function get_start_date() {
+    var today_date = new Date(); // Obtiene la fecha actual
+    // siempre asignara el 1 de enero, el unico que varia es el año
+    var start = new Date(today_date.getFullYear(), 0, 1);
+    return start;
+};
+
+function get_end_date() {
+    var today_date = new Date(); // Obtiene la fecha actual
+    // siempre asignara el 1 de enero, el unico que varia es el año
+    var end = new Date(today_date.getFullYear(), 11, 31);
+    return end;
 };
