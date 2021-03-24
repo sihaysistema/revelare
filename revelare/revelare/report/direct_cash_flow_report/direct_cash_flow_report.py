@@ -85,15 +85,20 @@ def get_data(filters=None):
 
     # Normalizando y uniendo categorias con journal_entry y payment_entry
     data_and_categories = formatting_data(data_by_categories, categories_by_name, ranges, filters)
+
     # Agregando datos a las columnas vacías
     data = adding_columns_to_data(data_and_categories, ranges, filters)
 
     # Sumando la data del reporte
     data = accumulate_values_into_parents(data, ranges, filters)
 
+    # Sumando cuentas hijas
+    data = add_values_of_sub_accounts(data)
+
+    # Agregando color a cada dato
     data = adding_color_to_data(data, ranges, filters)
 
-    # Cuando se maneje consolidado el flujo de caja se va a indicar el nombre de la compania en esta celda
+    # TODO: Cuando se maneje consolidado el flujo de caja se va a indicar el nombre de la compania en esta celda
     # Y se le agregara un totalizador
     data = rename_category(data)
 
@@ -202,6 +207,7 @@ def get_query_journal_entry(from_date, to_date):
             en['amount'] =  en['credit']
     return entry or []
 
+# es-GT: Obteniendo entradas de diario por categorias
 def get_journal_entry(start_date, end_date):
     ref_journal_entry = get_query_journal_entry(start_date, end_date)
 
@@ -236,32 +242,6 @@ def get_journal_entry(start_date, end_date):
                 journal_entry[journal['outflow_component']] = [journal]
     return journal_entry, journal_undefined_categories
 
-""" # es-GT: Obteniendo entradas de diario por categorias
-def set_journal_entry(from_date, to_date, root):
-    entry = []
-    entry = frappe.db.sql(f'''
-            SELECT JE.posting_date AS posting_date, 
-            JEC.account AS lb_name,
-            JEC.inflow_component AS inflow_component, 
-            JEC.outflow_component AS outflow_component, 
-            JEC.debit AS debit, JEC.credit AS credit,
-            JEC.debit_in_account_currency AS debit_in_account_currency,
-            JEC.credit_in_account_currency AS credit_in_account_currency,
-            JEC.account_currency AS acconut_currency
-            FROM `tabJournal Entry` AS JE
-            JOIN `tabJournal Entry Account` AS JEC ON JEC.parent = JE.name AND JE.docstatus = 1 AND JEC.docstatus = 1
-            WHERE JEC.inflow_component = '{root}'
-            OR JEC.outflow_component = '{root}'
-            AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
-            ''', as_dict=True)
-            
-
-    for en in entry:
-        if en['debit'] > 0 and en['inflow_component'] != None:
-            en['amount'] =  en['debit']
-        elif en['credit'] > 0 and en['outflow_component'] != None:
-            en['amount'] =  en['credit']
-    return entry or [] """
 
 def get_query_payment_entry(from_date, to_date):
     payments = []
@@ -586,6 +566,21 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
 
     return data_and_categories
 
+# Sumando valores de las cuentas hijas
+def add_values_of_sub_accounts(data):
+    for d in range(0, len(data)-1):
+        if (d+1) < len(data)-1:
+            if data[d]['name'] == data[d+1]['name']:
+                for key, values in data[d].items():
+                        if data[d][key] != data[d+1][key] and key != 'posting_date':
+                            if data[d][key] != 0:
+                                data[d][key] = data[d][key] + data[d+1][key]
+                            elif data[d][key] == 0:
+                                data[d][key] = data[d+1][key]
+                data.pop(d+1)
+    return data
+
+
 # Agregando datos a las columnas que no tienen
 def adding_columns_to_data(data, ranges, filters):
     for d in data:
@@ -674,7 +669,8 @@ def adding_color_to_data(data, ranges, filters):
     return data
 
 def rename_category(data):
-    data[0]['name']='Total cash flow'
+
+    data[0]['name']="<a href='' target='_blank' onclick='window.open('#List/Payment%20Entry/Report'); window.open('#List/Journal%20Entry/Report';'>Total cash flow</a>"
     return data
 
 
