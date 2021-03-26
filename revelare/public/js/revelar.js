@@ -266,3 +266,11 @@ frappe.ui.form.on("Payment Entry", {
         }
     }
 });
+
+// Función para Direct Cash
+function open_two_tabs(from_date){
+    window.open(`#List/Journal%20Entry/Report?tags="${from_date}"`);
+    window.open("#List/Payment%20Entry/Report");
+    return true;
+};
+console.log("Se esta cargando función open_two_tabs");

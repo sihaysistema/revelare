@@ -100,7 +100,7 @@ def get_data(filters=None):
 
     # TODO: Cuando se maneje consolidado el flujo de caja se va a indicar el nombre de la compania en esta celda
     # Y se le agregara un totalizador
-    data = rename_category(data)
+    data = rename_category(data, start_date)
 
     return data 
 
@@ -668,9 +668,9 @@ def adding_color_to_data(data, ranges, filters):
                         str(row_item[period])+negative_values_strong_2
     return data
 
-def rename_category(data):
+def rename_category(data, from_date):
 
-    data[0]['name']="<a href='' target='_blank' onclick='window.open('#List/Payment%20Entry/Report'); window.open('#List/Journal%20Entry/Report';'>Total cash flow</a>"
+    data[0]['name']=f'<a target="_blank" onclick="open_two_tabs({from_date})">Visit Indoorclimbing.com and Ziplinerider.com</a>'
     return data
 
 
