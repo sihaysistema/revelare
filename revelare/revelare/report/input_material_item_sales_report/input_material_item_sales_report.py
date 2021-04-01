@@ -68,7 +68,8 @@ from revelare.revelare.report.input_material_item_sales_report.report_markup_sty
 def execute(filters=None):
     columns = get_columns(filters)
     data = get_data(filters)
-    return columns, data
+    chart = get_chart(data, columns[1:], filters)
+    return columns, data, None, chart
 
 
 def get_columns(filters):
