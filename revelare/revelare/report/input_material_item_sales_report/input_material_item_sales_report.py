@@ -9,7 +9,6 @@ from datetime import datetime
 from erpnext.accounts.report.utils import convert  # value, from_, to, date
 import json
 from frappe.utils import nowdate, cstr, flt
-
 import pandas as pd
 import numpy as np
 import math
@@ -433,6 +432,27 @@ def get_data(filters):
 
     return data
 
+def get_chart(data, columns, filters):
+  frappe.msgprint(str(filters))
+  labels = [column["label"] for column in columns]
+  chart_data = [item for item in data[1:] if len(item) > 0] # Skip the header row and empty rows
+  datasets = [
+    {
+      'name': item['0'],
+      'values': [float(val) for key, val in item.items() if int(key) > 0]
+    } for item in chart_data
+  ]
+
+  chart = {
+    'data': {
+      'labels': labels,
+      'datasets': datasets
+    },
+    'isNavigable': 1,
+    'type': 'line'
+  }
+  
+  return chart
 
 def get_sales_data(filters):
     '''Returns the sale data for the range in filters'''
