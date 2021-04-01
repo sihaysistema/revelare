@@ -392,7 +392,7 @@ def get_data(filters):
     # Construct rows for each item with item totals across the columns
     # Start with an empty Row
     empty_row = {}
-    data.append([empty_row])
+    data.append(empty_row)
     # Build the remainder of the row data using the item totals
     for item_name, item_code in item_pairs:  # Get the items
         item_data = item_totals.get(item_code, {})
