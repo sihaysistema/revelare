@@ -64,6 +64,9 @@ from revelare.revelare.report.input_material_item_sales_report.report_markup_sty
     label_style_item_gray1
 )
 
+# Constants
+MAX_CHART_NAME_LEN = 16
+
 
 def execute(filters=None):
     columns = get_columns(filters)
@@ -433,27 +436,59 @@ def get_data(filters):
 
     return data
 
-def get_chart(data, columns, filters):
-  frappe.msgprint(str(filters))
-  labels = [column["label"] for column in columns]
-  chart_data = [item for item in data[1:] if len(item) > 0] # Skip the header row and empty rows
-  datasets = [
-    {
-      'name': item['0'],
-      'values': [float(val) for key, val in item.items() if int(key) > 0]
-    } for item in chart_data
-  ]
 
-  chart = {
-    'data': {
-      'labels': labels,
-      'datasets': datasets
-    },
-    'isNavigable': 1,
-    'type': 'line'
-  }
+def get_chart(data, columns, filters):
+    labels = [column["label"] for column in columns]
+    chart_data = [item for item in data[1:] if len(item) > 0]
+
+    # Determine the chart data by sales category
+    sales_category = filters.get('sales_category', '')
+
+    # Filter the data if the user selects Actual or Estimated data filters
+    if sales_category == 'Actual':
+        # Show only sales data
+        filtered_data = []
+        for item in chart_data:
+            label = item['0']
+            if label.find('Sold') != -1:
+                filtered_data.append(item)
+        chart_data = filtered_data
+    elif sales_category == 'Estimated':
+        # Show only item estimate data
+        filtered_data = []
+        for item in chart_data:
+            label = item['0']
+            if label.find('Estimated') != -1:
+                filtered_data.append(item)
+        chart_data = filtered_data
+    elif sales_category == 'Remaining':
+        # Show only item estimate data
+        filtered_data = []
+        for item in chart_data:
+            label = item['0']
+            if label.find('Remaining') != -1:
+                filtered_data.append(item)
+        chart_data = filtered_data
+
+    # Build the data sets
+    datasets = [
+        {
+            'name': shorten_column(item['0'], " (Pound)", MAX_CHART_NAME_LEN),
+            'values': [float(val) for key, val in item.items() if int(key) > 0]
+        } for item in chart_data
+    ]
   
-  return chart
+    chart = {
+        'data': {
+            'labels': labels,
+            'datasets': datasets
+        },
+        'isNavigable': 1,
+        'type': 'line'
+    }
+
+    return chart
+
 
 def get_sales_data(filters):
     '''Returns the sale data for the range in filters'''
