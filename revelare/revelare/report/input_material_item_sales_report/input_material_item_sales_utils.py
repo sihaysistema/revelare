@@ -203,3 +203,26 @@ def filter_dictionaries(list_of_dicts, configuration):
             if dictionary.get(key, {}) == val:
                 return dictionary
     return {}
+
+def shorten_column(column, border_str, nchars):
+  """Remove unwanted column text and shorten to n chars"""
+  if column.find(border_str) != -1:
+    column = column[:column.find(border_str)]
+    
+    # Shorten "Actual", "Estimated", and "Remaining"
+    actual_pos = column.find('Actual')
+    estimated_pos = column.find('Estimated')
+    remaining_pos = column.find('Remaining')
+
+    if actual_pos != -1:
+      column = column[:actual_pos] + "Act."
+    elif estimated_pos != -1:
+      column = column[:estimated_pos] + "Est."
+    elif remaining_pos != -1:
+      column = column[:remaining_pos] + "Rem."
+
+    # Shorten to the specified character limit
+    if len(column) > nchars:
+      column = column[:nchars]
+  return column
+    

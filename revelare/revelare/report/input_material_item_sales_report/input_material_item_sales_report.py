@@ -41,7 +41,8 @@ from revelare.revelare.report.input_material_item_sales_report.input_material_it
     get_year_number,
     group_data,
     convert_uom,
-    filter_dictionaries
+    filter_dictionaries,
+    shorten_column
 )
 
 from revelare.revelare.report.input_material_item_sales_report.report_markup_styles import (
