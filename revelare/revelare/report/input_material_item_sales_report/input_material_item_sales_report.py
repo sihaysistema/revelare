@@ -256,10 +256,18 @@ def get_data(filters):
 
     # Get the sales data for the range, individually listed by date
     sales_items = get_sales_data(filters)
+
+    # Handle item selection in filters
     selected_item = filters.get('item', '')
     if selected_item:
+        bom_item_map = get_bom_items_by_code(filters, sales_items)
+        estimated_item = bom_item_map.get(selected_item, selected_item)
+        frappe.msgprint(str(estimated_item))
         sales_items = filter_dictionaries(
             sales_items, {'item_code': selected_item})
+        estimated_materials = filter_dictionaries(
+            estimated_materials, {'name': estimated_item})
+        #frappe.msgprint(str(estimated_materials))
 
     # Get sales unit conversion data
     bom_data = {}
