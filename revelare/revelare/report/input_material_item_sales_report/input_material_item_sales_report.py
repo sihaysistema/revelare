@@ -390,7 +390,6 @@ def get_data(filters):
             for item in sold_items:
                 # Get the sold quantity
                 quantity = item.get('stock_qty', 0)
-
                 # Get the sales item code for association with boms_data
                 # to perform the conversion to the target uom
                 item_code = item.get('item_code', '')
@@ -619,7 +618,7 @@ def get_bom_items_by_code(filters, sales_items):
 
     # Add columns from the bom table to the bom items data
     for bom_item in bom_items_list:
-        # Append it to the list of sales items if not already 
+        # Append it to the list of sales items if not already
         # included in the report
         parent = bom_item.get('parent', '')
         matching_bom = filter_dictionaries_first(
