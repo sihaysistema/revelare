@@ -590,35 +590,16 @@ def get_unique_bom_item_data(filters, sales_items):
 def get_bom_items_by_code(filters, sales_items):
     """Returns a dictionary with the estimated item for each sales item"""
     bom_map = {}
-
-    # Obtain the boms for the sales items
-    boms_list = []
-    for sales_item in sales_items:
-        sales_item_code = sales_item['item_code']
-        boms = find_boms_by_item_code(filters, sales_item_code)
-        if boms:  # boms are an array
-            boms_list += boms
-
-    # Get the estimation BOM name for the sales items by linking through
-    # to them using the name property on the bom, which should match the
-    # parent column on the `tabBom Item` table
-    bom_items_list = []
-    for bom in boms_list:
-        bom_name = bom['name']
-        bom_items = find_bom_items_by_item_code(filters, bom_name)
-        if bom_items:  # bom_items is an array
-            bom_items_list += bom_items
+    boms_list, bom_items_list = get_bom_items_list(filters, sales_items)
 
     # Add columns from the bom table to the bom items data
     for bom_item in bom_items_list:
-        # Append it to the list of sales items if not already included in the report
+        # Append it to the list of sales items if not already 
+        # included in the report
         parent = bom_item.get('parent', '')
         matching_bom = filter_dictionaries_first(
             boms_list, {'name': parent})
         bom_item['sales_item_code'] = matching_bom['item']
-        bom_item['conversion_factor'] = find_conversion_factor(
-            bom_item['amount_uom'], bom_item['stock_uom'])
-
         bom_map[bom_item['sales_item_code']] = bom_item['item_code']
 
     return bom_map
