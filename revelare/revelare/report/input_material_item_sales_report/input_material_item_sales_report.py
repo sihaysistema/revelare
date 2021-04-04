@@ -530,10 +530,48 @@ def get_bom_items_list(filters, sales_items):
         if bom_items:  # bom_items is an array
             bom_items_list += bom_items
 
+    return boms_list, bom_items_list
+
+
+def get_bom_item_data(filters, sales_items):
+    """Get all bom information, necessary to convert sales item uoms, but
+    starting from the sales items rather than from the estimation items. This
+    is necessary to prevent situations where there are no estimation items
+    for a range or none selected in the filters"""
+    material_and_sales_items = []
+    boms_list, bom_items_list = get_bom_items_list(filters, sales_items)
+
+    # Add columns from the bom table to the bom items data
+    # Append the bom conversion data to the existing bom data
+    included_items = set()
+    for bom_item in bom_items_list:
+        parent = bom_item.get('parent', '')
+        matching_bom = filter_dictionaries_first(
+            boms_list, {'name': parent})
+        sales_item_code = matching_bom.get('item', '')
+        bom_item['sales_item_code'] = sales_item_code
+        if sales_item_code and not sales_item_code in included_items:
+          included_items.add(sales_item_code)
+          bom_item['conversion_factor'] = find_conversion_factor(
+              bom_item['amount_uom'], bom_item['stock_uom'])
+          material_and_sales_items.append(bom_item)
+
+    return material_and_sales_items
+
+
+def get_unique_bom_item_data(filters, sales_items):
+    """Gets the bom information, necessary to convert sales item uoms, but
+    starting from the sales items rather than from the estimation items. This
+    is necessary to prevent situations where there are no estimation items
+    for a range or none selected in the filters"""
+    material_and_sales_items = []
+    boms_list, bom_items_list = get_bom_items_list(filters, sales_items)
+
     # Add columns from the bom table to the bom items data
     included_items = set()
     for bom_item in bom_items_list:
-        # Append it to the list of sales items if not already included in the report
+        # Append it to the list of sales items if not already
+        # included in the report
         if not bom_item['item_name'] in included_items:
             included_items.add(bom_item['item_name'])
 
