@@ -204,6 +204,7 @@ def filter_dictionaries_first(list_of_dicts, configuration):
                 return dictionary
     return {}
 
+
 def filter_dictionaries(list_of_dicts, configuration):
     """Return all dictionaries in list_of_dicts w/ matching key,value pair"""
     dictionaries = []

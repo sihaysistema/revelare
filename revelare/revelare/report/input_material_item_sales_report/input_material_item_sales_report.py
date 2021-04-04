@@ -510,13 +510,8 @@ def get_sales_data(filters):
     return sales_data
 
 
-def get_bom_item_data(filters, sales_items):
-    """Get the bom information this necessary to convert sales item uoms, but
-    starting from the sales items rather than from the estimation items. This
-    is necessary to prevent situations where there are no estimation items
-    for a range or none selected in the filters"""
-    material_and_sales_items = []
-
+def get_bom_items_list(filters, sales_items):
+    """Generate a list of sales items with bom data, including conversions"""
     # Obtain the boms for the sales items
     boms_list = []
     for sales_item in sales_items:
