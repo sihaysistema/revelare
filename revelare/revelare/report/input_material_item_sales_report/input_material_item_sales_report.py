@@ -43,7 +43,8 @@ from revelare.revelare.report.input_material_item_sales_report.input_material_it
     convert_uom,
     filter_dictionaries_first,
     filter_dictionaries,
-    shorten_column
+    shorten_column,
+    reverse_dictionary
 )
 
 from revelare.revelare.report.input_material_item_sales_report.report_markup_styles import (

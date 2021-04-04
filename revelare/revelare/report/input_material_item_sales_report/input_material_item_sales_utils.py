@@ -213,25 +213,31 @@ def filter_dictionaries(list_of_dicts, configuration):
                 dictionaries.append(dictionary)
     return dictionaries
 
+
 def shorten_column(column, border_str, nchars):
-  """Remove unwanted column text and shorten to n chars"""
-  if column.find(border_str) != -1:
-    column = column[:column.find(border_str)]
-    
-    # Shorten "Actual", "Estimated", and "Remaining"
-    actual_pos = column.find('Actual')
-    estimated_pos = column.find('Estimated')
-    remaining_pos = column.find('Remaining')
+    """Remove unwanted column text and shorten to n chars"""
+    if column.find(border_str) != -1:
+        column = column[:column.find(border_str)]
 
-    if actual_pos != -1:
-      column = column[:actual_pos] + "Act."
-    elif estimated_pos != -1:
-      column = column[:estimated_pos] + "Est."
-    elif remaining_pos != -1:
-      column = column[:remaining_pos] + "Rem."
+        # Shorten "Actual", "Estimated", and "Remaining"
+        actual_pos = column.find('Actual')
+        estimated_pos = column.find('Estimated')
+        remaining_pos = column.find('Remaining')
 
-    # Shorten to the specified character limit
-    if len(column) > nchars:
-      column = column[:nchars]
-  return column
-    
+        if actual_pos != -1:
+            column = column[:actual_pos] + "Act."
+        elif estimated_pos != -1:
+            column = column[:estimated_pos] + "Est."
+        elif remaining_pos != -1:
+            column = column[:remaining_pos] + "Rem."
+
+        # Shorten to the specified character limit
+        if len(column) > nchars:
+            column = column[:nchars]
+    return column
+
+
+def reverse_dictionary(dictionary):
+    """Reverse  the key,val relationship in the dict"""
+    if dictionary:
+        return {val: key for key, val in dictionary.items()}
