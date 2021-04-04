@@ -261,14 +261,39 @@ def get_data(filters):
     # Handle item selection in filters
     selected_item = filters.get('item', '')
     if selected_item:
-        bom_item_map = get_bom_items_by_code(filters, sales_items)
-        estimated_item = bom_item_map.get(selected_item, selected_item)
-        frappe.msgprint(str(estimated_item))
-        sales_items = filter_dictionaries(
-            sales_items, {'item_code': selected_item})
-        estimated_materials = filter_dictionaries(
-            estimated_materials, {'name': estimated_item})
-        #frappe.msgprint(str(estimated_materials))
+        # Create dictionaries mapping sales items to estimated names
+        # and vice versa
+        sales_to_estimated_map = get_bom_items_by_code(filters, sales_items)
+        estimated_to_sales_map = reverse_dictionary(sales_to_estimated_map)
+
+        # Identify if the item code is a sales item or an estimated item
+        item_is_sales = selected_item in sales_to_estimated_map
+        item_is_estimated = selected_item in estimated_to_sales_map
+
+        # If a sales item is selected, the sales items are filtered by
+        # the item code, but no estimation items are filtered.
+        if item_is_sales:
+            estimated_item = sales_to_estimated_map.get(selected_item, '')
+            sales_item = selected_item
+            sales_items = filter_dictionaries(
+                sales_items, {'item_code': sales_item})
+            estimated_materials = filter_dictionaries(
+                estimated_materials, {'name': estimated_item})
+
+        # If an estimation item is selected, then the estimation data is
+        # filtered and all sales items linked to that item in BOms are included
+        elif item_is_estimated:
+            estimated_item = selected_item
+            estimated_materials = filter_dictionaries(
+                estimated_materials, {'name': estimated_item})
+
+            # Add the filtered items by sales item codes mapped from estimated_item
+            sales_item_list = estimated_to_sales_map.get(selected_item, '')
+            sales_items_updated = []
+            for item in sales_item_list:
+                items = filter_dictionaries(sales_items, {'item_code': item})
+                sales_items_updated += items
+            sales_items = sales_items_updated
 
     # Get sales unit conversion data
     bom_data = {}
@@ -551,10 +576,10 @@ def get_bom_item_data(filters, sales_items):
         sales_item_code = matching_bom.get('item', '')
         bom_item['sales_item_code'] = sales_item_code
         if sales_item_code and not sales_item_code in included_items:
-          included_items.add(sales_item_code)
-          bom_item['conversion_factor'] = find_conversion_factor(
-              bom_item['amount_uom'], bom_item['stock_uom'])
-          material_and_sales_items.append(bom_item)
+            included_items.add(sales_item_code)
+            bom_item['conversion_factor'] = find_conversion_factor(
+                bom_item['amount_uom'], bom_item['stock_uom'])
+            material_and_sales_items.append(bom_item)
 
     return material_and_sales_items
 
