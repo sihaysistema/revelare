@@ -256,6 +256,10 @@ def get_data(filters):
 
     # Get the sales data for the range, individually listed by date
     sales_items = get_sales_data(filters)
+    selected_item = filters.get('item', '')
+    if selected_item:
+        sales_items = filter_dictionaries(
+            sales_items, {'item_code': selected_item})
 
     # Get sales unit conversion data
     bom_data = {}
