@@ -204,6 +204,15 @@ def filter_dictionaries_first(list_of_dicts, configuration):
                 return dictionary
     return {}
 
+def filter_dictionaries(list_of_dicts, configuration):
+    """Return all dictionaries in list_of_dicts w/ matching key,value pair"""
+    dictionaries = []
+    for dictionary in list_of_dicts:
+        for key, val in configuration.items():
+            if dictionary.get(key, {}) == val:
+                dictionaries.append(dictionary)
+    return dictionaries
+
 def shorten_column(column, border_str, nchars):
   """Remove unwanted column text and shorten to n chars"""
   if column.find(border_str) != -1:
