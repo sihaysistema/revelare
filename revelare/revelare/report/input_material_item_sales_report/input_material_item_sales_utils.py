@@ -239,6 +239,16 @@ def shorten_column(column, border_str, nchars):
 
 
 def reverse_dictionary(dictionary):
-    """Reverse  the key,val relationship in the dict"""
+    """Reverse  the key,val relationship in the dict, accounting for there
+    no longer having 1:1 relationships by multiples of the same value in
+    the original dict to arrays mapped to the val"""
+    reversed = {}
     if dictionary:
-        return {val: key for key, val in dictionary.items()}
+        for key, val in dictionary.items():
+          if val in reversed:
+            current_val = reversed[val]
+            reversed.get(val, []).append(key)
+          else:
+            reversed[val] = [key]
+
+    return reversed
