@@ -196,7 +196,7 @@ def convert_uom(total_sold, stock_qty, conversion_factor):
     return target_quantity
 
 
-def filter_dictionaries(list_of_dicts, configuration):
+def filter_dictionaries_first(list_of_dicts, configuration):
     """Return the first dictionary in list_of_dicts w/ matching key,value pair"""
     for dictionary in list_of_dicts:
         for key, val in configuration.items():

@@ -41,6 +41,7 @@ from revelare.revelare.report.input_material_item_sales_report.input_material_it
     get_year_number,
     group_data,
     convert_uom,
+    filter_dictionaries_first,
     filter_dictionaries,
     shorten_column
 )
@@ -370,7 +371,7 @@ def get_data(filters):
 
                     # Add it to the totals for that item in item_totals,
                     # not the sales item code
-                    bom_data = filter_dictionaries(
+                    bom_data = filter_dictionaries_first(
                         bom_data_array, {'sales_item_code': item_code})
                     if bom_data:
                         parent_item_code = bom_data.get('item_code', '')
@@ -401,11 +402,11 @@ def get_data(filters):
         item_data = item_totals.get(item_code, {})
         item_uom = ''
         if estimated_materials:
-            item_metadata = filter_dictionaries(
+            item_metadata = filter_dictionaries_first(
                 estimated_materials, {'name': item_code})
             item_uom = item_metadata.get('estimation_uom', '')
         elif sales_items:
-            item_metadata = filter_dictionaries(
+            item_metadata = filter_dictionaries_first(
                 bom_data_array, {'item_code': item_code})
             item_uom = item_metadata.get('amount_uom', '')
 
@@ -477,7 +478,7 @@ def get_chart(data, columns, filters):
             'values': [float(val) for key, val in item.items() if int(key) > 0]
         } for item in chart_data
     ]
-  
+
     chart = {
         'data': {
             'labels': labels,
@@ -515,7 +516,6 @@ def get_bom_item_data(filters, sales_items):
     # to them using the name property on the bom, which should match the
     # parent column on the `tabBom Item` table
     bom_items_list = []
-    included_items = set()
     for bom in boms_list:
         bom_name = bom['name']
         bom_items = find_bom_items_by_item_code(filters, bom_name)
@@ -523,13 +523,15 @@ def get_bom_item_data(filters, sales_items):
             bom_items_list += bom_items
 
     # Add columns from the bom table to the bom items data
+    included_items = set()
     for bom_item in bom_items_list:
         # Append it to the list of sales items if not already included in the report
         if not bom_item['item_name'] in included_items:
             included_items.add(bom_item['item_name'])
 
             parent = bom_item.get('parent', '')
-            matching_bom = filter_dictionaries(boms_list, {'name': parent})
+            matching_bom = filter_dictionaries_first(
+                boms_list, {'name': parent})
             bom_item['sales_item_code'] = matching_bom['item']
             bom_item['conversion_factor'] = find_conversion_factor(
                 bom_item['amount_uom'], bom_item['stock_uom'])
