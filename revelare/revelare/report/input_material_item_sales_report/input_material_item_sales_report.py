@@ -557,6 +557,14 @@ def get_bom_items_list(filters, sales_items):
         bom_items = find_bom_items_by_item_code(filters, bom_name)
         if bom_items:  # bom_items is an array
             bom_items_list += bom_items
+        else:
+            # Warn the user if an item availability estimate doesn't exist
+            # for this item
+            item_name = bom.get('item')
+            frappe.msgprint(
+                f'Unable to include sales data for {item_name}.' +
+                f' Please add at least one item availability estimate for' +
+                f' {item_name} in order for it to be included in this report')
 
     return boms_list, bom_items_list
 
