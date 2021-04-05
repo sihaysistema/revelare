@@ -221,21 +221,27 @@ def shorten_column(column, border_str, nchars):
         column = column[:column.find(border_str)]
 
         # Shorten "Actual", "Estimated", and "Remaining"
-        actual_pos = column.find('Actual')
+        actual_pos = column.find('Sold')
         estimated_pos = column.find('Estimated')
         remaining_pos = column.find('Remaining')
 
         if actual_pos != -1:
-            column = column[:actual_pos] + "Act."
+            column = cap_column_length(column[:actual_pos], " Act.", nchars)
         elif estimated_pos != -1:
-            column = column[:estimated_pos] + "Est."
+            column = cap_column_length(column[:estimated_pos], " Est.", nchars)
         elif remaining_pos != -1:
-            column = column[:remaining_pos] + "Rem."
+            column = cap_column_length(column[:remaining_pos], " Rem.", nchars) 
 
-        # Shorten to the specified character limit
-        if len(column) > nchars:
-            column = column[:nchars]
     return column
+
+
+def cap_column_length(column, append_chars, nchars):
+  """Reduce the column text to nchars"""
+  frappe.msgprint(column)
+  if len(column) > nchars:
+    column = column[:nchars - len(append_chars)]
+  column += append_chars
+  return column
 
 
 def reverse_dictionary(dictionary):
