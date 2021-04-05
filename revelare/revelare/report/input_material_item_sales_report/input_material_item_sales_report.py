@@ -295,6 +295,10 @@ def get_data(filters):
                 sales_items_updated += items
             sales_items = sales_items_updated
 
+        else:
+            sales_items = []
+            estimated_materials = []
+
     # Get sales unit conversion data
     bom_data = {}
     if sales_items:
