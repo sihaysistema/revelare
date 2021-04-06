@@ -237,7 +237,6 @@ def shorten_column(column, border_str, nchars):
 
 def cap_column_length(column, append_chars, nchars):
   """Reduce the column text to nchars"""
-  frappe.msgprint(column)
   if len(column) > nchars:
     column = column[:nchars - len(append_chars)]
   column += append_chars

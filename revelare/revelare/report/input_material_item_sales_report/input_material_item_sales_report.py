@@ -591,7 +591,7 @@ def get_bom_item_data(filters, sales_items):
             bom_item['conversion_factor'] = find_conversion_factor(
                 bom_item['amount_uom'], bom_item['stock_uom'])
             material_and_sales_items.append(bom_item)
-
+  
     return material_and_sales_items
 
 
