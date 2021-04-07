@@ -670,7 +670,7 @@ def adding_color_to_data(data, ranges, filters):
 
 def rename_category(data, from_date):
 
-    data[0]['name']=f'<a target="_blank" onclick="open_two_tabs({from_date})">Visit Indoorclimbing.com and Ziplinerider.com</a>'
+    data[0]['name']=f'<a target="_blank" onclick="open_two_tabs()">Total cash flow</a>'
     return data
 
 
