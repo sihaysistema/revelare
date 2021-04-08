@@ -281,6 +281,20 @@ def get_payment_entry(from_date, to_date):
                 payments[payment['outflow_component']].append(payment)
             except:
                 payments[payment['outflow_component']] = [payment]
+
+    for d in payments.values():
+        for item in d:
+            if item['payment_type'] == 'Receive':
+                item['lb_name'] =item['paid_to']
+            elif item['payment_type'] == 'Pay':
+                item['lb_name'] =item['paid_from']
+
+    for d in payment_undefined_categories:
+        if d['payment_type'] == 'Receive':
+            d['lb_name'] =d['paid_to']
+        elif d['payment_type'] == 'Pay':
+            d['lb_name'] =d['paid_from']
+
     return payments, payment_undefined_categories
 
 #Obteniendo pagos por categorias
