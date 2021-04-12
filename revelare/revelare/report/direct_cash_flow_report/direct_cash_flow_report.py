@@ -3,20 +3,22 @@
 
 from __future__ import unicode_literals
 
+import datetime
 import json
+from datetime import datetime
 
 import frappe
+import numpy as np
+import pandas as pd
 from erpnext.accounts.utils import get_fiscal_year
 from frappe import _, scrub
 from frappe.utils import cint, flt, getdate
-from frappe.utils.nestedset import NestedSet, get_root_of
 from six import itervalues
 
 
-
 def execute(filters=None):
-    data = get_data(filters)
-    return get_columns(filters), data
+    # data = 
+    return get_columns(filters), get_data(filters)
 
 def get_columns(filters):
     '''Retorna las columnas a utilizar en el reporte'''
@@ -32,7 +34,8 @@ def get_columns(filters):
 
     # Genera las columnas en base al rango de fechas
     for dummy, end_date in ranges:
-        period = get_period(end_date, filters)
+        fecha_dt = datetime.strptime(str(end_date), '%Y-%m-%d')
+        period = get_period(fecha_dt, filters)
 
         columns.append({
             "label": _(period),
@@ -61,20 +64,24 @@ def get_data(filters=None):
 
     start_date = filters.from_date
     end_date = filters.to_date
-    for root in categories_child:
+
+    journal_entry, undefined_journal_entries = get_journal_entry(start_date, end_date)
+    payment_entry, undefined_payment_categories = get_payment_entry(start_date, end_date)
+    #for root in categories_child:
         # Agregando entradas de diario por categoria
-        if set_journal_entry(start_date, end_date, root['direct_cash_flow_component_name']) != []:
-            journal_entry[root['direct_cash_flow_component_name']] = set_journal_entry(start_date, end_date, root['direct_cash_flow_component_name'])
+        #if set_journal_entry(start_date, end_date, root['direct_cash_flow_component_name']) != []:
+            # journal_entry[root['direct_cash_flow_component_name']] = set_journal_entry(start_date, end_date, root['direct_cash_flow_component_name'])
 
         # Agregando entradas de pago por categoria
-        if set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name']) != []:
-            payment_entry[root['direct_cash_flow_component_name']] = set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name'])
+        #if set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name']) != []:
+        #    payment_entry[root['direct_cash_flow_component_name']] = set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name'])
+
+    # Agregando categorias no definidas de entras de diario y pagos
+    journal_entry = add_undefined_entries(journal_entry, undefined_journal_entries)
+    payment_entry = add_undefined_payments(payment_entry, undefined_payment_categories)
 
     # Uniendo journal_entry y payment_entry
     data_by_categories = merging_dictionaries(journal_entry,payment_entry)
-
-    # Calculando valor de cada documento en el campo amount
-    #calculate_values(categories_by_name, data_by_categories)
 
     # Normalizando y uniendo categorias con journal_entry y payment_entry
     data_and_categories = formatting_data(data_by_categories, categories_by_name, ranges, filters)
@@ -85,11 +92,15 @@ def get_data(filters=None):
     # Sumando la data del reporte
     data = accumulate_values_into_parents(data, ranges, filters)
 
+    # Sumando cuentas hijas
+    data = add_values_of_sub_accounts(data)
+
+    # Agregando color a cada dato
     data = adding_color_to_data(data, ranges, filters)
 
-    # Cuando se maneje consolidado el flujo de caja se va a indicar el nombre de la compania en esta celda
+    # TODO: Cuando se maneje consolidado el flujo de caja se va a indicar el nombre de la compania en esta celda
     # Y se le agregara un totalizador
-    data = rename_category(data)
+    data = rename_category(data, start_date)
 
     return data 
 
@@ -172,40 +183,119 @@ def filter_categories(categories, depth=10):
 
     return categories_by_name
 
-# es-GT: Obteniendo entradas de diario por categorias
-def set_journal_entry(from_date, to_date, root):
-    """Returns a dict like { "Journal Entry": [gl entries], ... }"""
-    """
-    Obtiene todas las partidas de diario, que tengan que ver
-    con flujo de efectivo.
-
-    Returns:
-        lista de diccionarios: [{cuenta, cagoria, ...},{cuenta, cagoria, ...}]
-    """    
+def get_query_journal_entry(from_date, to_date):
     entry = []
     entry = frappe.db.sql(f'''
             SELECT JE.posting_date AS posting_date, 
+            JE.docstatus,
             JEC.account AS lb_name,
             JEC.inflow_component AS inflow_component, 
             JEC.outflow_component AS outflow_component, 
             JEC.debit AS debit, JEC.credit AS credit,
-            JEC.debit_in_account_currency AS debit_in_account_currency,
-            JEC.credit_in_account_currency AS credit_in_account_currency,
-            JEC.account_currency AS acconut_currency
+            JEC.account_type
             FROM `tabJournal Entry` AS JE
             JOIN `tabJournal Entry Account` AS JEC ON JEC.parent = JE.name AND JE.docstatus = 1 AND JEC.docstatus = 1
-            WHERE JEC.inflow_component = '{root}'
-            OR JEC.outflow_component = '{root}'
-            AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
+            AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}' AND JEC.account_type = 'Bank'  OR JEC.account_type = 'Cash'
             ''', as_dict=True)
             
 
     for en in entry:
+        en['posting_date'] = str(en['posting_date'])
         if en['debit'] > 0 and en['inflow_component'] != None:
             en['amount'] =  en['debit']
         elif en['credit'] > 0 and en['outflow_component'] != None:
             en['amount'] =  en['credit']
     return entry or []
+
+# es-GT: Obteniendo entradas de diario por categorias
+def get_journal_entry(start_date, end_date):
+    ref_journal_entry = get_query_journal_entry(start_date, end_date)
+
+    # Pasandolo a Pandas
+    df_journal = pd.DataFrame(json.loads(json.dumps(ref_journal_entry)))
+    # obtenemos los componenete indefinidos
+    df_journal = df_journal.fillna("")
+    df_journal_undefined_categories = df_journal.query("inflow_component == '' and outflow_component == ''")
+
+    # Obtenemos los componente definidos
+    df_journal_categories = df_journal.query("inflow_component != '' or outflow_component != ''")
+    journal_undefined_categories = df_journal_undefined_categories.to_dict(orient='records')
+    journal_categories = df_journal_categories.to_dict(orient='records')
+    for journal in journal_undefined_categories:
+        if journal.get('amount','') == '':
+            if journal.get('debit', None) != 0:
+                journal['amount'] = journal.get('debit')
+            elif journal.get('credit', None) != 0:
+                journal['amount'] = journal.get('credit')
+    
+    journal_entry = {}
+    for journal in journal_categories:
+        if journal['inflow_component'] != '':
+            try:
+                journal_entry[journal['inflow_component']].append(journal)
+            except:
+                journal_entry[journal['inflow_component']] = [journal]
+        elif journal['outflow_component'] != '':
+            try:
+                journal_entry[journal['outflow_component']].append(journal)
+            except:
+                journal_entry[journal['outflow_component']] = [journal]
+    return journal_entry, journal_undefined_categories
+
+
+def get_query_payment_entry(from_date, to_date):
+    payments = []
+    payments = frappe.db.sql(f'''
+        SELECT paid_to AS lb_name, paid_from, paid_to, posting_date, 
+        inflow_component, outflow_component, paid_amount AS amount, payment_type
+        FROM `tabPayment Entry` WHERE posting_date 
+        BETWEEN '{from_date}' AND '{to_date}' AND docstatus = 1
+    ''', as_dict=True)
+
+    for pay in payments:
+        pay['posting_date'] = str(pay['posting_date'])
+    return payments
+
+def get_payment_entry(from_date, to_date):
+    payment_entry = get_query_payment_entry(from_date, to_date)
+    df_payment = pd.DataFrame(json.loads(json.dumps(payment_entry)))
+    # obtenemos los componenete indefinidos
+    df_payment = df_payment.fillna("")
+    df_payment_undefined_categories = df_payment.query("inflow_component == '' and outflow_component == '' and payment_type != 'Internal Transfer'")
+
+    # Obtenemos los componente definidos
+    df_payment_categories = df_payment.query("inflow_component != '' or outflow_component != ''")
+
+    payment_undefined_categories = df_payment_undefined_categories.to_dict(orient='records')
+    payment_categories = df_payment_categories.to_dict(orient='records')
+
+    payments = {}
+    for payment in payment_categories:
+        if payment['inflow_component'] != '':
+            try:
+                payments[payment['inflow_component']].append(payment)
+            except:
+                payments[payment['inflow_component']] = [payment]
+        elif payment['outflow_component'] != '':
+            try:
+                payments[payment['outflow_component']].append(payment)
+            except:
+                payments[payment['outflow_component']] = [payment]
+
+    for d in payments.values():
+        for item in d:
+            if item['payment_type'] == 'Receive':
+                item['lb_name'] =item['paid_to']
+            elif item['payment_type'] == 'Pay':
+                item['lb_name'] =item['paid_from']
+
+    for d in payment_undefined_categories:
+        if d['payment_type'] == 'Receive':
+            d['lb_name'] =d['paid_to']
+        elif d['payment_type'] == 'Pay':
+            d['lb_name'] =d['paid_from']
+
+    return payments, payment_undefined_categories
 
 #Obteniendo pagos por categorias
 def set_payment_entry(from_date, to_date, root):
@@ -221,16 +311,77 @@ def set_payment_entry(from_date, to_date, root):
     # Ej: docstatus '1'
     payments = []
     payments = frappe.db.sql(f'''
-        SELECT name AS lb_name, posting_date, direct_cash_flow_component, paid_amount
-        FROM `tabPayment Entry` WHERE direct_cash_flow_component = '{root}'
-        AND posting_date BETWEEN '{from_date}' AND '{to_date}' 
-        AND docstatus = '1' AND docstatus != '2' AND docstatus != '0'
-        ''', as_dict=True)
-
-    for pay in payments:
-        pay['amount'] = pay['paid_amount']
+        SELECT name AS lb_name, posting_date, inflow_component, outflow_component, paid_amount AS amount, payment_type
+        FROM `tabPayment Entry` WHERE inflow_component = '{root}' OR outflow_component = '{root}'
+        AND posting_date BETWEEN '{from_date}' AND '{to_date}' AND docstatus = 1 ''', as_dict=True)
 
     return payments or []
+
+#Obtenemos las entradas de diario indifinidas
+def get_undefined_journal_entries(from_date, to_date):
+    undefined_journal_entries = frappe.db.sql(f'''
+        SELECT 
+        JE.posting_date AS posting_date, 
+        JEC.account AS lb_name, JE.docstatus, JEC.docstatus,
+        JEC.outflow_component AS outflow_component, 
+        JEC.inflow_component AS inflow_component, 
+            JEC.debit AS debit, JEC.credit AS credit,
+        JEC.debit_in_account_currency AS debit_in_account_currency,
+        JEC.credit_in_account_currency AS credit_in_account_currency,
+        JEC.account_currency AS acconut_currency 
+        FROM _1bd3e0294da19198.`tabJournal Entry` AS JE
+        JOIN _1bd3e0294da19198.`tabJournal Entry Account` AS JEC ON JEC.parent = JE.name 
+        WHERE JEC.account_type IN ('Bank', 'Cash') 
+        AND JEC.inflow_component IS NULL AND JEC.outflow_component IS NULL
+        AND JEC.docstatus = 1 AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
+    ''', as_dict=True)
+    return undefined_journal_entries
+
+#Agrega la entradas de diario a la lista de diccionarios
+def add_undefined_entries(journal_entry, undefined):
+    journal_entry['Uncategorized Inflows'] = []
+    journal_entry['Uncategorized Outflows'] = []
+    for category in undefined:
+        if category['debit'] > 0:
+            category['amount'] =  category['debit']
+            if (journal_entry.get('Uncategorized Inflows', None) != None):
+                journal_entry['Uncategorized Inflows'].append(category)
+            else: 
+                journal_entry['Uncategorized Inflows'] = category
+                
+        elif category['credit'] > 0:
+            category['amount'] =  category['credit']
+            if (journal_entry.get('Uncategorized Outflows', None) != None):
+                journal_entry['Uncategorized Outflows'].append(category)
+            else:
+                journal_entry['Uncategorized Outflows'] = category    
+    return journal_entry
+
+def add_undefined_payments(payment, undefined):
+    """[summary]
+
+    Args:
+        from_date ([type]): [description]
+        to_date ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """    
+    payment['Uncategorized Inflows'] = []
+    payment['Uncategorized Outflows'] = []
+    for category in undefined:
+        if category['payment_type'] == 'Receive':
+            if (payment.get('Uncategorized Inflows', None) != None):
+                payment['Uncategorized Inflows'].append(category)
+            else: 
+                payment['Uncategorized Inflows'] = category
+                
+        elif category['payment_type'] == 'Pay':
+            if (payment.get('Uncategorized Outflows', None) != None):
+                payment['Uncategorized Outflows'].append(category)
+            else:
+                payment['Uncategorized Outflows'] = category    
+    return payment
 
 #Obteniendo categorias hijas
 def get_categories_child():
@@ -247,7 +398,7 @@ def merging_dictionaries(journal_entry,payment_entry):
     data= {}
     for category, detail in journal_entry.items():
         data[category] = detail
-        
+
     for category, detail in payment_entry.items():
         if data.get(category):
             data[category].extend(detail)
@@ -359,7 +510,8 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
         if item['is_group'] == '':
             
             for date_colum in ranges:
-                period = get_period(date_colum[1], filters)
+                fecha_dt = datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
+                period = get_period(fecha_dt, filters)
                 period = scrub(period)
                 
                 if item.get(period) > 0:
@@ -393,7 +545,8 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
         elif item['is_group'] == 0:
                 
             for date_colum in ranges:
-                period = get_period(date_colum[1], filters)
+                fecha_dt = datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
+                period = get_period(fecha_dt, filters)
                 period = scrub(period)
                 
                 if item.get(period, 0) != 0:
@@ -409,7 +562,8 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
                     
         elif item['is_group'] == 1:
             for date_colum in ranges:
-                period = get_period(date_colum[1], filters)
+                fecha_dt = datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
+                period = get_period(fecha_dt, filters)
                 period = scrub(period)
 
                 if item.get(period, 0) != 0:
@@ -426,16 +580,33 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
 
     return data_and_categories
 
+# Sumando valores de las cuentas hijas
+def add_values_of_sub_accounts(data):
+    for d in range(0, len(data)-1):
+        if (d+1) < len(data)-1:
+            if data[d]['name'] == data[d+1]['name']:
+                for key, values in data[d].items():
+                        if data[d][key] != data[d+1][key] and key != 'posting_date':
+                            if data[d][key] != 0:
+                                data[d][key] = data[d][key] + data[d+1][key]
+                            elif data[d][key] == 0:
+                                data[d][key] = data[d+1][key]
+                data.pop(d+1)
+    return data
+
+
 # Agregando datos a las columnas que no tienen
 def adding_columns_to_data(data, ranges, filters):
     for d in data:
         period_amount = ''
         if d.get('posting_date', None) != None:
-            period_amount = get_period(d.get('posting_date'), filters)
+            fecha_dt = datetime.strptime(str(d.get('posting_date')), '%Y-%m-%d')
+            period_amount = get_period(fecha_dt, filters)
             period_amount = scrub(period_amount)
 
-        for from_date, to_date in ranges:
-            period = get_period(to_date, filters)
+        for date_colum in ranges:
+            fecha_dt = datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
+            period = get_period(fecha_dt, filters)
             period = scrub(period)
             if period_amount == period:
                 d[period] = d.get('amount')
@@ -482,7 +653,8 @@ def adding_color_to_data(data, ranges, filters):
 
         # Por cada fila le agregara un color dependiendo del valor
         for date_colum in ranges:
-            period = get_period(date_colum[1], filters)
+            fecha_dt = datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
+            period = get_period(fecha_dt, filters)
             period = scrub(period)
             row_item[period] = "{:.2f}".format(
                 float(row_item[period]))
@@ -510,8 +682,9 @@ def adding_color_to_data(data, ranges, filters):
                         str(row_item[period])+negative_values_strong_2
     return data
 
-def rename_category(data):
-    data[0]['name']='Total cash flow'
+def rename_category(data, from_date):
+
+    data[0]['name']=f'<a target="_blank" onclick="open_two_tabs()">Total cash flow</a>'
     return data
 
 

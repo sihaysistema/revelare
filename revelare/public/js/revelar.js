@@ -266,3 +266,15 @@ frappe.ui.form.on("Payment Entry", {
         }
     }
 });
+
+// Función para Direct Cash
+function open_two_tabs(from_date){
+    account = '1.1.01.02.22 - PAYPAL - ACC-GT'
+    start_date = '2021-02-01'
+    end_date = '2021-03-31'
+
+    window.open(`#List/Journal%20Entry/Report?account=${account}&posting_date=${start_date},${end_date}`);
+    window.open("#List/Payment%20Entry/Report");
+    return true;
+};
+console.log("Se esta cargando función open_two_tabs");
