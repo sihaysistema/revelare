@@ -46,6 +46,20 @@ def get_data():
 					"link": "Tree/Category Cash Flow Group",
 					"description": _("Manage Categories Group Tree."),
 					"onboard": 1
+				},
+				{
+					"type": "doctype",
+					"name": "Direct Cash Flow Component",
+					"link": "Tree/Direct Cash Flow Component",
+					"description": _("Manage Categories Group Tree."),
+					"onboard": 1
+				},
+				{
+					"type": "report",
+					"name": "Direct Cash Flow Report",
+					"description": _("Direct Cash Flow Report Report."),
+					"is_query_report": True,
+					"onboard": 1,
 				}
 			]
 		},

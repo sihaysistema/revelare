@@ -10,7 +10,7 @@ frappe.query_reports["Input Material Item Sales Report"] = {
 			fieldtype: "Select",
 			options: [__("Weekly"), __("Monthly"), __("Quarterly"), __("Yearly")],
 			reqd: 1,
-			default: __("Sales Order")
+			default: __("Monthly")
 		},
     {
 			fieldname: "from_date",
@@ -30,9 +30,9 @@ frappe.query_reports["Input Material Item Sales Report"] = {
 			fieldname: "sales_category",
 			label: __("Sold"),
 			fieldtype: "Select",
-			options: [__("Actual"), __("Estimated"), __("Both")],
+			options: [__("Actual"), __("Estimated"), __("Remaining"), __("All")],
 			reqd: 1,
-			default: __("Actual")
+			default: __("All")
     },
     {
 			fieldname: "item",

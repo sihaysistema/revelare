@@ -9,7 +9,6 @@ from datetime import datetime
 from erpnext.accounts.report.utils import convert  # value, from_, to, date
 import json
 from frappe.utils import nowdate, cstr, flt
-
 import pandas as pd
 import numpy as np
 import math
@@ -42,7 +41,10 @@ from revelare.revelare.report.input_material_item_sales_report.input_material_it
     get_year_number,
     group_data,
     convert_uom,
-    filter_dictionaries
+    filter_dictionaries_first,
+    filter_dictionaries,
+    shorten_column,
+    reverse_dictionary
 )
 
 from revelare.revelare.report.input_material_item_sales_report.report_markup_styles import (
@@ -64,11 +66,15 @@ from revelare.revelare.report.input_material_item_sales_report.report_markup_sty
     label_style_item_gray1
 )
 
+# Constants
+MAX_CHART_NAME_LEN = 16
+
 
 def execute(filters=None):
     columns = get_columns(filters)
     data = get_data(filters)
-    return columns, data
+    chart = get_chart(data, columns[1:], filters)
+    return columns, data, None, chart
 
 
 def get_columns(filters):
@@ -252,6 +258,47 @@ def get_data(filters):
     # Get the sales data for the range, individually listed by date
     sales_items = get_sales_data(filters)
 
+    # Handle item selection in filters
+    selected_item = filters.get('item', '')
+    if selected_item:
+        # Create dictionaries mapping sales items to estimated names
+        # and vice versa
+        sales_to_estimated_map = get_bom_items_by_code(filters, sales_items)
+        estimated_to_sales_map = reverse_dictionary(sales_to_estimated_map)
+
+        # Identify if the item code is a sales item or an estimated item
+        item_is_sales = selected_item in sales_to_estimated_map
+        item_is_estimated = selected_item in estimated_to_sales_map
+
+        # If a sales item is selected, the sales items are filtered by
+        # the item code, but no estimation items are filtered.
+        if item_is_sales:
+            estimated_item = sales_to_estimated_map.get(selected_item, '')
+            sales_item = selected_item
+            sales_items = filter_dictionaries(
+                sales_items, {'item_code': sales_item})
+            estimated_materials = filter_dictionaries(
+                estimated_materials, {'name': estimated_item})
+
+        # If an estimation item is selected, then the estimation data is
+        # filtered and all sales items linked to that item in BOms are included
+        elif item_is_estimated:
+            estimated_item = selected_item
+            estimated_materials = filter_dictionaries(
+                estimated_materials, {'name': estimated_item})
+
+            # Add the filtered items by sales item codes mapped from estimated_item
+            sales_item_list = estimated_to_sales_map.get(selected_item, '')
+            sales_items_updated = []
+            for item in sales_item_list:
+                items = filter_dictionaries(sales_items, {'item_code': item})
+                sales_items_updated += items
+            sales_items = sales_items_updated
+
+        else:
+            sales_items = []
+            estimated_materials = []
+
     # Get sales unit conversion data
     bom_data = {}
     if sales_items:
@@ -347,7 +394,6 @@ def get_data(filters):
             for item in sold_items:
                 # Get the sold quantity
                 quantity = item.get('stock_qty', 0)
-
                 # Get the sales item code for association with boms_data
                 # to perform the conversion to the target uom
                 item_code = item.get('item_code', '')
@@ -366,7 +412,7 @@ def get_data(filters):
 
                     # Add it to the totals for that item in item_totals,
                     # not the sales item code
-                    bom_data = filter_dictionaries(
+                    bom_data = filter_dictionaries_first(
                         bom_data_array, {'sales_item_code': item_code})
                     if bom_data:
                         parent_item_code = bom_data.get('item_code', '')
@@ -391,17 +437,17 @@ def get_data(filters):
     # Construct rows for each item with item totals across the columns
     # Start with an empty Row
     empty_row = {}
-    data.append([empty_row])
+    data.append(empty_row)
     # Build the remainder of the row data using the item totals
     for item_name, item_code in item_pairs:  # Get the items
         item_data = item_totals.get(item_code, {})
         item_uom = ''
         if estimated_materials:
-            item_metadata = filter_dictionaries(
+            item_metadata = filter_dictionaries_first(
                 estimated_materials, {'name': item_code})
             item_uom = item_metadata.get('estimation_uom', '')
         elif sales_items:
-            item_metadata = filter_dictionaries(
+            item_metadata = filter_dictionaries_first(
                 bom_data_array, {'item_code': item_code})
             item_uom = item_metadata.get('amount_uom', '')
 
@@ -433,19 +479,67 @@ def get_data(filters):
     return data
 
 
+def get_chart(data, columns, filters):
+    labels = [column["label"] for column in columns]
+    chart_data = [item for item in data[1:] if len(item) > 0]
+
+    # Determine the chart data by sales category
+    sales_category = filters.get('sales_category', '')
+
+    # Filter the data if the user selects Actual or Estimated data filters
+    if sales_category == 'Actual':
+        # Show only sales data
+        filtered_data = []
+        for item in chart_data:
+            label = item['0']
+            if label.find('Sold') != -1:
+                filtered_data.append(item)
+        chart_data = filtered_data
+    elif sales_category == 'Estimated':
+        # Show only item estimate data
+        filtered_data = []
+        for item in chart_data:
+            label = item['0']
+            if label.find('Estimated') != -1:
+                filtered_data.append(item)
+        chart_data = filtered_data
+    elif sales_category == 'Remaining':
+        # Show only item estimate data
+        filtered_data = []
+        for item in chart_data:
+            label = item['0']
+            if label.find('Remaining') != -1:
+                filtered_data.append(item)
+        chart_data = filtered_data
+
+    # Build the data sets
+    datasets = [
+        {
+            'name': shorten_column(item['0'], " (Pound)", MAX_CHART_NAME_LEN),
+            'values': [float(val) for key, val in item.items() if int(key) > 0]
+        } for item in chart_data
+    ]
+
+    chart = {
+        'data': {
+            'labels': labels,
+            'datasets': datasets
+        },
+        'isNavigable': 1,
+        'type': 'line'
+    }
+
+    return chart
+
+
 def get_sales_data(filters):
     '''Returns the sale data for the range in filters'''
     sales_data = item_bom_sales(filters)
     return sales_data
 
 
-def get_bom_item_data(filters, sales_items):
-    """Get the bom information this necessary to convert sales item uoms, but
-    starting from the sales items rather than from the estimation items. This
-    is necessary to prevent situations where there are no estimation items
-    for a range or none selected in the filters"""
-    material_and_sales_items = []
-
+def get_bom_items_list(filters, sales_items):
+    """Generate a list of sales items with bom data, including conversions"""
     # Obtain the boms for the sales items
     boms_list = []
     for sales_item in sales_items:
@@ -458,21 +552,68 @@ def get_bom_item_data(filters, sales_items):
     # to them using the name property on the bom, which should match the
     # parent column on the `tabBom Item` table
     bom_items_list = []
-    included_items = set()
     for bom in boms_list:
         bom_name = bom['name']
         bom_items = find_bom_items_by_item_code(filters, bom_name)
         if bom_items:  # bom_items is an array
             bom_items_list += bom_items
+        else:
+            # Warn the user if an item availability estimate doesn't exist
+            # for this item
+            item_name = bom.get('item')
+            frappe.msgprint(
+                f'Unable to include sales data for {item_name}.' +
+                f' Please add at least one item availability estimate for' +
+                f' {item_name} in order for it to be included in this report')
+
+    return boms_list, bom_items_list
+
+
+def get_bom_item_data(filters, sales_items):
+    """Get all bom information, necessary to convert sales item uoms, but
+    starting from the sales items rather than from the estimation items. This
+    is necessary to prevent situations where there are no estimation items
+    for a range or none selected in the filters"""
+    material_and_sales_items = []
+    boms_list, bom_items_list = get_bom_items_list(filters, sales_items)
 
     # Add columns from the bom table to the bom items data
+    # Append the bom conversion data to the existing bom data
+    included_items = set()
     for bom_item in bom_items_list:
-        # Append it to the list of sales items if not already included in the report
+        parent = bom_item.get('parent', '')
+        matching_bom = filter_dictionaries_first(
+            boms_list, {'name': parent})
+        sales_item_code = matching_bom.get('item', '')
+        bom_item['sales_item_code'] = sales_item_code
+        if sales_item_code and not sales_item_code in included_items:
+            included_items.add(sales_item_code)
+            bom_item['conversion_factor'] = find_conversion_factor(
+                bom_item['amount_uom'], bom_item['stock_uom'])
+            material_and_sales_items.append(bom_item)
+  
+    return material_and_sales_items
+
+
+def get_unique_bom_item_data(filters, sales_items):
+    """Gets the bom information, necessary to convert sales item uoms, but
+    starting from the sales items rather than from the estimation items. This
+    is necessary to prevent situations where there are no estimation items
+    for a range or none selected in the filters"""
+    material_and_sales_items = []
+    boms_list, bom_items_list = get_bom_items_list(filters, sales_items)
+
+    # Add columns from the bom table to the bom items data
+    included_items = set()
+    for bom_item in bom_items_list:
+        # Append it to the list of sales items if not already
+        # included in the report
         if not bom_item['item_name'] in included_items:
             included_items.add(bom_item['item_name'])
 
             parent = bom_item.get('parent', '')
-            matching_bom = filter_dictionaries(boms_list, {'name': parent})
+            matching_bom = filter_dictionaries_first(
+                boms_list, {'name': parent})
             bom_item['sales_item_code'] = matching_bom['item']
             bom_item['conversion_factor'] = find_conversion_factor(
                 bom_item['amount_uom'], bom_item['stock_uom'])
@@ -480,6 +621,24 @@ def get_bom_item_data(filters, sales_items):
             material_and_sales_items.append(bom_item)
 
     return material_and_sales_items
+
+
+def get_bom_items_by_code(filters, sales_items):
+    """Returns a dictionary with the estimated item for each sales item"""
+    bom_map = {}
+    boms_list, bom_items_list = get_bom_items_list(filters, sales_items)
+
+    # Add columns from the bom table to the bom items data
+    for bom_item in bom_items_list:
+        # Append it to the list of sales items if not already
+        # included in the report
+        parent = bom_item.get('parent', '')
+        matching_bom = filter_dictionaries_first(
+            boms_list, {'name': parent})
+        bom_item['sales_item_code'] = matching_bom['item']
+        bom_map[bom_item['sales_item_code']] = bom_item['item_code']
+
+    return bom_map
 
 
 def get_bom_data(filters, estimated_materials):

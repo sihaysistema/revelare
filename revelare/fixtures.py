@@ -27,7 +27,12 @@ def fill_fixtures():
                     "Item-include_in_estimations",
                     "Item-column_break_estimations",
                     "Item-estimation_uom",
-                    "Item-estimation_name"
+                    "Item-estimation_name",
+                    "Payment Entry-cash_flow",
+                    "Journal Entry Account-inflow_component",
+                    "Journal Entry Account-outflow_component",
+                    "Payment Entry-inflow_component",
+                    "Payment Entry-outflow_component"
                 ]
             ]
         ]
@@ -93,9 +98,15 @@ def fill_fixtures():
         ]
     }
 
+    dcf_component = {
+        "dt": "Direct Cash Flow Component"
+    }
+
+
     # NEW FUNCTIONALITY FOR EXPORTING
     fixtures_fillup.append(custom_field)
     fixtures_fillup.append(translation)
+    fixtures_fillup.append(dcf_component)
     # fixtures_fillup.append(tax_category)
     # fixtures_fillup.append(id_doctype)
 

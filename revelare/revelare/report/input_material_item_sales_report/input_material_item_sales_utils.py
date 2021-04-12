@@ -196,10 +196,64 @@ def convert_uom(total_sold, stock_qty, conversion_factor):
     return target_quantity
 
 
-def filter_dictionaries(list_of_dicts, configuration):
+def filter_dictionaries_first(list_of_dicts, configuration):
     """Return the first dictionary in list_of_dicts w/ matching key,value pair"""
     for dictionary in list_of_dicts:
         for key, val in configuration.items():
             if dictionary.get(key, {}) == val:
                 return dictionary
     return {}
+
+
+def filter_dictionaries(list_of_dicts, configuration):
+    """Return all dictionaries in list_of_dicts w/ matching key,value pair"""
+    dictionaries = []
+    for dictionary in list_of_dicts:
+        for key, val in configuration.items():
+            if dictionary.get(key, {}) == val:
+                dictionaries.append(dictionary)
+    return dictionaries
+
+
+def shorten_column(column, border_str, nchars):
+    """Remove unwanted column text and shorten to n chars"""
+    if column.find(border_str) != -1:
+        column = column[:column.find(border_str)]
+
+        # Shorten "Actual", "Estimated", and "Remaining"
+        actual_pos = column.find('Sold')
+        estimated_pos = column.find('Estimated')
+        remaining_pos = column.find('Remaining')
+
+        if actual_pos != -1:
+            column = cap_column_length(column[:actual_pos], " Act.", nchars)
+        elif estimated_pos != -1:
+            column = cap_column_length(column[:estimated_pos], " Est.", nchars)
+        elif remaining_pos != -1:
+            column = cap_column_length(column[:remaining_pos], " Rem.", nchars) 
+
+    return column
+
+
+def cap_column_length(column, append_chars, nchars):
+  """Reduce the column text to nchars"""
+  if len(column) > nchars:
+    column = column[:nchars - len(append_chars)]
+  column += append_chars
+  return column
+
+
+def reverse_dictionary(dictionary):
+    """Reverse  the key,val relationship in the dict, accounting for there
+    no longer having 1:1 relationships by multiples of the same value in
+    the original dict to arrays mapped to the val"""
+    reversed = {}
+    if dictionary:
+        for key, val in dictionary.items():
+          if val in reversed:
+            current_val = reversed[val]
+            reversed.get(val, []).append(key)
+          else:
+            reversed[val] = [key]
+
+    return reversed
