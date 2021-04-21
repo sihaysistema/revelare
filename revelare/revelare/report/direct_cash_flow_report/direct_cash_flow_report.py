@@ -67,14 +67,6 @@ def get_data(filters=None):
 
     journal_entry, undefined_journal_entries = get_journal_entry(start_date, end_date)
     payment_entry, undefined_payment_categories = get_payment_entry(start_date, end_date)
-    #for root in categories_child:
-        # Agregando entradas de diario por categoria
-        #if set_journal_entry(start_date, end_date, root['direct_cash_flow_component_name']) != []:
-            # journal_entry[root['direct_cash_flow_component_name']] = set_journal_entry(start_date, end_date, root['direct_cash_flow_component_name'])
-
-        # Agregando entradas de pago por categoria
-        #if set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name']) != []:
-        #    payment_entry[root['direct_cash_flow_component_name']] = set_payment_entry(start_date, end_date, root['direct_cash_flow_component_name'])
 
     # Agregando categorias no definidas de entras de diario y pagos
     journal_entry = add_undefined_entries(journal_entry, undefined_journal_entries)
@@ -94,13 +86,14 @@ def get_data(filters=None):
 
     # Sumando cuentas hijas
     data = add_values_of_sub_accounts(data)
-
+    data = rename_category(data)
+    
     # Agregando color a cada dato
     data = adding_color_to_data(data, ranges, filters)
 
     # TODO: Cuando se maneje consolidado el flujo de caja se va a indicar el nombre de la compania en esta celda
     # Y se le agregara un totalizador
-    data = rename_category(data, start_date)
+    
 
     return data 
 
@@ -297,25 +290,6 @@ def get_payment_entry(from_date, to_date):
 
     return payments, payment_undefined_categories
 
-#Obteniendo pagos por categorias
-def set_payment_entry(from_date, to_date, root):
-    """
-    Obtiene todos los pagos, que tengan que ver
-    con flujo de efectivo.
-
-    Returns:
-        lista de diccionarios: [{cuenta, cagoria, ...},{cuenta, cagoria, ...}]
-    """    
-
-    # Para filtrar si un documento esta validado o no, el digito debe estar como string
-    # Ej: docstatus '1'
-    payments = []
-    payments = frappe.db.sql(f'''
-        SELECT name AS lb_name, posting_date, inflow_component, outflow_component, paid_amount AS amount, payment_type
-        FROM `tabPayment Entry` WHERE inflow_component = '{root}' OR outflow_component = '{root}'
-        AND posting_date BETWEEN '{from_date}' AND '{to_date}' AND docstatus = 1 ''', as_dict=True)
-
-    return payments or []
 
 #Obtenemos las entradas de diario indifinidas
 def get_undefined_journal_entries(from_date, to_date):
@@ -683,11 +657,9 @@ def adding_color_to_data(data, ranges, filters):
     return data
 
 def rename_category(data, from_date):
-
-    data[0]['name']=f'<a target="_blank" onclick="open_two_tabs()">Total cash flow</a>'
+    data[0]['name']='Total cash flow'
     return data
 
+def insert_link_to_categories(data, from_date, to_date):
 
-def dicToJSON(nomArchivo, diccionario):
-    with open(str(nomArchivo+'.json'), 'w') as f:
-        f.write(json.dumps(diccionario, indent=2, default=str))
+    return data

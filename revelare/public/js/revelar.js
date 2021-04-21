@@ -277,4 +277,13 @@ function open_two_tabs(from_date){
     window.open("#List/Payment%20Entry/Report");
     return true;
 };
-console.log("Se esta cargando función open_two_tabs");
+
+// Función para Detail Cash Flow
+function open_one_tab(name, type){
+    if (type === 'journal_entry'){
+        window.open(`#Form/Journal%20Entry/${name}`);
+    } else if(type === 'payment_entry'){
+        window.open(`#Form/Payment%20Entry/${name}`);
+    }
+    return true;
+};

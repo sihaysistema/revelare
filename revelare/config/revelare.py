@@ -60,6 +60,13 @@ def get_data():
 					"description": _("Direct Cash Flow Report Report."),
 					"is_query_report": True,
 					"onboard": 1,
+				},
+				{
+					"type": "report",
+					"name": "Cash Flow Detail",
+					"description": _("Cash Flow Detail Report."),
+					"is_query_report": True,
+					"onboard": 1,
 				}
 			]
 		},
