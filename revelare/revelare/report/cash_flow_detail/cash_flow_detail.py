@@ -43,41 +43,43 @@ def get_data(filters=None):
         [lista][diccionarios]: [{'name':'Operations','amount':200}]
     """
 
-    # Forma de pasar filtros por url
-    # #query-report/Cash%20Flow%20Detail?from_date=2021-01-02
-    payments_entry = set_payment_entry(filters.from_date, filters.to_date, 'Interest Received from Investment')
-    journal_entry = set_journal_entry(filters.from_date, filters.to_date, 'Interest Received from Investment')
-    # dicToJSON('payments_entry',payments_entry)
-    # dicToJSON('journal_entry',journal_entry)
-    data = []
-    for pay in payments_entry:
-        data.append({
-            'name':pay['name'],
-            'amount':pay['amount'],
-            'type':'payment_entry',
-            'name_url':pay['name_url']
-        })
-    for journal in journal_entry:
-        data.append({
-            'name':journal['name'],
-            'amount':journal['amount'],
-            'type':'journal_entry',
-            'name_url':journal['name_url']
-        })
-    data = rename_categories(data)
+    if filters.category != None:
+        # Forma de pasar filtros por url
+        # #query-report/Cash%20Flow%20Detail?from_date=2021-01-02
+        payments_entry = set_payment_entry(filters.from_date, filters.to_date, filters.category)
+        journal_entry = set_journal_entry(filters.from_date, filters.to_date, filters.category)
+        # dicToJSON('payments_entry',payments_entry)
+        # dicToJSON('journal_entry',journal_entry)
+        data = []
+        for pay in payments_entry:
+            data.append({
+                'name':pay['name'],
+                'amount':pay['amount'],
+                'type':'payment_entry',
+                'name_url':pay['name_url']
+            })
+        for journal in journal_entry:
+            data.append({
+                'name':journal['name'],
+                'amount':journal['amount'],
+                'type':'journal_entry',
+                'name_url':journal['name_url']
+            })
+        data = rename_categories(data)
 
-    amount_total = 0
-    for d in reversed(data):
-        amount_total += d['amount']
-    data.insert(0,{
-                    'name':'Interest Received from Investment',
-                    'amount':amount_total
-                })
-
+        amount_total = 0
+        for d in reversed(data):
+            amount_total += d['amount']
+        data.insert(0,{
+                        'name':filters.category,
+                        'amount':amount_total
+                    })
+    else:
+        data = [{'name':'','amount':0}]
     return data 
 
 #Obteniendo pagos por categorias
-def set_payment_entry(from_date, to_date, cartegory):
+def set_payment_entry(from_date, to_date, category):
     """
     Obtiene todos los pagos, que tengan que ver
     con flujo de efectivo.
@@ -93,7 +95,7 @@ def set_payment_entry(from_date, to_date, cartegory):
         SELECT name as name_url, paid_from, paid_to, posting_date, inflow_component, 
         outflow_component, paid_amount AS amount, payment_type
         FROM `tabPayment Entry` 
-        WHERE inflow_component = 'Interest Received from Investment' OR outflow_component = 'Interest Received from Investment'
+        WHERE inflow_component = '{category}' OR outflow_component = '{category}'
         AND posting_date BETWEEN '{from_date}' AND '{to_date}' AND docstatus = 1 ''', as_dict=True)
 
     for item in payments:
@@ -104,7 +106,7 @@ def set_payment_entry(from_date, to_date, cartegory):
 
     return payments or []
 
-def set_journal_entry(from_date, to_date, cartegory):
+def set_journal_entry(from_date, to_date, category):
     entry = []
     entry = frappe.db.sql(f'''
             SELECT JE.posting_date AS posting_date, 
@@ -120,8 +122,8 @@ def set_journal_entry(from_date, to_date, cartegory):
             AND JE.docstatus = 1 AND JEC.docstatus = 1
             AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}' 
             AND JEC.account_type = 'Bank'  OR JEC.account_type = 'Cash'
-            WHERE JEC.inflow_component = 'Interest Received from Investment' 
-            OR JEC.outflow_component = 'Interest Received from Investment'
+            WHERE JEC.inflow_component = '{category}' 
+            OR JEC.outflow_component = '{category}'
             ''', as_dict=True)
             
 
