@@ -83,25 +83,28 @@ def get_data(filters=None):
     start_date = filters.from_date
     end_date = filters.to_date
 
-    journal_entry, undefined_journal_entries = get_journal_entry(start_date, end_date)
+    journal_entry = get_journal_entry(start_date, end_date)
     payment_entry, undefined_payment_categories = get_payment_entry(start_date, end_date)
 
     # Agregando categorias no definidas de entras de diario y pagos
-    journal_entry = add_undefined_entries(journal_entry, undefined_journal_entries)
+    # journal_entry = add_undefined_entries(journal_entry, undefined_journal_entries)
     payment_entry = add_undefined_payments(payment_entry, undefined_payment_categories)
 
+    
     # Uniendo journal_entry y payment_entry
     data_by_categories = merging_dictionaries(journal_entry,payment_entry)
 
     # Normalizando y uniendo categorias con journal_entry y payment_entry
     data_and_categories = formatting_data(data_by_categories, categories_by_name, filters)
 
+
     # Agregando datos a las columnas vacías
     data = adding_columns_to_data(data_and_categories, ranges, filters)
 
+    dicToJSON('data',data)
     # Sumando la data del reporte
     data = accumulate_values_into_parents(data, ranges, filters)
-
+    dicToJSON('data',data)
     # Sumando cuentas hijas
     data = add_values_of_sub_accounts(data)
     data = rename_category(data)
@@ -255,22 +258,12 @@ def get_journal_entry(start_date, end_date):
 
     # Pasandolo a Pandas
     df_journal = pd.DataFrame(json.loads(json.dumps(journal_entry)))
-    # obtenemos los componenete indefinidos
     df_journal = df_journal.fillna("")
-    df_journal_undefined_categories = df_journal.query("inflow_component == '' and outflow_component == ''")
 
+    journal_entry = {}
     # Obtenemos los componente definidos
     df_journal_categories = df_journal.query("inflow_component != '' or outflow_component != ''")
-    journal_undefined_categories = df_journal_undefined_categories.to_dict(orient='records')
     journal_categories = df_journal_categories.to_dict(orient='records')
-    for journal in journal_undefined_categories:
-        if journal.get('amount','') == '':
-            if journal.get('debit', None) != 0:
-                journal['amount'] = journal.get('debit')
-            elif journal.get('credit', None) != 0:
-                journal['amount'] = journal.get('credit')
-    
-    journal_entry = {}
     for journal in journal_categories:
         if journal['inflow_component'] != '':
             try:
@@ -282,7 +275,19 @@ def get_journal_entry(start_date, end_date):
                 journal_entry[journal['outflow_component']].append(journal)
             except:
                 journal_entry[journal['outflow_component']] = [journal]
-    return journal_entry, journal_undefined_categories
+
+    """# obtenemos los componenete indefinidos
+    df_journal_undefined_categories = df_journal.query("inflow_component == '' and outflow_component == ''")
+
+    journal_undefined_categories = df_journal_undefined_categories.to_dict(orient='records')
+    for journal in journal_undefined_categories:
+        if journal.get('amount','') == '':
+            if journal.get('debit', None) != 0:
+                journal['amount'] = journal.get('debit')
+            elif journal.get('credit', None) != 0:
+                journal['amount'] = journal.get('credit')"""
+    #return journal_entry, journal_undefined_categories
+    return journal_entry
 
 # Obtiene el formato de Journal entries
 # def get_query_journal_entry(from_date, to_date):
@@ -733,7 +738,7 @@ def formatting_data(data_by_categories, categories_by_name, filters):
                     'cash_effect' : items['cash_effect'],
                     'is_group' : items['is_group'],
                     'indent' : categori['indent'] + 1,
-                    'amount' : values.get('amount')
+                    'amount' : items.get('amount')
                     })
 
     return categories_and_data or []
@@ -987,6 +992,12 @@ def insert_link_to_categories(data, from_date='', to_date=''):
     """    
     for d in data:
         if d['is_group'] != 1 and d['is_group'] != '':
+            one_string = '<a target="_blank" onclick="open_detailed_cash_flow_report('
+            two_string = ')">'
+            three_string = '</a>'
+            d['name'] = f"{one_string}'{d['name']}','{from_date}','{to_date}'{two_string}{d['name']}{three_string}"
+        
+        if d['name'] == 'Uncategorized Inflows' or d['name'] == 'Uncategorized Outflows':
             one_string = '<a target="_blank" onclick="open_detailed_cash_flow_report('
             two_string = ')">'
             three_string = '</a>'
