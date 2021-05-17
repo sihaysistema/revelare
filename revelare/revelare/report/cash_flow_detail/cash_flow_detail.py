@@ -94,18 +94,29 @@ def set_payment_entry(from_date, to_date, category):
     Returns:
         lista de diccionarios: [{cuenta, cagoria, ...},{cuenta, cagoria, ...}]
     """    
-
+    
     # Para filtrar si un documento esta validado o no, el digito debe estar como string
     # Ej: docstatus '1'
     payments = []
-    payments = frappe.db.sql(f'''
-        SELECT name as name_url, paid_from, paid_to, posting_date, inflow_component, 
-        outflow_component, paid_amount AS amount, payment_type
-        FROM `tabPayment Entry` 
-        WHERE inflow_component = '{category}' OR outflow_component = '{category}'
-        AND posting_date BETWEEN '{from_date}' AND '{to_date}' AND docstatus = 1 ''', as_dict=True)
+    if category != 'Uncategorized Outflows' and category != 'Uncategorized Inflows':
 
+        payments = frappe.db.sql(f'''
+            SELECT name as name_url, paid_from, paid_to, posting_date, inflow_component, 
+            outflow_component, paid_amount AS amount, payment_type
+            FROM `tabPayment Entry` 
+            WHERE inflow_component = '{category}' OR outflow_component = '{category}' AND payment_type != 'Internal Transfer'
+            AND posting_date BETWEEN '{from_date}' AND '{to_date}' AND docstatus = 1 ''', as_dict=True)
+    else: 
+
+        payments = frappe.db.sql(f'''
+            SELECT name as name_url, paid_from, paid_to, posting_date, inflow_component, 
+            outflow_component, paid_amount AS amount, payment_type
+            FROM `tabPayment Entry` 
+            WHERE inflow_component IS NULL AND outflow_component IS NULL AND payment_type != 'Internal Transfer'
+            AND posting_date BETWEEN '{from_date}' AND '{to_date}' AND docstatus = 1 ''', as_dict=True)
+    
     for item in payments:
+
         if item['payment_type'] == 'Receive':
             item['name'] =item['paid_to']
 
@@ -195,6 +206,7 @@ def get_journal_entry(start_date, end_date, category):
     """
     # journal_entry = get_query_journal_entry(start_date, end_date, category)
     journal_entry = get_query_journal_entry(start_date, end_date)
+    dicToJSON('journal_entry_CFD',journal_entry)
     journal_undefined_categories = []
     if journal_entry:
         #------------ Inicio Polizas definidas ------------
@@ -227,7 +239,7 @@ def get_journal_entry(start_date, end_date, category):
         
         df_journal_undefined_categories = df_journal.query("inflow_component == '' and outflow_component == ''")# obtenemos los componenete indefinidos
         journal_undefined_categories = df_journal_undefined_categories.to_dict(orient='records')
-        
+
     return journal_entry, journal_undefined_categories
 
 def get_query_journal_entry(from_date, to_date):
@@ -464,5 +476,11 @@ def rename_categories(data, from_date='', to_date=''):
 
 # Para debug
 def dicToJSON(nomArchivo, diccionario):
-    with open(str(nomArchivo+'.json'), 'w') as f:
+    with open(str(nomArchivo+'.json'), 'a') as f:
         f.write(json.dumps(diccionario, indent=2, default=str))
+        f.close()
+
+def escribe(texto):
+    with open ('log.txt','w') as f:
+        f.write(f'{texto}')
+        f.close()

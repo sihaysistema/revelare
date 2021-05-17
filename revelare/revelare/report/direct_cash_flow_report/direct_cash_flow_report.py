@@ -89,22 +89,20 @@ def get_data(filters=None):
     # Agregando categorias no definidas de entras de diario y pagos
     # journal_entry = add_undefined_entries(journal_entry, undefined_journal_entries)
     payment_entry = add_undefined_payments(payment_entry, undefined_payment_categories)
-
     
+
     # Uniendo journal_entry y payment_entry
     data_by_categories = merging_dictionaries(journal_entry,payment_entry)
 
     # Normalizando y uniendo categorias con journal_entry y payment_entry
     data_and_categories = formatting_data(data_by_categories, categories_by_name, filters)
-
-
+    
     # Agregando datos a las columnas vacías
     data = adding_columns_to_data(data_and_categories, ranges, filters)
 
-    dicToJSON('data',data)
     # Sumando la data del reporte
     data = accumulate_values_into_parents(data, ranges, filters)
-    dicToJSON('data',data)
+
     # Sumando cuentas hijas
     data = add_values_of_sub_accounts(data)
     data = rename_category(data)
@@ -255,14 +253,15 @@ def get_journal_entry(start_date, end_date):
         filtradas repecto al flujo de caja.
     """
     journal_entry = get_query_journal_entry(start_date, end_date)
-
-    # Pasandolo a Pandas
+    
+    # Pasando a Pandas
     df_journal = pd.DataFrame(json.loads(json.dumps(journal_entry)))
     df_journal = df_journal.fillna("")
 
     journal_entry = {}
     # Obtenemos los componente definidos
     df_journal_categories = df_journal.query("inflow_component != '' or outflow_component != ''")
+    
     journal_categories = df_journal_categories.to_dict(orient='records')
     for journal in journal_categories:
         if journal['inflow_component'] != '':
@@ -276,17 +275,32 @@ def get_journal_entry(start_date, end_date):
             except:
                 journal_entry[journal['outflow_component']] = [journal]
 
-    """# obtenemos los componenete indefinidos
+    # obtenemos los componenete indefinidos
     df_journal_undefined_categories = df_journal.query("inflow_component == '' and outflow_component == ''")
 
     journal_undefined_categories = df_journal_undefined_categories.to_dict(orient='records')
+    
+    journal_undefined = {}
     for journal in journal_undefined_categories:
+        
         if journal.get('amount','') == '':
+            
             if journal.get('debit', None) != 0:
                 journal['amount'] = journal.get('debit')
+                
+                try:
+                    journal_entry['Uncategorized Inflows'].append(journal)
+                except:
+                    journal_entry['Uncategorized Inflows'] = [journal]
+                
             elif journal.get('credit', None) != 0:
-                journal['amount'] = journal.get('credit')"""
-    #return journal_entry, journal_undefined_categories
+                journal['amount'] = journal.get('credit')
+                
+                try:
+                    journal_entry['Uncategorized Outflows'].append(journal)
+                except:
+                    journal_entry['Uncategorized Outflows'] = [journal]
+                
     return journal_entry
 
 # Obtiene el formato de Journal entries
@@ -328,17 +342,18 @@ def get_query_journal_entry(from_date, to_date):
         para mostrar en el reporte
     """    
     individual_entries = individual_journal_entries(from_date, to_date)
+
     new_journal_entry = [] # Polizas validas para reporte
     for journal in individual_entries: # por cada poliza
         journal_flatten = [] # Aplanamos el array
-        journal_ = list(journal.values())
+        journal_ = journal.values()
         for j in journal_:
             for item in j:# Accedemos hasta el diccionario
                 journal_flatten.append(item)# Agregamos la cuenta a la poliza
 
         if there_is_only_one_cash_flow_account(journal_flatten): # si es caso 1
             for ju in journal_flatten: 
-                if ju.get('account_type') == 'Bank' or ju.get('account_type') == 'Cash': # Si es cash o bank
+                if ju['account_type'] == 'Bank' or ju['account_type'] == 'Cash': # Si es cash o bank
                     new_journal_entry.append(ju) # lo agregamos a la data
         elif all_cash_or_bank_accounts(journal_flatten):
             pass
@@ -356,6 +371,7 @@ def get_query_journal_entry(from_date, to_date):
                         debit += journal_f['debit']
                     elif journal_f['credit'] > 0.0:
                         credit += journal_f['credit']
+
         return new_journal_entry
 
 def individual_journal_entries(from_date, to_date):
@@ -369,13 +385,14 @@ def individual_journal_entries(from_date, to_date):
 
     Returns:
         Lista de Diccionarios: Lista de diccionarios, divididos por poliza, por medio de un diccionario
-    """    
+    """
     list_journal_entries = get_list_journal_entries(from_date, to_date)
     individual_entries = []
     for journal in list_journal_entries:
         individual_entries.append({
             journal['name']: get_accounts_for_journal_entries(journal['name'], journal['posting_date'])
         })
+    
     return individual_entries
 
 def get_list_journal_entries(from_date, to_date):
@@ -451,12 +468,15 @@ def there_is_only_one_cash_flow_account(journal_flatten):
     Returns:
         Boolean: Verdadero o Falso
     """    
-    count = 0
-    for journal_f in journal_flatten:
-        if journal_f['account_type'] == 'Bank' or journal_f['account_type'] == 'Cash':
-            count += 1
-    if count == 1:
-        return True
+    if len(journal_flatten) < 3:
+        count = 0
+        for journal_f in journal_flatten:
+            if journal_f['account_type'] == 'Bank' or journal_f['account_type'] == 'Cash':
+                count += 1
+        if count == 1:
+            return True
+        else: 
+            return False
     else: 
         return False
 
@@ -480,6 +500,7 @@ def there_are_different_accounts(journal_flatten):
                 count_cash += 1
             elif journal_f['account_type'] != 'Bank' or journal_f['account_type'] != 'Cash':
                 count_dif += 1
+
         if count_cash > count_dif and count_dif != 0: # si hay mas cuentas que no tengan que ver con dinero
             return True
         elif count_cash > 1 and count_dif != 0: # si hay mas cuentas que tienen que ver con dinero
@@ -527,7 +548,7 @@ def get_query_payment_entry(from_date, to_date):
         SELECT paid_to AS lb_name, paid_from, paid_to, posting_date, 
         inflow_component, outflow_component, paid_amount AS amount, payment_type
         FROM `tabPayment Entry` WHERE posting_date 
-        BETWEEN '{from_date}' AND '{to_date}' AND docstatus = 1
+        BETWEEN '{from_date}' AND '{to_date}' AND docstatus = 1 AND payment_type != 'Internal Transfer'
     ''', as_dict=True)
 
     for pay in payments:
@@ -566,6 +587,7 @@ def get_payment_entry(from_date, to_date):
                 item['lb_name'] =item['paid_to']
             elif item['payment_type'] == 'Pay':
                 item['lb_name'] =item['paid_from']
+
 
     for d in payment_undefined_categories:
         if d['payment_type'] == 'Receive':
@@ -738,7 +760,7 @@ def formatting_data(data_by_categories, categories_by_name, filters):
                     'cash_effect' : items['cash_effect'],
                     'is_group' : items['is_group'],
                     'indent' : categori['indent'] + 1,
-                    'amount' : items.get('amount')
+                    'amount' : items['amount']
                     })
 
     return categories_and_data or []
