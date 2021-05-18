@@ -48,9 +48,10 @@ def get_data(filters=None):
         # Forma de pasar filtros por url
         # #query-report/Cash%20Flow%20Detail?from_date=2021-01-02
         payments_entry = set_payment_entry(filters.from_date, filters.to_date, filters.category)
+        
         journal_entry = set_journal_entry(filters.from_date, filters.to_date, filters.category)
         # dicToJSON('payments_entry',payments_entry)
-        # dicToJSON('journal_entry',journal_entry)
+        dicToJSON('journal_entry_detalle',journal_entry)
         data = []
 
         for pay in payments_entry:
@@ -206,7 +207,7 @@ def get_journal_entry(start_date, end_date, category):
     """
     # journal_entry = get_query_journal_entry(start_date, end_date, category)
     journal_entry = get_query_journal_entry(start_date, end_date)
-    dicToJSON('journal_entry_CFD',journal_entry)
+
     journal_undefined_categories = []
     if journal_entry:
         #------------ Inicio Polizas definidas ------------
@@ -256,12 +257,11 @@ def get_query_journal_entry(from_date, to_date):
         para mostrar en el reporte
     """    
     individual_entries = individual_journal_entries(from_date, to_date)
-
-
+    
     new_journal_entry = [] # Polizas validas para reporte
     for journal in individual_entries: # por cada poliza
         journal_flatten = [] # Aplanamos el array
-        journal_ = list(journal.values())
+        journal_ = journal.values()
         for j in journal_:
 
             for item in j:# Accedemos hasta el diccionario
@@ -284,16 +284,15 @@ def get_query_journal_entry(from_date, to_date):
             """
             debit = 0
             credit = 0
-            
+
             for journal_f in journal_flatten:
                 if journal_f['account_type'] == 'Bank' or journal_f['account_type'] == 'Cash':
-                    
+
                     if journal_f['debit'] > 0.0:
                         debit += journal_f['debit']
                     elif journal_f['credit'] > 0.0:
                         credit += journal_f['credit']
             pass
-
     return new_journal_entry
 
 def individual_journal_entries(from_date, to_date):
@@ -307,14 +306,14 @@ def individual_journal_entries(from_date, to_date):
 
     Returns:
         Lista de Diccionarios: Lista de diccionarios, divididos por poliza, por medio de un diccionario
-    """    
+    """
     list_journal_entries = get_list_journal_entries(from_date, to_date)
     individual_entries = []
+
     for journal in list_journal_entries:
         individual_entries.append({
             journal['url_name']: get_accounts_for_journal_entries(journal['url_name'], journal['posting_date'])
         })
-
     return individual_entries
 
 def get_list_journal_entries(from_date, to_date):
@@ -396,12 +395,15 @@ def there_is_only_one_cash_flow_account(journal_flatten):
     Returns:
         Boolean: Verdadero o Falso
     """    
-    count = 0
-    for journal_f in journal_flatten:
-        if journal_f['account_type'] == 'Bank' or journal_f['account_type'] == 'Cash':
-            count += 1
-    if count == 1:
-        return True
+    if len(journal_flatten) < 3:
+        count = 0
+        for journal_f in journal_flatten:
+            if journal_f['account_type'] == 'Bank' or journal_f['account_type'] == 'Cash':
+                count += 1
+        if count == 1:
+            return True
+        else: 
+            return False
     else: 
         return False
 
@@ -476,11 +478,11 @@ def rename_categories(data, from_date='', to_date=''):
 
 # Para debug
 def dicToJSON(nomArchivo, diccionario):
-    with open(str(nomArchivo+'.json'), 'a') as f:
+    with open(str(nomArchivo+'.json'), 'w') as f:
         f.write(json.dumps(diccionario, indent=2, default=str))
         f.close()
 
 def escribe(texto):
-    with open ('log.txt','w') as f:
+    with open ('log.txt','a') as f:
         f.write(f'{texto}')
         f.close()

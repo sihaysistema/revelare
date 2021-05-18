@@ -87,7 +87,6 @@ def get_data(filters=None):
     payment_entry, undefined_payment_categories = get_payment_entry(start_date, end_date)
 
     # Agregando categorias no definidas de entras de diario y pagos
-    # journal_entry = add_undefined_entries(journal_entry, undefined_journal_entries)
     payment_entry = add_undefined_payments(payment_entry, undefined_payment_categories)
     
 
@@ -257,9 +256,9 @@ def get_journal_entry(start_date, end_date):
     # Pasando a Pandas
     df_journal = pd.DataFrame(json.loads(json.dumps(journal_entry)))
     df_journal = df_journal.fillna("")
-
-    journal_entry = {}
+    
     # Obtenemos los componente definidos
+    journal_entry = {}
     df_journal_categories = df_journal.query("inflow_component != '' or outflow_component != ''")
     
     journal_categories = df_journal_categories.to_dict(orient='records')
@@ -274,32 +273,29 @@ def get_journal_entry(start_date, end_date):
                 journal_entry[journal['outflow_component']].append(journal)
             except:
                 journal_entry[journal['outflow_component']] = [journal]
-
+    
     # obtenemos los componenete indefinidos
     df_journal_undefined_categories = df_journal.query("inflow_component == '' and outflow_component == ''")
-
+    
     journal_undefined_categories = df_journal_undefined_categories.to_dict(orient='records')
     
     journal_undefined = {}
     for journal in journal_undefined_categories:
-        
-        if journal.get('amount','') == '':
-            
-            if journal.get('debit', None) != 0:
-                journal['amount'] = journal.get('debit')
-                
-                try:
-                    journal_entry['Uncategorized Inflows'].append(journal)
-                except:
-                    journal_entry['Uncategorized Inflows'] = [journal]
-                
-            elif journal.get('credit', None) != 0:
-                journal['amount'] = journal.get('credit')
-                
-                try:
-                    journal_entry['Uncategorized Outflows'].append(journal)
-                except:
-                    journal_entry['Uncategorized Outflows'] = [journal]
+        if journal.get('debit', 0) != 0:
+            journal['amount'] = journal.get('debit')
+
+            try:
+                journal_entry['Uncategorized Inflows'].append(journal)
+            except:
+                journal_entry['Uncategorized Inflows'] = [journal]
+
+        elif journal.get('credit', 0) != 0:
+            journal['amount'] = journal.get('credit')
+
+            try:
+                journal_entry['Uncategorized Outflows'].append(journal)
+            except:
+                journal_entry['Uncategorized Outflows'] = [journal]
                 
     return journal_entry
 
@@ -342,37 +338,43 @@ def get_query_journal_entry(from_date, to_date):
         para mostrar en el reporte
     """    
     individual_entries = individual_journal_entries(from_date, to_date)
-
+    
     new_journal_entry = [] # Polizas validas para reporte
     for journal in individual_entries: # por cada poliza
         journal_flatten = [] # Aplanamos el array
         journal_ = journal.values()
         for j in journal_:
+
             for item in j:# Accedemos hasta el diccionario
                 journal_flatten.append(item)# Agregamos la cuenta a la poliza
 
         if there_is_only_one_cash_flow_account(journal_flatten): # si es caso 1
+
             for ju in journal_flatten: 
-                if ju['account_type'] == 'Bank' or ju['account_type'] == 'Cash': # Si es cash o bank
+                if ju.get('account_type') == 'Bank' or ju.get('account_type') == 'Cash': # Si es cash o bank
                     new_journal_entry.append(ju) # lo agregamos a la data
+
         elif all_cash_or_bank_accounts(journal_flatten):
             pass
+
         elif there_are_different_accounts(journal_flatten):
-            """ 
+            """
             El caso 3, se ha analizado la forma de determinar cual fue el flujo de caja 
             realizado en la transacción, pero no es coherente al momento de asignar le la categoria,
             para mostrar en el reporte de flujo de caja directo.
             """
             debit = 0
             credit = 0
+
             for journal_f in journal_flatten:
                 if journal_f['account_type'] == 'Bank' or journal_f['account_type'] == 'Cash':
+
                     if journal_f['debit'] > 0.0:
                         debit += journal_f['debit']
                     elif journal_f['credit'] > 0.0:
                         credit += journal_f['credit']
-
-        return new_journal_entry
+            pass
+    return new_journal_entry
 
 def individual_journal_entries(from_date, to_date):
     """
@@ -388,11 +390,12 @@ def individual_journal_entries(from_date, to_date):
     """
     list_journal_entries = get_list_journal_entries(from_date, to_date)
     individual_entries = []
+
     for journal in list_journal_entries:
         individual_entries.append({
-            journal['name']: get_accounts_for_journal_entries(journal['name'], journal['posting_date'])
+            journal['url_name']: get_accounts_for_journal_entries(journal['url_name'], journal['posting_date'])
         })
-    
+
     return individual_entries
 
 def get_list_journal_entries(from_date, to_date):
@@ -408,11 +411,11 @@ def get_list_journal_entries(from_date, to_date):
         Lista de diccionarios: Lista de diccionarios, con nombre y fecha de la poliza.
     """    
     list_journal_entries = frappe.db.sql(f'''
-                        SELECT JE.name, JE.posting_date
+                        SELECT JE.name AS url_name, JE.posting_date
                         FROM `tabJournal Entry` AS JE
                         INNER JOIN `tabJournal Entry Account` AS JEC 
                         ON JEC.parent = JE.name AND JE.docstatus = 1 AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
-                        WHERE JEC.account_type = 'Bank' OR JEC.account_type = 'Cash' GROUP BY name;
+                        WHERE JEC.account_type = 'Bank' OR JEC.account_type = 'Cash' GROUP BY JEC.name;
                         ''', as_dict=True)
     return list_journal_entries
 
