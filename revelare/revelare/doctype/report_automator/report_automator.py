@@ -84,6 +84,24 @@ class ReportAutomator(Document):
         columns, data = report.get_data(limit=self.no_of_rows or 100, user = self.user,
             filters = self.filters, as_dict=True, ignore_prepared_report=True)
 
+        # usar para debug
+        # with open('columnas.json', 'w')as f:
+        #     f.write(json.dumps(columns, indent=2, default=str))
+
+        # with open('data.json', 'w')as f:
+        #     f.write(json.dumps(data, indent=2, default=str))
+
+        # filter data
+        if self.columns_report:
+            columns, data = filter_data_repo(self.columns_report, columns, data)
+
+            # Usar para debug
+            # with open('new-columnas.json', 'w')as f:
+            #     f.write(json.dumps(columns, indent=2, default=str))
+
+            # with open('new-data.json', 'w')as f:
+            #     f.write(json.dumps(data, indent=2, default=str))
+
         # add serial numbers
         columns.insert(0, frappe._dict(fieldname='idx', label='', width='30px'))
         for i in range(len(data)):
@@ -191,6 +209,7 @@ class ReportAutomator(Document):
     def dynamic_date_filters_set(self):
         return self.dynamic_date_period and self.from_date_field and self.to_date_field
 
+
 @frappe.whitelist()
 def download(name):
     '''Download report locally'''
@@ -206,12 +225,14 @@ def download(name):
     frappe.local.response.type = "download"
     frappe.local.response.filename = auto_email_report.get_file_name()
 
+
 @frappe.whitelist()
 def send_now(name):
     '''Send Report Automator now'''
     auto_email_report = frappe.get_doc('Report Automator', name)
     auto_email_report.check_permission()
     auto_email_report.send()
+
 
 def send_daily():
     '''Check reports to be sent daily'''
@@ -241,6 +262,7 @@ def send_monthly():
     for report in frappe.get_all('Report Automator', {'enabled': 1, 'frequency': 'Monthly'}):
         frappe.get_doc('Report Automator', report.name).send()
 
+
 def make_links(columns, data):
     for row in data:
         for col in columns:
@@ -254,6 +276,7 @@ def make_links(columns, data):
                 row[col.fieldname] = frappe.format_value(row[col.fieldname], col)
 
     return columns, data
+
 
 def update_field_types(columns):
     for col in columns:
@@ -278,3 +301,30 @@ def render_template_prev(data_select={}):
     }
     return frappe.render_template('revelare/templates/color_template.html', props_report)
 
+
+def filter_data_repo(columns_ref, cols, data):
+
+    cols_ref = []
+    [cols_ref.append(x.get("column_name")) for x in columns_ref]
+
+    # Filtra solo aquellas columnas definidas en el doctype
+    new_cols = []
+    for col in cols:
+        if col.get("fieldname") in cols_ref:
+            new_cols.append(col)
+
+    # Filtra solo la data en funcion a las columnas definidas
+    new_data = []
+    # Recorre cada dict
+    for key_dict_data in data:
+        base_data = {}
+
+        # Por cada valor en la lista
+        for val_base in cols_ref:
+            # Si el valor existe en el diccionario
+            if val_base in key_dict_data:
+                base_data.update({val_base: key_dict_data.get(val_base)})
+
+        if base_data: new_data.append(base_data)
+
+    return new_cols, new_data
