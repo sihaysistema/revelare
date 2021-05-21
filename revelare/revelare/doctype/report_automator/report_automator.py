@@ -84,11 +84,6 @@ class ReportAutomator(Document):
         columns, data = report.get_data(limit=self.no_of_rows or 100, user = self.user,
             filters = self.filters, as_dict=True, ignore_prepared_report=True)
 
-        with open('columnas.json', 'w') as f:
-            f.write(json.dumps(columns, indent=2, default=str))
-        with open('data.json', 'w') as f:
-            f.write(json.dumps(data, indent=2, default=str))
-
         # add serial numbers
         columns.insert(0, frappe._dict(fieldname='idx', label='', width='30px'))
         for i in range(len(data)):
@@ -115,7 +110,6 @@ class ReportAutomator(Document):
             frappe.throw(_('Invalid Output Format'))
 
     def get_html_table(self, columns=None, data=None):
-
         date_time = global_date_format(now()) + ' ' + format_time(now())
         report_doctype = frappe.db.get_value('Report', self.report, 'ref_doctype')
 
@@ -130,7 +124,7 @@ class ReportAutomator(Document):
             'edit_report_settings': get_link_to_form('Report Automator', self.name)
         }
 
-        return frappe.render_template('revelare/templates/auto_email_report.html', props_report)
+        return frappe.render_template('revelare/templates/color_template.html', props_report)
 
     @staticmethod
     def get_spreadsheet_data(columns, data):
@@ -282,5 +276,5 @@ def render_template_prev(data_select={}):
         'report_name': data_select.get("report_name", ""),
         'edit_report_settings': data_select.get("edit_report_settings", "")
     }
-    return frappe.render_template('revelare/templates/auto_email_report.html', props_report)
+    return frappe.render_template('revelare/templates/color_template.html', props_report)
 
