@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "Leonhard Euler",
+    "country": "Rusia",
+    "profession": "Mathematician"
+  },
+  {
+    "id": 2,
+    "name": "Issac Newton",
+    "country": "United Kingdom",
+    "profession": "Physicist"
+  },
+  {
+    "id": 3,
+    "name": "Michael Faraday",
+    "country": "United Kingdom",
+    "profession": "Physicist"
+  },
+  {
+    "id": 4,
+    "name": "Joseph Fourier",
+    "country": "France",
+    "profession": "Mathematician"
+  },
+  {
+    "id": 5,
+    "name": "René Descartes",
+    "country": "France",
+    "profession": "Philosopher"
+  },
+  {
+    "id": 6,
+    "name": "Galileo Galilei",
+    "country": "Italy",
+    "profession": "Astronomer"
+  }
+]
