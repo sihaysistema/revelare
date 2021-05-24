@@ -1,5 +1,6 @@
 {
  "allow_rename": 1,
+ "autoname": "format:Report-{report}-{#######}",
  "creation": "2021-05-20 16:19:51.799505",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -33,6 +34,7 @@
   "template_section",
   "template",
   "preview_template",
+  "reference_data",
   "custom_columns_section",
   "columns_report",
   "section_break_15",
@@ -188,10 +190,13 @@
    "reqd": 1
   },
   {
+   "default": "HTML",
+   "description": "Coming soon in .xlsx format",
    "fieldname": "format",
    "fieldtype": "Select",
    "label": "Format",
    "options": "HTML\nXLSX\nCSV",
+   "read_only": 1,
    "reqd": 1
   },
   {
@@ -215,7 +220,7 @@
    "fieldname": "template",
    "fieldtype": "Select",
    "label": "Template",
-   "options": "Option A\nOption B\nOption C"
+   "options": "Basic Template\nBasic Colorized Template"
   },
   {
    "fieldname": "preview_template",
@@ -233,9 +238,18 @@
    "fieldtype": "Table",
    "label": "Columns Report",
    "options": "Report customizer"
+  },
+  {
+   "default": "{\n  \"cols\": [\n    {\n      \"label\": \"ID\",\n      \"fieldname\": \"idx\",\n      \"fieldtype\": \"Data\",\n      \"width\": 150\n    },\n    {\n      \"label\": \"Name\",\n      \"fieldname\": \"name\",\n      \"fieldtype\": \"Data\",\n      \"width\": 150\n    },\n    {\n      \"label\": \"Country\",\n      \"fieldname\": \"country\",\n      \"fieldtype\": \"Data\",\n      \"width\": 150\n    },\n    {\n      \"label\": \"Profession\",\n      \"fieldname\": \"profession\",\n      \"fieldtype\": \"Data\",\n      \"width\": 150\n    }\n  ],\n  \"data\": [\n    {\n      \"idx\": 1,\n      \"name\": \"Leonhard Euler\",\n      \"country\": \"Rusia\",\n      \"profession\": \"Mathematician\"\n    },\n    {\n      \"idx\": 2,\n      \"name\": \"Issac Newton\",\n      \"country\": \"United Kingdom\",\n      \"profession\": \"Physicist\"\n    },\n    {\n      \"idx\": 3,\n      \"name\": \"Michael Faraday\",\n      \"country\": \"United Kingdom\",\n      \"profession\": \"Physicist\"\n    },\n    {\n      \"idx\": 4,\n      \"name\": \"Joseph Fourier\",\n      \"country\": \"France\",\n      \"profession\": \"Mathematician\"\n    },\n    {\n      \"idx\": 5,\n      \"name\": \"Ren\u00e9 Descartes\",\n      \"country\": \"France\",\n      \"profession\": \"Philosopher\"\n    },\n    {\n      \"idx\": 6,\n      \"name\": \"Galileo Galilei\",\n      \"country\": \"Italy\",\n      \"profession\": \"Astronomer\"\n    }\n  ]\n}",
+   "fieldname": "reference_data",
+   "fieldtype": "Code",
+   "hidden": 1,
+   "label": "Reference Data",
+   "options": "json",
+   "read_only": 1
   }
  ],
- "modified": "2021-05-21 11:53:30.719703",
+ "modified": "2021-05-24 11:55:29.567168",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Report Automator",

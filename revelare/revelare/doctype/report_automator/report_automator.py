@@ -18,10 +18,13 @@ from frappe.utils.xlsxutils import make_xlsx
 
 max_reports_per_user = frappe.local.conf.max_reports_per_user or 3
 
-class ReportAutomator(Document):
-    def autoname(self):
-        self.name = _(self.report)
 
+REPORT_TEMPLATES = {
+    "Basic Template": "basic_template.html",
+    "Basic Colorized Template": "color_template.html"
+}
+
+class ReportAutomator(Document):
     def validate(self):
         self.validate_report_count()
         self.validate_emails()
@@ -84,23 +87,16 @@ class ReportAutomator(Document):
         columns, data = report.get_data(limit=self.no_of_rows or 100, user = self.user,
             filters = self.filters, as_dict=True, ignore_prepared_report=True)
 
-        # usar para debug
-        # with open('columnas.json', 'w')as f:
-        #     f.write(json.dumps(columns, indent=2, default=str))
-
-        # with open('data.json', 'w')as f:
-        #     f.write(json.dumps(data, indent=2, default=str))
-
-        # filter data
+         # filter data
         if self.columns_report:
             columns, data = filter_data_repo(self.columns_report, columns, data)
 
-            # Usar para debug
-            # with open('new-columnas.json', 'w')as f:
-            #     f.write(json.dumps(columns, indent=2, default=str))
+        # Usar para debug
+        # with open('new-columnas.json', 'w')as f:
+        #     f.write(json.dumps(columns, indent=2, default=str))
 
-            # with open('new-data.json', 'w')as f:
-            #     f.write(json.dumps(data, indent=2, default=str))
+        # with open('new-data.json', 'w')as f:
+        #     f.write(json.dumps(data, indent=2, default=str))
 
         # add serial numbers
         columns.insert(0, frappe._dict(fieldname='idx', label='', width='30px'))
@@ -132,17 +128,17 @@ class ReportAutomator(Document):
         report_doctype = frappe.db.get_value('Report', self.report, 'ref_doctype')
 
         props_report = {
-            'title': self.name,
+            'title': self.report,
             'description': self.description,
             'date_time': date_time,
             'columns': columns,
             'data': data,
             'report_url': get_url_to_report(self.report, self.report_type, report_doctype),
             'report_name': self.report,
-            'edit_report_settings': get_link_to_form('Report Automator', self.name)
+            'edit_report_settings': get_link_to_form('Report Automator', self.report)
         }
 
-        return frappe.render_template('revelare/templates/color_template.html', props_report)
+        return frappe.render_template(f'revelare/templates/{REPORT_TEMPLATES.get(self.template)}', props_report)
 
     @staticmethod
     def get_spreadsheet_data(columns, data):
@@ -152,8 +148,8 @@ class ReportAutomator(Document):
             out.append(new_row)
             for df in columns:
                 if df.fieldname not in row: continue
-                new_row.append(frappe.format(row[df.fieldname], df, row))
-
+                tester = frappe.format(row[df.fieldname], df, row)
+                new_row.append(tester)
         return out
 
     def get_file_name(self):
@@ -199,11 +195,11 @@ class ReportAutomator(Document):
 
         frappe.sendmail(
             recipients = self.email_to.split(),
-            subject = self.name,
+            subject = self.report,
             message = message,
             attachments = attachments,
             reference_doctype = self.doctype,
-            reference_name = self.name
+            reference_name = self.report
         )
 
     def dynamic_date_filters_set(self):
@@ -287,7 +283,15 @@ def update_field_types(columns):
 
 
 @frappe.whitelist()
-def render_template_prev(data_select={}):
+def render_template_prev(opt, data_select={}):
+    """
+    Args:
+        opt (str): Template Name
+        data_select (dict, optional): [description]. Defaults to {}.
+
+    Returns:
+        str: HTML
+    """
     data_select = json.loads(data_select)
     props_report = {
         'title': data_select.get("name", ""),
@@ -299,19 +303,33 @@ def render_template_prev(data_select={}):
         'report_name': data_select.get("report_name", ""),
         'edit_report_settings': data_select.get("edit_report_settings", "")
     }
-    return frappe.render_template('revelare/templates/color_template.html', props_report)
+    return frappe.render_template(f'revelare/templates/{REPORT_TEMPLATES.get(opt)}', props_report)
 
 
 def filter_data_repo(columns_ref, cols, data):
+    """
+    Filtra la data original del reporte en funcion a los campos (columnas)
+    fijados en la tabla hija `Columns Report`
+
+    Args:
+        columns_ref (list): Nombres de columnas a utilizar del reporte origin
+        cols (list): Propiedades columnas origin report
+        data (list): Datos reporte origen
+
+    Returns:
+        tuple: list, list
+    """
 
     cols_ref = []
     [cols_ref.append(x.get("column_name")) for x in columns_ref]
 
-    # Filtra solo aquellas columnas definidas en el doctype
+    # De la data del reporte filtra solo aquellas columnas definidas en el doctype
+    # siguiendo el orden por numero de fila
     new_cols = []
-    for col in cols:
-        if col.get("fieldname") in cols_ref:
-            new_cols.append(col)
+    for col_ref in cols_ref:
+        for col_repo in cols:
+            if col_ref in col_repo.get("fieldname"):
+                new_cols.append((col_repo))
 
     # Filtra solo la data en funcion a las columnas definidas
     new_data = []

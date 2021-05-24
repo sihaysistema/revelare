@@ -20,37 +20,39 @@
 </table>
 
 <!-- BODY -->
-{% if data %}
-<table class="table table-bordered text-medium fl-table" cellpadding="0" cellspacing="0" border="0"
-  style="max-width: {{ max_width }}">
-  <thead>
-    <tr>
-      {% for col in columns %}
-      <th {{- get_alignment(col) }}>
-        {{- _(col.label) -}}
-      </th>
-      {% endfor %}
-    </tr>
-  </thead>
-  <tbody>
-    {% for row in data %}
-    <tr>
-      {% for col in columns %}
-      {% if row[col.fieldname] == 'Total' %}
-      <td {{- get_alignment(col) }}>
-        {{- row[col.fieldname] -}}
-      </td>
-      {% else %}
-      <td {{- get_alignment(col) }}>
-        {{- frappe.format(row[col.fieldname], col, row) -}}
-      </td>
-      {% endif %}
-      {% endfor %}
-      </td>
-      {% endfor %}
-  </tbody>
-</table>
-{% endif %}
+<div class="table-wrapper">
+  {% if data %}
+  <table class="table table-bordered text-medium fl-table" cellpadding="0" cellspacing="0" border="0"
+    style="max-width: {{ max_width }}">
+    <thead>
+      <tr>
+        {% for col in columns %}
+        <th {{- get_alignment(col) }}>
+          {{- _(col.label) -}}
+        </th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in data %}
+      <tr>
+        {% for col in columns %}
+        {% if row[col.fieldname] == 'Total' %}
+        <td {{- get_alignment(col) }}>
+          {{- row[col.fieldname] -}}
+        </td>
+        {% else %}
+        <td {{- get_alignment(col) }}>
+          {{- frappe.format(row[col.fieldname], col, row) -}}
+        </td>
+        {% endif %}
+        {% endfor %}
+        </td>
+        {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
 
 <!-- FOOTER -->
 {% if not frappe.db.get_value("System Settings", "System Settings", "hide_footer_in_auto_email_reports")|int %}
@@ -108,13 +110,13 @@
 
   .fl-table thead th {
     color: #ffffff;
-    background: #4FC3A1;
+    background: #4FC3A1 !important;
   }
 
 
   .fl-table thead th:nth-child(odd) {
     color: #ffffff;
-    background: #324960;
+    background: #324960 !important;
   }
 
   .fl-table tr:nth-child(even) {

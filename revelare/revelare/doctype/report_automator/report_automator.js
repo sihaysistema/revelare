@@ -2,6 +2,9 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Report Automator', {
+    onload: function (frm) {
+        render_prev(frm);
+    },
     refresh: function (frm) {
         if (frm.doc.report_type !== 'Report Builder') {
             if (frm.script_setup_for !== frm.doc.report && !frm.doc.__islocal) {
@@ -139,91 +142,31 @@ frappe.ui.form.on('Report Automator', {
         }
     },
     template: function (frm) {
-
-        var $log_wrapper = $(frm.fields_dict.preview_template.wrapper).empty();
-        const cols = [
-            {
-                "label": "ID",
-                "fieldname": "idx",
-                "fieldtype": "Data",
-                "width": 150
-            },
-            {
-                "label": "Name",
-                "fieldname": "name",
-                "fieldtype": "Data",
-                "width": 150
-            },
-            {
-                "label": "Country",
-                "fieldname": "country",
-                "fieldtype": "Data",
-                "width": 150
-            },
-            {
-                "label": "Profession",
-                "fieldname": "profession",
-                "fieldtype": "Data",
-                "width": 150
-            },
-        ]
-
-        const data = [
-            {
-                "idx": 1,
-                "name": "Leonhard Euler",
-                "country": "Rusia",
-                "profession": "Mathematician"
-            },
-            {
-                "idx": 2,
-                "name": "Issac Newton",
-                "country": "United Kingdom",
-                "profession": "Physicist"
-            },
-            {
-                "idx": 3,
-                "name": "Michael Faraday",
-                "country": "United Kingdom",
-                "profession": "Physicist"
-            },
-            {
-                "idx": 4,
-                "name": "Joseph Fourier",
-                "country": "France",
-                "profession": "Mathematician"
-            },
-            {
-                "idx": 5,
-                "name": "René Descartes",
-                "country": "France",
-                "profession": "Philosopher"
-            },
-            {
-                "idx": 6,
-                "name": "Galileo Galilei",
-                "country": "Italy",
-                "profession": "Astronomer"
-            }
-        ]
-
-        frappe.call({
-            method: "revelare.revelare.doctype.report_automator.report_automator.render_template_prev",
-            args: {
-                data_select: {
-                    title: frm.doc.name,
-                    description: "",
-                    date_time: "",
-                    columns: cols,
-                    data: data,
-                    report_url: "",
-                    report_name: frm.doc.name,
-                    edit_report_settings: ""
-                }
-            },
-            callback: function (r) {
-                $(r.message).appendTo($log_wrapper);
-            }
-        });
+        render_prev(frm)
     }
 });
+
+const render_prev = (frm) => {
+    let ref_data = JSON.parse(frm.doc.reference_data);
+    var $log_wrapper = $(frm.fields_dict.preview_template.wrapper).empty();
+
+    frappe.call({
+        method: "revelare.revelare.doctype.report_automator.report_automator.render_template_prev",
+        args: {
+            opt: frm.doc.template,
+            data_select: {
+                title: frm.doc.name,
+                description: "",
+                date_time: "",
+                columns: ref_data.cols,
+                data: ref_data.data,
+                report_url: "",
+                report_name: frm.doc.name,
+                edit_report_settings: ""
+            }
+        },
+        callback: function (r) {
+            $(r.message).appendTo($log_wrapper);
+        }
+    });
+}

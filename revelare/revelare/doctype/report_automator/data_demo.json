@@ -1,38 +1,66 @@
-[
-  {
-    "id": 1,
-    "name": "Leonhard Euler",
-    "country": "Rusia",
-    "profession": "Mathematician"
-  },
-  {
-    "id": 2,
-    "name": "Issac Newton",
-    "country": "United Kingdom",
-    "profession": "Physicist"
-  },
-  {
-    "id": 3,
-    "name": "Michael Faraday",
-    "country": "United Kingdom",
-    "profession": "Physicist"
-  },
-  {
-    "id": 4,
-    "name": "Joseph Fourier",
-    "country": "France",
-    "profession": "Mathematician"
-  },
-  {
-    "id": 5,
-    "name": "René Descartes",
-    "country": "France",
-    "profession": "Philosopher"
-  },
-  {
-    "id": 6,
-    "name": "Galileo Galilei",
-    "country": "Italy",
-    "profession": "Astronomer"
-  }
-]
+{
+  "cols": [
+    {
+      "label": "ID",
+      "fieldname": "idx",
+      "fieldtype": "Data",
+      "width": 150
+    },
+    {
+      "label": "Name",
+      "fieldname": "name",
+      "fieldtype": "Data",
+      "width": 150
+    },
+    {
+      "label": "Country",
+      "fieldname": "country",
+      "fieldtype": "Data",
+      "width": 150
+    },
+    {
+      "label": "Profession",
+      "fieldname": "profession",
+      "fieldtype": "Data",
+      "width": 150
+    }
+  ],
+  "data": [
+    {
+      "idx": 1,
+      "name": "Leonhard Euler",
+      "country": "Rusia",
+      "profession": "Mathematician"
+    },
+    {
+      "idx": 2,
+      "name": "Issac Newton",
+      "country": "United Kingdom",
+      "profession": "Physicist"
+    },
+    {
+      "idx": 3,
+      "name": "Michael Faraday",
+      "country": "United Kingdom",
+      "profession": "Physicist"
+    },
+    {
+      "idx": 4,
+      "name": "Joseph Fourier",
+      "country": "France",
+      "profession": "Mathematician"
+    },
+    {
+      "idx": 5,
+      "name": "René Descartes",
+      "country": "France",
+      "profession": "Philosopher"
+    },
+    {
+      "idx": 6,
+      "name": "Galileo Galilei",
+      "country": "Italy",
+      "profession": "Astronomer"
+    }
+  ]
+}
