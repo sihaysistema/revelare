@@ -16,7 +16,7 @@ from frappe.utils.csvutils import to_csv
 import json
 from frappe.utils.xlsxutils import make_xlsx
 
-max_reports_per_user = frappe.local.conf.max_reports_per_user or 3
+max_reports_per_user = frappe.local.conf.max_reports_per_user or 150
 
 
 REPORT_TEMPLATES = {
