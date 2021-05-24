@@ -45,8 +45,15 @@ frappe.query_reports["Cash Flow Detail"] = {
             label: __("Category"),
             fieldtype: "Link",
             options: "Direct Cash Flow Component",
+            get_query: () => {
+                return {
+                    filters: {
+                        'is_group': 0
+                    }
+                };},
             default: "",
-            hidden:1
+                
+            //hidden:1
         }
     ]
 };

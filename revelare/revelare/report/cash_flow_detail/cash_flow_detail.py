@@ -20,7 +20,7 @@ def get_columns(filters):
     columns = [
         {
             "label": _("ID"),
-            "fieldname": "name",
+            "fieldname": "name_url",
             "fieldtype": "Data",
             "width": 365
         },
@@ -44,17 +44,14 @@ def get_data(filters=None):
         [lista][diccionarios]: [{'name':'Operations','amount':200}]
     """
 
-    if filters.category != None:
-        # Forma de pasar filtros por url
-        # #query-report/Cash%20Flow%20Detail?from_date=2021-01-02
+    if filters.category != None: # Si definimos la categoria.
+        #**************** Procesamos los datos *****************************
         payments_entry = set_payment_entry(filters.from_date, filters.to_date, filters.category)
-        
         journal_entry = set_journal_entry(filters.from_date, filters.to_date, filters.category)
-        # dicToJSON('payments_entry',payments_entry)
-        dicToJSON('journal_entry_detalle',journal_entry)
-        data = []
 
-        for pay in payments_entry:
+        data = [] # Definimos data a mostrar vacía
+        for pay in payments_entry: # Agregamos pyments_entry
+
             data.append({
                 'name':pay['name'],
                 'amount':pay['amount'],
@@ -62,28 +59,30 @@ def get_data(filters=None):
                 'name_url':pay['name_url']
             })
 
-        for journal in journal_entry:
+        for journal in journal_entry: # Agregamos journal_entry
+
             data.append({
                 'name':journal['name'],
                 'amount':journal['amount'],
                 'type':'journal_entry',
                 'name_url':journal['name_url']
             })
-        data = rename_categories(data)
-        amount_total = 0
-        
+
+        data = rename_categories(data) # Agregamos link a cada item de la data
+
+        amount_total = 0 # Sumamos el valor de todos los items
         for d in reversed(data):
             amount_total += d['amount']
-        
-        data.insert(0,{
-                        'name':filters.category,
+
+        data.insert(0,{ # Insertamos dicha suma en la primera fila del reporte
+                        'name_url':filters.category,
                         'amount':amount_total
                     })
-    else:
-        data = [{'name':'','amount':0}]
-    
-    # TODO:  Duplica los datos de las journal Entry, Revisar set_journal_entry
-    # dicToJSON('data', data)
+
+    else: # Mostramos el reporte vacío
+        data = [{'name_url':'','amount':0}]
+
+
     return data 
 
 #Obteniendo pagos por categorias
@@ -211,28 +210,34 @@ def get_journal_entry(start_date, end_date, category):
     journal_undefined_categories = []
     if journal_entry:
         #------------ Inicio Polizas definidas ------------
-        df_journal = pd.DataFrame(json.loads(json.dumps(journal_entry)))# Pasandolo a Pandas
+        df_journal = pd.DataFrame(json.loads(json.dumps(journal_entry))) # Pasamos data a Pandas
         df_journal = df_journal.fillna("")
-        df_journal_categories = df_journal.query("inflow_component != '' or outflow_component != ''")# Obtenemos los componente definidos
+        df_journal_categories = df_journal.query("inflow_component != '' or outflow_component != ''") # Obtenemos los componente definidos
 
         journal_categories = df_journal_categories.to_dict(orient='records')
         for journal in journal_undefined_categories:
             if journal.get('amount','') == '':
+
                 if journal.get('debit', None) != 0:
                     journal['amount'] = journal.get('debit')
+
                 elif journal.get('credit', None) != 0:
                     journal['amount'] = journal.get('credit')
 
         journal_entry = {}
         for journal in journal_categories:
+
             if journal['inflow_component'] != '':
                 try:
                     journal_entry[journal['inflow_component']].append(journal)
+
                 except:
                     journal_entry[journal['inflow_component']] = [journal]
+
             elif journal['outflow_component'] != '':
                 try:
                     journal_entry[journal['outflow_component']].append(journal)
+
                 except:
                     journal_entry[journal['outflow_component']] = [journal]
 
@@ -473,7 +478,8 @@ def rename_categories(data, from_date='', to_date=''):
         one_string = '<a target="_blank" onclick="open_one_tab('
         two_string = ')">'
         three_string = '</a>'
-        d['name'] = f"{one_string}'{d['name_url']}','{d['type']}'{two_string}{d['name']}{three_string}"
+        d['name_url'] = f"{one_string}'{d['name_url']}','{d['type']}'{two_string}{d['name_url']}{three_string}"
+        # d['name'] = f"{one_string}'{d['name_url']}','{d['type']}'{two_string}{d['name']}{three_string}"
     return data
 
 # Para debug
