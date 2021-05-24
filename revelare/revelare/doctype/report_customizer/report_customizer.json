@@ -9,13 +9,13 @@
  "fields": [
   {
    "fieldname": "column_name",
-   "fieldtype": "Data",
+   "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Column Name"
   }
  ],
  "istable": 1,
- "modified": "2021-05-21 11:52:50.163714",
+ "modified": "2021-05-24 14:53:11.445108",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Report customizer",

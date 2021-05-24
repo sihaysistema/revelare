@@ -36,6 +36,7 @@
   "preview_template",
   "reference_data",
   "custom_columns_section",
+  "load_report_columns",
   "columns_report",
   "section_break_15",
   "description"
@@ -247,9 +248,14 @@
    "label": "Reference Data",
    "options": "json",
    "read_only": 1
+  },
+  {
+   "fieldname": "load_report_columns",
+   "fieldtype": "Button",
+   "label": "Load Report Columns"
   }
  ],
- "modified": "2021-05-24 11:55:29.567168",
+ "modified": "2021-05-24 13:32:32.008175",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Report Automator",

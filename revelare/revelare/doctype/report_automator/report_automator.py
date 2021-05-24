@@ -72,6 +72,25 @@ class ReportAutomator(Document):
                     '<br><br><ul><li>' + ' <li>'.join(throw_list) + '</ul>',
             )
 
+    def fields_to_child_table(self):
+        report = frappe.get_doc('Report', self.report)
+
+        self.filters = frappe.parse_json(self.filters) if self.filters else {}
+
+        if self.report_type=='Report Builder' and self.data_modified_till:
+            self.filters['modified'] = ('>', now_datetime() - timedelta(hours=self.data_modified_till))
+
+        if self.report_type != 'Report Builder' and self.dynamic_date_filters_set():
+            self.prepare_dynamic_filters()
+
+        columns, data = report.get_data(limit=self.no_of_rows or 100, user = self.user,
+            filters = self.filters, as_dict=True, ignore_prepared_report=True)
+
+        # Obtencion de cols
+        columns_report_ref = self.get_cols_report(columns, data)
+
+        return columns_report_ref
+
     def get_report_content(self):
         '''Returns file in for the report in given format'''
         report = frappe.get_doc('Report', self.report)
@@ -150,6 +169,11 @@ class ReportAutomator(Document):
                 if df.fieldname not in row: continue
                 tester = frappe.format(row[df.fieldname], df, row)
                 new_row.append(tester)
+        return out
+
+    @staticmethod
+    def get_cols_report(columns, data):
+        out = [[_(df.fieldname) for df in columns], ]
         return out
 
     def get_file_name(self):
@@ -346,3 +370,14 @@ def filter_data_repo(columns_ref, cols, data):
         if base_data: new_data.append(base_data)
 
     return new_cols, new_data
+
+
+@frappe.whitelist()
+def colums_to_report(name):
+    """Obtiene las columnas que conforman el reporte seleccionado, estos
+    valores se cargaran a la tabla hija de custom columns"""
+    auto_email_report = frappe.get_doc('Report Automator', name)
+    auto_email_report.check_permission()
+    data = list(auto_email_report.fields_to_child_table())
+
+    return json.dumps(data)

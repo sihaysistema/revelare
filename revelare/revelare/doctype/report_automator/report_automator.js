@@ -2,6 +2,9 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Report Automator', {
+    onload_post_render: function (frm) {
+        frm.get_field("load_report_columns").$input.addClass("btn btn-primary"); //" fa fa-upload");
+    },
     onload: function (frm) {
         render_prev(frm);
     },
@@ -143,6 +146,18 @@ frappe.ui.form.on('Report Automator', {
     },
     template: function (frm) {
         render_prev(frm)
+    },
+    load_report_columns: function (frm) {
+        frappe.call({
+            method: "revelare.revelare.doctype.report_automator.report_automator.colums_to_report",
+            args: {
+                name: frm.doc.name
+            },
+            callback: function (r) {
+                frappe.meta.get_docfield('Report customizer', 'column_name', cur_frm.doc.name).options = JSON.parse(r.message)[0]
+                cur_frm.refresh_field('column_name');
+            }
+        });
     }
 });
 
