@@ -102,10 +102,8 @@ def get_data(filters=None):
     # Sumando la data del reporte
     data = accumulate_values_into_parents(data, ranges, filters)
 
-    dicToJSON('in_data',data)
     # Sumando cuentas hijas
     data = add_values_of_sub_accounts(data)
-    dicToJSON('out_data',data)
 
     data = rename_category(data)
 
