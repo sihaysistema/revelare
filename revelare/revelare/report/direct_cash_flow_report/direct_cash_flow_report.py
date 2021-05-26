@@ -102,8 +102,11 @@ def get_data(filters=None):
     # Sumando la data del reporte
     data = accumulate_values_into_parents(data, ranges, filters)
 
+    dicToJSON('in_data',data)
     # Sumando cuentas hijas
     data = add_values_of_sub_accounts(data)
+    dicToJSON('out_data',data)
+
     data = rename_category(data)
 
     data = insert_link_to_categories(data, filters.from_date,filters.to_date)
@@ -873,6 +876,7 @@ def add_values_of_sub_accounts(data):
         Lista de diccionarios: Lista de diccionarios,
         suma y elimina las cuentas repetidas.
     """    
+    """ Aquí si funcionaba
     for d in range(0, len(data)-1):
         if (d+1) < len(data)-1:
             if data[d]['name'] == data[d+1]['name']:
@@ -884,6 +888,32 @@ def add_values_of_sub_accounts(data):
                                 data[d][key] = data[d+1][key]
                 data.pop(d+1)
     return data
+    """
+    new_datalist = [] # Creamos una nueva lista
+    for element in data: # Recorremos la lista anterior
+        if len(new_datalist) != 0: # Verificamos si la lista ya tiene algún elemento
+            add = True # Inicialiamos un booleano para validar si agrega
+            
+            for new_element in new_datalist: # Recorremos la lista nueva
+                if new_element.get('name', None) == element['name'] and \
+                   new_element.get('parent_direct_cash_flow_component', None) == element['parent_direct_cash_flow_component']: # Verificamos que sea la misma cuenta y componente
+                    
+                    for key, value in new_element.items(): # Recorremos los valores de nuevo elemento
+                        if key != 'name' and key != 'posting_date' and key != 'cash_effect' and key != 'indent' and key  != 'amount' and \
+                           key != 'parent_direct_cash_flow_component' and key != 'is_group': # Eliminamos los valores, que no son numericos
+
+                            new_element[key] = new_element[key] + element[key] # Sumamos el elemento retpetido con el elemento base
+                            # new_element = Elemento base; element = Elemento repetido
+                    
+                    add = False # Si esta repetido, no se grega
+
+            if add: # Validamos si agregamos
+                new_datalist.append(element)  
+
+        else: # Si la lista esta vacía entonces agreamos el elemento
+            new_datalist.append(element)
+        
+    return new_datalist
 
 def adding_columns_to_data(data, ranges, filters):
     """

@@ -11,7 +11,6 @@ from frappe import _, scrub
 
 
 def execute(filters=None):
-    columns, data = [], []
     return get_columns(filters), get_data(filters)
 
 def get_columns(filters):
@@ -81,7 +80,6 @@ def get_data(filters=None):
 
     else: # Mostramos el reporte vacío
         data = [{'name_url':'','amount':0}]
-
 
     return data 
 

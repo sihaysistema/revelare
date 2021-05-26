@@ -51,8 +51,7 @@ frappe.query_reports["Cash Flow Detail"] = {
                         'is_group': 0
                     }
                 };},
-            default: "",
-                
+            default: ""
             //hidden:1
         }
     ]
