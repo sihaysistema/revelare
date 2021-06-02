@@ -26,7 +26,7 @@ def get_columns(filters):
         {
             "label": _("Amount"),
             "fieldname": "amount",
-            "fieldtype": "Int",
+            "fieldtype": "Data"
         }
     ]
 
@@ -68,15 +68,9 @@ def get_data(filters=None):
             })
 
         data = rename_categories(data) # Agregamos link a cada item de la data
-
-        amount_total = 0 # Sumamos el valor de todos los items
-        for d in reversed(data):
-            amount_total += d['amount']
-
-        data.insert(0,{ # Insertamos dicha suma en la primera fila del reporte
-                        'name_url':filters.category,
-                        'amount':amount_total
-                    })
+        dicToJSON('data', data)
+        dicToJSON('filters', filters)
+        data = formating_data_before_print(data, filters.category)
 
     else: # Mostramos el reporte vacío
         data = [{'name_url':'','amount':0}]
@@ -478,6 +472,51 @@ def rename_categories(data, from_date='', to_date=''):
         three_string = '</a>'
         d['name_url'] = f"{one_string}'{d['name_url']}','{d['type']}'{two_string}{d['name_url']}{three_string}"
         # d['name'] = f"{one_string}'{d['name_url']}','{d['type']}'{two_string}{d['name']}{three_string}"
+    return data
+
+def formating_data_before_print(data, category):
+    amount_total = 0 # Sumamos el valor de todos los items
+    for d in reversed(data):
+        amount_total += d['amount']
+    
+
+        # --------- Valores Positivos ----------
+    positive_values_strong_1 = "<span style='color: #006600; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    positive_values_strong_2 = "</strong></span>"
+    positive_values_1 = "<span style='color: #006600; background-color: white; float: right; text-align: right; vertical-align: text-top;'>"
+    positive_values_2 = "</span>"
+
+    # --------- Valores Negativos ----------
+    negative_values_strong_1 = "<span style='color: #CC0000; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    negative_values_strong_2 = "</strong></span>"
+    negative_values_1 = "<span style='color: #CC0000; background-color: white; float: right; text-align: right; vertical-align: text-top;'>"
+    negative_values_2 = "</span>"
+
+    # --------- Valores nulos ----------
+    neutral_values_strong_1 = "<span style='color: black; background-color: #FFFFFF; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    neutral_values_strong_2 = "</strong></span>"
+    neutral_values_1 = "<span style='color: black; background-color: #FFFFFF; float: right; text-align: right; vertical-align: text-top;'>"
+    neutral_values_2 = "</span>"
+
+    if amount_total > 0:
+        amount_total = str(amount_total)
+        data.insert(0,{ # Insertamos dicha suma en la primera fila del reporte
+                        'name_url': category,
+                        'amount':str(positive_values_strong_1+amount_total+positive_values_strong_2)
+                    })
+    elif amount_total < 0:  
+        amount_total = str(amount_total)
+        data.insert(0,{ # Insertamos dicha suma en la primera fila del reporte
+                        'name_url': category,
+                        'amount':str(negative_values_strong_1+amount_total+negative_values_strong_2)
+                    })
+    else:
+        amount_total = str(amount_total)
+        data.insert(0,{ # Insertamos dicha suma en la primera fila del reporte
+                        'name_url': category,
+                        'amount':str(neutral_values_strong_1+amount_total+neutral_values_strong_2)
+                    })
+
     return data
 
 # Para debug
