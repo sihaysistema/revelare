@@ -79,7 +79,14 @@ frappe.ui.form.on('Journal Entry', {
                 }
             };
         });
-    },
+    }, 
+    before_save : function(frm){
+        length_accounts = frm.doc.accounts.length;
+        if(length_accounts > 1){
+            accounts = cur_frm.doc.accounts;
+            accounts.forEach(element => console.log(element.account_type));
+        }
+    }
 });
 
 // Funcionalidad sobre tabla hija en Journal Entry
@@ -268,13 +275,17 @@ frappe.ui.form.on("Payment Entry", {
 });
 
 // Función para Direct Cash
-function open_two_tabs(from_date){
-    account = '1.1.01.02.22 - PAYPAL - ACC-GT'
-    start_date = '2021-02-01'
-    end_date = '2021-03-31'
-
-    window.open(`#List/Journal%20Entry/Report?account=${account}&posting_date=${start_date},${end_date}`);
-    window.open("#List/Payment%20Entry/Report");
+function open_detailed_cash_flow_report(name, from_date, to_date){
+    window.open(`#query-report/Cash%20Flow%20Detail?category=${name}&from_date=${from_date}&to_date=${to_date}`);
     return true;
 };
-console.log("Se esta cargando función open_two_tabs");
+
+// Función para Detail Cash Flow
+function open_one_tab(name, type){
+    if (type === 'journal_entry'){
+        window.open(`#Form/Journal%20Entry/${name}`);
+    } else if(type === 'payment_entry'){
+        window.open(`#Form/Payment%20Entry/${name}`);
+    }
+    return true;
+};
