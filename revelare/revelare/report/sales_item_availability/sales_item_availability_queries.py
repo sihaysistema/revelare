@@ -194,6 +194,11 @@ def find_conversion_factor(from_uom, to_uom):
         }
         Updated: returns the value of the 'value' key only.
     """
+
+    ## Validar si la dos UOM son iguales, no se hace conversion y se retorna 1,
+    #  Si no se encuentra la conversion se muestra un mensaje que diga, 
+    # "Unit conversion factor for {from_uom} uom to {to_uom} uom not found, creating a new one, please make sure to specify the correct conversion factor."
+    # Agregar un link, que cree un nuevo doctype de conversion, ya con los datos cargados que faltan.
     result = frappe.db.sql(
         f"""
         SELECT from_uom, to_uom, value FROM `tabUOM Conversion Factor` WHERE from_uom='{from_uom}' AND to_uom='{to_uom}';

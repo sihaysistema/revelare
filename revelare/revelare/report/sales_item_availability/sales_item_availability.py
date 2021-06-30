@@ -259,7 +259,7 @@ def get_data(filters):
             if not boms[0]['item_name'] in included_items:
                 included_items.add(boms[0]['item_name'])
                 material_and_sales_items.append(bom_item)
-
+    dicToJSON('material_and_sales_items',material_and_sales_items)
     # ----- QUERY # 4 BEGIN -----
     # Sales Order query, return all sales order names that fit within
     # the dates in report filter
@@ -592,3 +592,8 @@ def sum_and_convert_estimated_material_list(estimated_material_list):
         new_list.append(temp_dict)
     # Our list is now ready to use, with like item amounts added.
     return new_list
+
+# Para debug
+def dicToJSON(nomArchivo, diccionario):
+    with open(str(nomArchivo+'.json'), 'w') as f:
+        f.write(json.dumps(diccionario, indent=2, default=str))
