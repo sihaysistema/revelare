@@ -199,15 +199,41 @@ def find_conversion_factor(from_uom, to_uom):
     #  Si no se encuentra la conversion se muestra un mensaje que diga, 
     # "Unit conversion factor for {from_uom} uom to {to_uom} uom not found, creating a new one, please make sure to specify the correct conversion factor."
     # Agregar un link, que cree un nuevo doctype de conversion, ya con los datos cargados que faltan.
-    result = frappe.db.sql(
-        f"""
-        SELECT from_uom, to_uom, value FROM `tabUOM Conversion Factor` WHERE from_uom='{from_uom}' AND to_uom='{to_uom}';
-        """, as_dict=True
-    )
-    # Change the return to this variable to provide only the value of the conversion.
-    if result:
-        value_only = result[0]['value']
-    return result
+
+    if from_uom == to_uom:
+        return [{
+            'from_uom':from_uom,
+            'to_uom': to_uom,
+            'value': 1
+        }]
+    else:
+        result = frappe.db.sql(
+            f"""
+            SELECT from_uom, to_uom, value FROM `tabUOM Conversion Factor` WHERE from_uom='{from_uom}' AND to_uom='{to_uom}';
+            """, as_dict=True
+        )
+
+        if result:
+            return result
+        else:
+            frappe.msgprint(f'Unit conversion factor for {from_uom} uom to {to_uom} uom not found, creating a new one, please make sure to specify the correct conversion factor.')
+
+            return [{
+            'from_uom':from_uom,
+            'to_uom': to_uom,
+            'value': 0
+            }]
+        
+         
+        # result = frappe.db.sql(
+        #     f"""
+        #     SELECT from_uom, to_uom, value FROM `tabUOM Conversion Factor` WHERE from_uom='{from_uom}' AND to_uom='{to_uom}';
+        #     """, as_dict=True
+        # )
+        # # Change the return to this variable to provide only the value of the conversion.
+        # if result:
+        #     value_only = result[0]['value']
+        # return result
 
 
 def find_sales_orders(filters):

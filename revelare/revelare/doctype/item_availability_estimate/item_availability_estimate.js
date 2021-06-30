@@ -17,7 +17,7 @@ frappe.ui.form.on('Item Availability Estimate', {
         var name_new_doc = frm.doc.name
         name_new_doc = name_new_doc.toString();
         name_new_doc = name_new_doc.replace(' ','-').toLowerCase(); //Sirve para version 12
-        
+
         if(name_new_doc.includes('new-item-availability-estimate-')){
             frm.set_value('posting_date', today_date);
         }

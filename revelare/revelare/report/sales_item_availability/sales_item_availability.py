@@ -145,6 +145,7 @@ def get_data(filters):
         column name as declared in the function above, and the value is what will be shown.
 
     """
+    dicToJSON('type',type(filters))
     # --------- EMPTY ROW ----------
     empty_row = {}
     data = [empty_row]
@@ -259,7 +260,6 @@ def get_data(filters):
             if not boms[0]['item_name'] in included_items:
                 included_items.add(boms[0]['item_name'])
                 material_and_sales_items.append(bom_item)
-    dicToJSON('material_and_sales_items',material_and_sales_items)
     # ----- QUERY # 4 BEGIN -----
     # Sales Order query, return all sales order names that fit within
     # the dates in report filter
