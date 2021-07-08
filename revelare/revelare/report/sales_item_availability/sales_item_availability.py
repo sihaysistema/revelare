@@ -134,7 +134,7 @@ def get_columns(filters):
     return columns
 
 
-def get_data(filters):
+def get_data(filters, is_report=True):
     """Function to obtain and process the data.
 
     Args:
@@ -145,13 +145,13 @@ def get_data(filters):
         column name as declared in the function above, and the value is what will be shown.
 
     """
-    dicToJSON('type',type(filters))
     # --------- EMPTY ROW ----------
     empty_row = {}
     data = [empty_row]
 
     # --------- STYLES DEIFNITIONS BEGIN ----------
     # Styles
+    # Definiciones de estilos
     quantity_style_estimate_1 = """
       color: white;
       background-color: darkorange;
@@ -201,6 +201,7 @@ def get_data(filters):
     """
 
     # Tag arrays
+    # Listas de etiquetas 
     strong = {"markup": "strong", "style": ""}
     strong_gray = {"markup": "strong", "style": "color: #686868"}
 
@@ -223,13 +224,19 @@ def get_data(filters):
 
     # ----- QUERY # 1 BEGIN -----
     # We now create a list of estimation item attributes
-    # [{'name': 'CULTIVO-0069', 'estimation_name': 'Perejil', 'estimation_uom': 'Pound', 'stock_uom': 'Onza', 'amount':'15.0', 'amount_uom': 'Pound'}]
     # This list is already "filtered" and curated to include all the REQUESTED estimation item codes and attributes
+
+    # ES: Creamos una lista de los atributos de los items de estimación
+    # Esta lista ya esta "filtrada" y estructurada para incluir todos los codigos de items de estimación solicitados, con sus atributos
+
+    # [{'name': 'CULTIVO-0069', 'estimation_name': 'Perejil', 'estimation_uom': 'Pound', 'stock_uom': 'Onza', 'amount':'15.0', 'amount_uom': 'Pound'}]
     estimated_materials_with_attributes = total_item_availability_estimate_attributes(
         filters)
 
     # ----- QUERY # 2 BEGIN -----
     # Now we find the BOM names based on the names of material items in our item_attributes_list
+
+    # Ahora encontramos los nombres de listados de materiales basados en los nombre de los materiales en nuestro listado de atributos obtenidos en el query 1
     # [{'item_code': 'CULTIVO-0069', 'parent': 'BOM-7401168802186-001', 'stock_qty': 6.0, 'stock_uom': 'Onza'}]
     bom_items_list = []
     for material in estimated_materials_with_attributes:
@@ -239,6 +246,7 @@ def get_data(filters):
 
     # ----- QUERY # 3 BEGIN -----
     # we get sales item code, quantity obtained, and uom obtained for each bom parent.
+    # Obtenemos el codigo del item de venta, la cantidad y la unidad de medida. Para cada padre de BOM
     material_and_sales_items = []
     included_items = set()
     for bom_item in bom_items_list:
@@ -247,6 +255,8 @@ def get_data(filters):
 
         # We rearrange the current dictionary, assigning values from returned keys in this list
         # to new keys in this object.
+
+        # ES: Reordenamos el diccionario actual, asignamos valores de las llaves retornadas en esta lista a nuevas llaves en este objeto
         if len(boms):
             bom_item['sales_item_code'] = boms[0]['item']
             bom_item['sales_item_qty'] = boms[0]['quantity']
@@ -257,220 +267,39 @@ def get_data(filters):
             bom_item.pop("parent")
 
             # Append it to the list of sales items if not already included in the report
+            # ES: Adjuntamos a la lista de los items de venta si no han sido incluidos en el reporte
             if not boms[0]['item_name'] in included_items:
                 included_items.add(boms[0]['item_name'])
                 material_and_sales_items.append(bom_item)
     # ----- QUERY # 4 BEGIN -----
     # Sales Order query, return all sales order names that fit within
     # the dates in report filter
+
+    # ES: Este es un query de ordenes de venta donde retornamos todos los nombres de las ordenes de venta que cumplen con los filtros de las fechas en el reporte.
+    #     Segun su FECHA DE ENTREGA!! no estamos usando la fecha de posteo.
     matching_sales_order_items = total_sales_items(filters)
 
     # Sort material and sales items list by order of sales item code
     # Should print the code column in order like: -001, -002, -003, ...
+
+    # ES: Reordenamos los materiales y los items de venta, por orden de "sales_item_code".
+    #     Debe imprimir la columna del codigo en orden ascendente: -001, -002, -003, ...
     material_and_sales_items = sorted(
         material_and_sales_items, key=lambda x: x['sales_item_code'])
 
     # Get the sales order quantities for items
+    # Obtenemos las cantidades de los items en las ordenes de venta
     sales_item_codes = [item['item_code']
                         for item in matching_sales_order_items]
 
-    # ----- PROCESS DATA BEGIN -----
-    # Iterate over the list of item estimates, including items from matching
-    # sales orders and converting units to the target uom
-    for available_material in estimated_materials_with_attributes:
-        # en: We build and add the "grouping row"
-        estimation_name = available_material['estimation_name']
-        uom_name = available_material["amount_uom"]
-        material_amount = available_material['amount']
+    #----- New Funtion----
+    data = process_data(estimated_materials_with_attributes, qty_plenty1_strong, strong, data, material_and_sales_items, 
+                        sales_item_codes, matching_sales_order_items, qty_sold1_strong, strong_gray, item_link_open, 
+                        item_link_style, item_link_open_end, item_link_close, qty_sold1_dk_strong, qty_estimate1_strong, empty_row, is_report)
 
-        material_amount_html = html_wrap(
-            str(material_amount), qty_plenty1_strong)
-        row_header = {
-            "A": estimation_name,
-            "B": material_amount_html,
-            "C": _(f"{uom_name}"),
-            "D": _(f"Total {uom_name} Sold"),
-            "E": "",
-            "F": "",
-            "G": ""
-        }
-        # We add bold style to the subtitles for the headers.
-        col_a = html_wrap(_("Code"), [strong])
-        col_b = html_wrap(_("Name"), [strong])
-        col_c = html_wrap(_("Possible"), [strong])
-        col_d = html_wrap(_("UOM"), [strong])
-        col_e = html_wrap(_("Sold"), [strong])
-        col_f = html_wrap(_("Available"), [strong])
-
-        row_sub_header = {
-            "A": col_a,
-            "B": col_b,
-            "C": col_c,
-            "D": col_d,
-            "E": col_e,
-            "F": col_f,
-            "G": ""
-        }
-
-        explanation_f = html_wrap(_("Possible - Total Sold"), [strong_gray])
-
-        row_explanation = {
-            "A": "",
-            "B": "",
-            "C": "",
-            "D": "",
-            "E": "",
-            "F": explanation_f,
-            "G": ""
-        }
-
-        # Declare the columns where we will place the total sold data
-        total_sold_column = "E"
-        total_difference_column = "F"
-
-        # Set the header and subheader values
-        data.append(row_header)
-        header_idx = len(data) - 1  # track the header index for updates later
-        data.append(row_sub_header)
-        data.append(row_explanation)
-
-        # Initialize the total sold items in the target uom
-        total_target_uom_sold = 0
-        total_uom_sold = 0
-
-        # Sum the sales order items and deduct from total available
-        item_deductions = {}
-        total_uom_sold = 0
-        for ms_item in material_and_sales_items:
-            if ms_item['item_code'] == available_material['name']:
-                # Reset variables
-                item_code = ""
-                items_sold = 0
-                target_uom_sold = 0
-
-                # Total all units sold per sales item
-                item_code = ms_item['sales_item_code']
-                if item_code in sales_item_codes:
-                    # sum the stock qty for all sales order items
-                    order_qtys = [item['stock_qty'] for item in matching_sales_order_items
-                                  if item['item_code'] == ms_item['sales_item_code']]
-                    items_sold = math.floor(sum(order_qtys))
-                else:
-                    items_sold = 0
-
-                # Convert the items sold an amt in the target UOM
-                conversion = ms_item['conversion_factor'][0]['value']
-                target_uom_sold = (
-                    items_sold * ms_item['stock_qty']) / conversion
-
-                # Add sold qty to item_deductions for later use
-                total_uom_sold += target_uom_sold
-                item_deductions[item_code] = target_uom_sold
-
-        # We now cross-check, convert and structure our row output.
-        for ms_item in material_and_sales_items:
-            if ms_item['item_code'] == available_material['name']:
-                if ms_item['stock_uom'] != available_material['amount_uom']:
-
-                    # Reinitialize variables
-                    item_code = ""
-
-                    # find conversion factor , from unit is available material amount_uom - INSERT QUERY CALL HERE
-                    conversion_factor = find_conversion_factor(
-                        available_material['amount_uom'], ms_item['stock_uom'])
-                    conversion_factor_reversed = find_conversion_factor(
-                        ms_item['stock_uom'], available_material['amount_uom'])
-
-                    # Warn the user if a conversion factor doesn't exist for
-                    # the ms_item
-                    if not conversion_factor:
-                        frappe.msgprint("A UOM conversion factor is required to convert " + str(
-                            available_material['amount_uom']) + " to " + str(ms_item['stock_uom']))
-                    elif not conversion_factor_reversed:
-                        frappe.msgprint("A UOM conversion factor is required to convert " + str(
-                            ms_item['stock_uom']) + " to " + str(available_material['amount_uom']))
-                    else:
-                        # Convert available_material uom to ms_item uom, by multiplying available material amount by conversion factor found
-                        av_mat_amt_converted = float(
-                            available_material['amount']) * float(conversion_factor[0]['value'])
-
-                        # Now, we divide the av_mat_amt_converted by the stock_qty to obtain possible quantity
-                        # Adjusted quantity takes into account aldready sold uom counts
-                        adjusted_amt = float(
-                            available_material['amount']) - total_uom_sold
-                        adjusted_quantity = math.floor((
-                            adjusted_amt * float(conversion_factor[0]['value'])) / ms_item['stock_qty'])
-
-                        # Possible quantity is the original converted material amount
-                        # without deducting sales
-                        possible_quantity = av_mat_amt_converted / \
-                            ms_item['stock_qty']
-                        possible_uom = _(ms_item['sales_item_uom'])
-
-                        # Add HTML and CSS styles to certain fields
-                        pos_qty = str(math.floor(possible_quantity))
-                        quantity_sales_item_html = html_wrap(
-                            pos_qty, qty_plenty1_strong)
-
-                        # Build the item code url
-                        item_code = ms_item['sales_item_code']
-                        sales_item_route = f"{item_link_open}/{item_code}'" + \
-                            item_link_style + item_link_open_end + \
-                            str(ms_item['sales_item_code']
-                                [-4:]) + item_link_close
-
-                        # Calculate the amount sold
-                        if ms_item['sales_item_code'] in sales_item_codes:
-                            # sum the stock qty for all sales order items
-                            order_qtys = [item['stock_qty'] for item in matching_sales_order_items
-                                          if item['item_code'] == ms_item['sales_item_code']]
-                            sold_quantity = math.floor(sum(order_qtys))
-                        else:
-                            sold_quantity = 0
-
-                        # Add HTML to the sold quantity
-                        quantity_sold_html = html_wrap(
-                            str(sold_quantity), qty_sold1_strong)
-
-                        # Calculate the difference of possible and sold items
-                        available_quantity = int(
-                            possible_quantity - sold_quantity)
-
-                        available_quantity_html = html_wrap(
-                            str(adjusted_quantity), qty_plenty1_strong)
-
-                        # Populate the row
-                        sales_item_row = {
-                            "A": sales_item_route,
-                            "B": str(ms_item['sales_item_name']),
-                            "C": quantity_sales_item_html,
-                            "D": _(possible_uom),
-                            "E": quantity_sold_html,
-                            "F": available_quantity_html,
-                            "G": ""
-                        }
-                        data.append(sales_item_row)
-
-                else:
-                    print('Units are the same, no need for conversion.')
-            else:
-                pass
-
-        # Add the target uom total to the header
-        data[header_idx][total_sold_column] = html_wrap(
-            str(total_uom_sold), qty_sold1_dk_strong)
-
-        # Add the target uom total difference to the header
-        total_uom_diff = str(material_amount - total_uom_sold)
-        data[header_idx][total_difference_column] = html_wrap(
-            total_uom_diff, qty_estimate1_strong)
-
-        # We add an empty row after a set of products for easier reading.
-        data.append(empty_row)
-
+    # ----- PROCESO TERMINA -----
     # ----- PROCESS DATA END -----
     return data
-
 
 def make_list_of_unique_codes(estimated_material_list):
     """Function that makes a list of unique item codes
@@ -499,7 +328,6 @@ def make_list_of_unique_codes(estimated_material_list):
     unique_item_codes.extend(list(dict.fromkeys(only_codes_list)))
 
     return unique_item_codes
-
 
 def sum_and_convert_estimated_material_list(estimated_material_list):
     """Function that finds all item_code values in an object list, and sums their amount value
@@ -592,6 +420,467 @@ def sum_and_convert_estimated_material_list(estimated_material_list):
         new_list.append(temp_dict)
     # Our list is now ready to use, with like item amounts added.
     return new_list
+
+def process_data(estimated_materials_with_attributes, qty_plenty1_strong, strong, data, material_and_sales_items, 
+                 sales_item_codes, matching_sales_order_items, qty_sold1_strong, strong_gray, item_link_open, 
+                 item_link_style, item_link_open_end, item_link_close, qty_sold1_dk_strong, qty_estimate1_strong, empty_row, is_report):
+    """Función para limiar la data del html"""
+
+    # ----- PROCESS DATA BEGIN -----
+    # Iterate over the list of item estimates, including items from matching
+    # sales orders and converting units to the target uom
+    # ----- PROCESANDO DATA -----
+    # ES: Iteración de los estimados de items, incluyendo items de ordenes de venta (notas de entrega, facturas de venta), y convirtiendo las unidades a la unidad de medida objetivo
+    if is_report:
+        for available_material in estimated_materials_with_attributes:
+            # en: We build and add the "grouping row"
+            # ES: Construimos y agregamos la fila de agrupamiento
+            estimation_name = available_material['estimation_name']
+            uom_name = available_material["amount_uom"]
+            material_amount = available_material['amount']
+
+            material_amount_html = html_wrap(
+                str(material_amount), qty_plenty1_strong)
+            row_header = {
+                "A": estimation_name,
+                "B": material_amount_html,
+                "C": _(f"{uom_name}"),
+                "D": _(f"Total {uom_name} Sold"),
+                "E": "",
+                "F": "",
+                "G": ""
+            }
+
+            # We add bold style to the subtitles for the headers.
+            # Agregamos negrita a los encabezados
+            col_a = html_wrap(_("Code"), [strong])
+            col_b = html_wrap(_("Name"), [strong])
+            col_c = html_wrap(_("Possible"), [strong])
+            col_d = html_wrap(_("UOM"), [strong])
+            col_e = html_wrap(_("Sold"), [strong])
+            col_f = html_wrap(_("Available"), [strong])
+
+            row_sub_header = {
+                "A": col_a,
+                "B": col_b,
+                "C": col_c,
+                "D": col_d,
+                "E": col_e,
+                "F": col_f,
+                "G": ""
+            }
+
+            explanation_f = html_wrap(_("Possible - Total Sold"), [strong_gray])
+
+            row_explanation = {
+                "A": "",
+                "B": "",
+                "C": "",
+                "D": "",
+                "E": "",
+                "F": explanation_f,
+                "G": ""
+            }
+
+            # Declare the columns where we will place the total sold data
+            # Declaremos los columnas en donde vamos a colocar la data del total vendido
+            total_sold_column = "E"
+            total_difference_column = "F"
+
+            # Set the header and subheader values
+            # Indicar el valor del encabezado y los hijos
+            data.append(row_header)
+            header_idx = len(data) - 1  # track the header index for updates later; 
+                                        # ES: Rastrear el indice del Header para ser actualizado despues
+            data.append(row_sub_header)
+            data.append(row_explanation)
+
+            # Initialize the total sold items in the target uom
+            # Inicializar los items de venta totales en la unidad de medida objetivo
+
+            total_target_uom_sold = 0
+
+            # Sum the sales order items and deduct from total available
+            # Sumamos los items de la orden de venta (notas de entrega o facturas de venta) y los deducimos del total disponible
+            item_deductions = {}
+            total_uom_sold = 0
+
+            for ms_item in material_and_sales_items:
+                if ms_item['item_code'] == available_material['name']:
+                    # Reset variables
+                    # Reiniciamos variables
+                    item_code = ""
+                    items_sold = 0
+                    target_uom_sold = 0
+
+                    # Total all units sold per sales item
+                    # Totalizamos todas las unidades vendidas por cada item de venta
+                    item_code = ms_item['sales_item_code']
+                    if item_code in sales_item_codes:
+                        # sum the stock qty for all sales order items
+                        # Sumamos la cantidad de stock para todos los items de las ordenes de venta
+                        order_qtys = [item['stock_qty'] for item in matching_sales_order_items
+                                    if item['item_code'] == ms_item['sales_item_code']]
+                        items_sold = math.floor(sum(order_qtys))
+                    else:
+                        items_sold = 0
+
+                    # Convert the items sold an amt in the target UOM
+                    # Convertimos los items vendidos a su cantidad en la unidad de medida objetivo
+                    conversion = ms_item['conversion_factor'][0]['value']
+                    target_uom_sold = (
+                        items_sold * ms_item['stock_qty']) / conversion
+
+                    # Add sold qty to item_deductions for later use
+                    # Agregamos la cantidad vendida a las deducciones de los items para posterior uso
+                    total_uom_sold += target_uom_sold
+                    item_deductions[item_code] = target_uom_sold
+
+            # We now cross-check, convert and structure our row output.
+            # Ahora hacemos un chequeo cruzado, convertimos y estructuramos nuestras filas.
+            for ms_item in material_and_sales_items:
+                if ms_item['item_code'] == available_material['name']:
+                    if ms_item['stock_uom'] != available_material['amount_uom']:
+
+                        # Reinitialize variables
+                        # Reiniciamos las variables
+                        item_code = ""
+
+                        # find conversion factor , from unit is available material amount_uom - INSERT QUERY CALL HERE
+                        # Encontramos el factor de conversion, la unidad "from" es igual a la unidad de medida de material disponible - Insertar llamada al query desde aquí
+                        conversion_factor = find_conversion_factor(
+                            available_material['amount_uom'], ms_item['stock_uom'])
+                        conversion_factor_reversed = find_conversion_factor(
+                            ms_item['stock_uom'], available_material['amount_uom'])
+
+                        # Warn the user if a conversion factor doesn't exist for
+                        # the ms_item
+
+                        # Alertamos al usuario si el factor de conversion no existe para el ms_item
+                        if not conversion_factor:
+                            frappe.msgprint("A UOM conversion factor is required to convert " + str(
+                                available_material['amount_uom']) + " to " + str(ms_item['stock_uom']))
+
+                        elif not conversion_factor_reversed:
+                            frappe.msgprint("A UOM conversion factor is required to convert " + str(
+                                ms_item['stock_uom']) + " to " + str(available_material['amount_uom']))
+
+                        else:
+                            # Convert available_material uom to ms_item uom, by multiplying available material amount by conversion factor found
+                            # Convertimos la unidad de medida available_material a la unidad de medida ms_item al multiplicar la cantidad de material disponible por el factor de conversión encontrado.
+                            av_mat_amt_converted = float(
+                                available_material['amount']) * float(conversion_factor[0]['value'])
+                            # Now, we divide the av_mat_amt_converted by the stock_qty to obtain possible quantity
+                            # Ahora, dividimos la cantidad de material disponible "av_mat_amt_converted", convertido por la vantidad stock para obtener la cantidad posible
+                            
+                            # Adjusted quantity takes into account aldready sold uom counts
+                            # La cantidad ajustada toma en cuenta la contabilización de las unidades de medida que ya se vendieron
+                            adjusted_amt = float(
+                                available_material['amount']) - total_uom_sold
+                            adjusted_quantity = math.floor((
+                                adjusted_amt * float(conversion_factor[0]['value'])) / ms_item['stock_qty'])
+
+                            # Possible quantity is the original converted material amount
+                            # without deducting sales
+                            # La cantidad posible es la cantidad de material originalmente convertida sin deducir las ventas
+                            possible_quantity = av_mat_amt_converted / \
+                                ms_item['stock_qty']
+                            possible_uom = _(ms_item['sales_item_uom'])
+
+                            # Add HTML and CSS styles to certain fields
+                            # Agregamo html y css algunos campos
+                            pos_qty = str(math.floor(possible_quantity))
+                            quantity_sales_item_html = html_wrap(
+                                pos_qty, qty_plenty1_strong)
+
+                            # Build the item code url
+                            # Construimos la url del codigo de item
+                            item_code = ms_item['sales_item_code']
+                            #sales_item_route = f"{item_link_open}/{item_code}'" + item_link_style + item_link_open_end + str(ms_item['sales_item_code'][-4:]) + item_link_close
+                            sales_item_route = f"{item_link_open}/{item_code}'" + item_link_style + item_link_open_end + str(ms_item['sales_item_code']) + item_link_close
+
+                            # Calculate the amount sold
+                            # Calculamos la cantidad vendida
+                            if ms_item['sales_item_code'] in sales_item_codes:
+                                # sum the stock qty for all sales order items
+                                # Sumamos la cantidad stock para todos los items de las ordenes de venta
+                                order_qtys = [item['stock_qty'] for item in matching_sales_order_items
+                                            if item['item_code'] == ms_item['sales_item_code']]
+                                sold_quantity = math.floor(sum(order_qtys))
+                            else:
+                                sold_quantity = 0
+
+                            # Add HTML to the sold quantity
+                            # Agregamos html a la cantidad vendida
+                            quantity_sold_html = html_wrap(
+                                str(sold_quantity), qty_sold1_strong)
+
+                            # Calculate the difference of possible and sold items
+                            # Calculamos la diferencia de items posibles menos vendidos
+                            available_quantity = int(
+                                possible_quantity - sold_quantity)
+
+                            available_quantity_html = html_wrap(
+                                str(adjusted_quantity), qty_plenty1_strong)
+
+                            # Populate the row
+                            # Llenamos la fila con los resultados anteriores
+                            sales_item_row = {
+                                "A": sales_item_route,
+                                "B": str(ms_item['sales_item_name']),
+                                "C": quantity_sales_item_html,
+                                "D": _(possible_uom),
+                                "E": quantity_sold_html,
+                                "F": available_quantity_html,
+                                "G": ""
+                            }
+                            data.append(sales_item_row)
+
+                    else:
+                        print('Units are the same, no need for conversion.')
+                else:
+                    pass
+
+            # Add the target uom total to the header
+            # Agregamos el total de la unidad de medida objetivo al encabezado
+            data[header_idx][total_sold_column] = html_wrap(
+                str(total_uom_sold), qty_sold1_dk_strong)
+
+            # Add the target uom total difference to the header
+            # Agregamos la diferencia total de la unidad de medida objetivo al encabezado
+            total_uom_diff = str(material_amount - total_uom_sold)
+            data[header_idx][total_difference_column] = html_wrap(
+                total_uom_diff, qty_estimate1_strong)
+
+            # We add an empty row after a set of products for easier reading.
+            # Agregamos una fila vacía luego de un set de productos para facilitar la lectura
+            data.append(empty_row)
+        return data
+
+    else:
+        for available_material in estimated_materials_with_attributes:
+            # en: We build and add the "grouping row"
+            # ES: Construimos y agregamos la fila de agrupamiento
+            estimation_name = available_material['estimation_name']
+            uom_name = available_material["amount_uom"]
+            material_amount = available_material['amount']
+
+            #material_amount_html = html_wrap(
+            #    str(material_amount), qty_plenty1_strong)
+            row_header = {
+                "A": estimation_name,
+                "B": material_amount,
+                "C": _(f"{uom_name}"),
+                "D": _(f"Total {uom_name} Sold"),
+                "E": "",
+                "F": "",
+                "G": ""
+            }
+
+            # We add bold style to the subtitles for the headers.
+            # Agregamos negrita a los encabezados
+            # col_a = html_wrap(_("Code"), [strong])
+            # col_b = html_wrap(_("Name"), [strong])
+            # col_c = html_wrap(_("Possible"), [strong])
+            # col_d = html_wrap(_("UOM"), [strong])
+            # col_e = html_wrap(_("Sold"), [strong])
+            # col_f = html_wrap(_("Available"), [strong])
+            col_a = _("Code")
+            col_b = _("Name")
+            col_c = _("Possible")
+            col_d = _("UOM")
+            col_e = _("Sold")
+            col_f = _("Available")
+
+            row_sub_header = {
+                "A": col_a,
+                "B": col_b,
+                "C": col_c,
+                "D": col_d,
+                "E": col_e,
+                "F": col_f,
+                "G": ""
+            }
+
+            explanation_f = _("Possible - Total Sold")
+
+            row_explanation = {
+                "A": "",
+                "B": "",
+                "C": "",
+                "D": "",
+                "E": "",
+                "F": explanation_f,
+                "G": ""
+            }
+
+            # Declare the columns where we will place the total sold data
+            # Declaremos los columnas en donde vamos a colocar la data del total vendido
+            total_sold_column = "E"
+            total_difference_column = "F"
+
+            # Set the header and subheader values
+            # Indicar el valor del encabezado y los hijos
+            data.append(row_header)
+            header_idx = len(data) - 1  # track the header index for updates later; 
+                                        # ES: Rastrear el indice del Header para ser actualizado despues
+            data.append(row_sub_header)
+            data.append(row_explanation)
+
+            # Initialize the total sold items in the target uom
+            # Inicializar los items de venta totales en la unidad de medida objetivo
+
+            total_target_uom_sold = 0
+
+            # Sum the sales order items and deduct from total available
+            # Sumamos los items de la orden de venta (notas de entrega o facturas de venta) y los deducimos del total disponible
+            item_deductions = {}
+            total_uom_sold = 0
+
+            for ms_item in material_and_sales_items:
+                if ms_item['item_code'] == available_material['name']:
+                    # Reset variables
+                    # Reiniciamos variables
+                    item_code = ""
+                    items_sold = 0
+                    target_uom_sold = 0
+
+                    # Total all units sold per sales item
+                    # Totalizamos todas las unidades vendidas por cada item de venta
+                    item_code = ms_item['sales_item_code']
+                    if item_code in sales_item_codes:
+                        # sum the stock qty for all sales order items
+                        # Sumamos la cantidad de stock para todos los items de las ordenes de venta
+                        order_qtys = [item['stock_qty'] for item in matching_sales_order_items
+                                    if item['item_code'] == ms_item['sales_item_code']]
+                        items_sold = math.floor(sum(order_qtys))
+                    else:
+                        items_sold = 0
+
+                    # Convert the items sold an amt in the target UOM
+                    # Convertimos los items vendidos a su cantidad en la unidad de medida objetivo
+                    conversion = ms_item['conversion_factor'][0]['value']
+                    target_uom_sold = (
+                        items_sold * ms_item['stock_qty']) / conversion
+
+                    # Add sold qty to item_deductions for later use
+                    # Agregamos la cantidad vendida a las deducciones de los items para posterior uso
+                    total_uom_sold += target_uom_sold
+                    item_deductions[item_code] = target_uom_sold
+            # We now cross-check, convert and structure our row output.
+            # Ahora hacemos un chequeo cruzado, convertimos y estructuramos nuestras filas.
+            for ms_item in material_and_sales_items:
+                if ms_item['item_code'] == available_material['name']:
+                    if ms_item['stock_uom'] != available_material['amount_uom']:
+
+                        # Reinitialize variables
+                        # Reiniciamos las variables
+                        item_code = ""
+
+                        # find conversion factor , from unit is available material amount_uom - INSERT QUERY CALL HERE
+                        # Encontramos el factor de conversion, la unidad "from" es igual a la unidad de medida de material disponible - Insertar llamada al query desde aquí
+                        conversion_factor = find_conversion_factor(
+                            available_material['amount_uom'], ms_item['stock_uom'])
+                        conversion_factor_reversed = find_conversion_factor(
+                            ms_item['stock_uom'], available_material['amount_uom'])
+
+                        # Warn the user if a conversion factor doesn't exist for
+                        # the ms_item
+
+                        # Alertamos al usuario si el factor de conversion no existe para el ms_item
+                        if not conversion_factor:
+                            frappe.msgprint("A UOM conversion factor is required to convert " + str(
+                                available_material['amount_uom']) + " to " + str(ms_item['stock_uom']))
+
+                        elif not conversion_factor_reversed:
+                            frappe.msgprint("A UOM conversion factor is required to convert " + str(
+                                ms_item['stock_uom']) + " to " + str(available_material['amount_uom']))
+
+                        else:
+                            # Convert available_material uom to ms_item uom, by multiplying available material amount by conversion factor found
+                            # Convertimos la unidad de medida available_material a la unidad de medida ms_item al multiplicar la cantidad de material disponible por el factor de conversión encontrado.
+                            av_mat_amt_converted = float(
+                                available_material['amount']) * float(conversion_factor[0]['value'])
+                            # Now, we divide the av_mat_amt_converted by the stock_qty to obtain possible quantity
+                            # Ahora, dividimos la cantidad de material disponible "av_mat_amt_converted", convertido por la vantidad stock para obtener la cantidad posible
+                            
+                            # Adjusted quantity takes into account aldready sold uom counts
+                            # La cantidad ajustada toma en cuenta la contabilización de las unidades de medida que ya se vendieron
+                            adjusted_amt = float(available_material['amount']) - total_uom_sold
+                            adjusted_quantity = math.floor((adjusted_amt * float(conversion_factor[0]['value'])) / ms_item['stock_qty'])
+
+                            # Possible quantity is the original converted material amount
+                            # without deducting sales
+                            # La cantidad posible es la cantidad de material originalmente convertida sin deducir las ventas
+                            possible_quantity = av_mat_amt_converted / ms_item['stock_qty']
+                            possible_uom = _(ms_item['sales_item_uom'])
+
+                            # Add HTML and CSS styles to certain fields
+                            # Agregamo html y css algunos campos
+                            pos_qty = str(math.floor(possible_quantity))
+                            # quantity_sales_item_html = html_wrap(pos_qty, qty_plenty1_strong)
+
+                            # Build the item code url
+                            # Construimos la url del codigo de item
+                            item_code = ms_item['sales_item_code']
+                            # sales_item_route = f"{item_link_open}/{item_code}'" + item_link_style + item_link_open_end + str(ms_item['sales_item_code']) + item_link_close
+                            sales_item_route = str(ms_item['sales_item_code'])
+
+                            # Calculate the amount sold
+                            # Calculamos la cantidad vendida
+                            if ms_item['sales_item_code'] in sales_item_codes:
+                                # sum the stock qty for all sales order items
+                                # Sumamos la cantidad stock para todos los items de las ordenes de venta
+                                order_qtys = [item['stock_qty'] for item in matching_sales_order_items if item['item_code'] == ms_item['sales_item_code']]
+                                sold_quantity = math.floor(sum(order_qtys))
+                            else:
+                                sold_quantity = 0
+
+                            # Add HTML to the sold quantity
+                            # Agregamos html a la cantidad vendida
+                            # quantity_sold_html = html_wrap(
+                            #    str(sold_quantity), qty_sold1_strong)
+
+                            # Calculate the difference of possible and sold items
+                            # Calculamos la diferencia de items posibles menos vendidos
+                            available_quantity = int(possible_quantity - sold_quantity)
+
+                            # available_quantity_html = html_wrap(str(adjusted_quantity), qty_plenty1_strong)
+
+                            # Populate the row
+                            # Llenamos la fila con los resultados anteriores
+                            sales_item_row = {
+                                "A": sales_item_route,
+                                "B": str(ms_item['sales_item_name']),
+                                "C": pos_qty,
+                                "D": _(possible_uom),
+                                "E": sold_quantity,
+                                "F": str(adjusted_quantity),
+                                "G": ""
+                            }
+                            data.append(sales_item_row)
+
+                    else:
+                        print('Units are the same, no need for conversion.')
+                else:
+                    pass
+
+            # Add the target uom total to the header
+            # Agregamos el total de la unidad de medida objetivo al encabezado
+            # data[header_idx][total_sold_column] = html_wrap(str(total_uom_sold), qty_sold1_dk_strong)
+            data[header_idx][total_sold_column] = str(total_uom_sold)
+
+            # Add the target uom total difference to the header
+            # Agregamos la diferencia total de la unidad de medida objetivo al encabezado
+            total_uom_diff = str(material_amount - total_uom_sold)
+            # data[header_idx][total_difference_column] = html_wrap(total_uom_diff, qty_estimate1_strong)
+            data[header_idx][total_difference_column] = total_uom_diff
+
+            # We add an empty row after a set of products for easier reading.
+            # Agregamos una fila vacía luego de un set de productos para facilitar la lectura
+            data.append(empty_row)
+
+        return data
 
 # Para debug
 def dicToJSON(nomArchivo, diccionario):

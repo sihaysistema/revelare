@@ -52,7 +52,8 @@ def total_item_availability_estimate_attributes(filters):
     )
     return result
 
-
+# Este query obtiene todos los items de las ordenes de venta, cuya FECHA DE ENTREGA coincide con las fechas de los filtros del reporte.
+# Se utiliza la fecha de entrea estipulada para hacer más precisa la estimación.
 def total_sales_items(filters):
     result = frappe.db.sql(
         f"""
