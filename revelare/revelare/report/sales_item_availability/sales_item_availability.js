@@ -28,6 +28,7 @@ frappe.query_reports["Sales Item Availability"] = {
             fieldtype: "Date",
             default: "",
             reqd: 0,
+
             on_change: function (report) {
                 const to_date = frappe.datetime.add_days(report.filters[1].value, 6);
                 frappe.query_report.set_filter_value("to_date", to_date);
