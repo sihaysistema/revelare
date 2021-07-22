@@ -14,7 +14,13 @@ frappe.ui.form.on('Item Availability Estimate', {
         frm.set_value('title', title_text);
         // en: Now we set the posting date value to today's date.
         // es-GT: Asignamos la fecha de posteo a la fecha de hoy.
-        frm.set_value('posting_date', today_date);
+        var name_new_doc = frm.doc.name
+        name_new_doc = name_new_doc.toString();
+        name_new_doc = name_new_doc.replace(' ','-').toLowerCase(); //Sirve para version 12
+
+        if(name_new_doc.includes('new-item-availability-estimate-')){
+            frm.set_value('posting_date', today_date);
+        }
     },
     posting_date: function (frm) {
         // en: We get the value in Posting Date field.
@@ -25,7 +31,9 @@ frappe.ui.form.on('Item Availability Estimate', {
         var set_start_date = monday(posting_date_value, 1);
         // en: We assign the start date as the monday closest to the pre-loaded posting_date.
         // es-GT: Asignamos la fecha inicial basado en el lunes mas cercano a la fecha de posteo automaticamente seleccionada.
-        frm.set_value('start_date', set_start_date);
+        if(frm.doc.status != 1){
+            frm.set_value('start_date', set_start_date);
+        }
     },
 
     start_date: function (frm) {
@@ -50,7 +58,8 @@ frappe.ui.form.on('Item Availability Estimate', {
         cur_frm.fields_dict["estimated_available_items"].grid.get_field("item_code").get_query = function (doc) {
             return {
                 filters: {
-                    "is_sales_item": 0,
+                    // "is_sales_item": 0,
+                    "include_item_in_manufacturing": 1,
                     "include_in_estimations": 1
                 }
             }

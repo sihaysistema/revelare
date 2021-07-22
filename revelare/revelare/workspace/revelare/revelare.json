@@ -34,7 +34,7 @@
   },
   {
    "hidden": 0,
-   "is_query_report": 0,
+   "is_query_report": 1,
    "label": "Sales Item Availability",
    "link_to": "Sales Item Availability",
    "link_type": "Report",
@@ -78,7 +78,7 @@
   },
   {
    "hidden": 0,
-   "is_query_report": 0,
+   "is_query_report": 1,
    "label": "Direct Cash Flow Report",
    "link_to": "Direct Cash Flow Report",
    "link_type": "Report",
@@ -95,7 +95,7 @@
   },
   {
    "hidden": 0,
-   "is_query_report": 0,
+   "is_query_report": 1,
    "label": "Production Report",
    "link_to": "Production Report",
    "link_type": "Report",
@@ -112,7 +112,7 @@
   },
   {
    "hidden": 0,
-   "is_query_report": 0,
+   "is_query_report": 1,
    "label": "Delivery Note By Item",
    "link_to": "Delivery Note By Item",
    "link_type": "Report",
@@ -120,13 +120,20 @@
    "type": "Link"
   }
  ],
- "modified": "2021-04-16 16:03:06.672185",
+ "modified": "2021-06-28 10:52:14.503047",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Revelare",
  "owner": "perencen17@gmail.com",
  "pin_to_bottom": 1,
  "pin_to_top": 0,
- "shortcuts": [],
+ "shortcuts": [
+  {
+   "doc_view": "",
+   "label": "Configuration",
+   "link_to": "Configuration Revelare",
+   "type": "DocType"
+  }
+ ],
  "shortcuts_label": ""
 }
