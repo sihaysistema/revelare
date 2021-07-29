@@ -88,7 +88,7 @@ def get_columns(filters):
             "label": _("Possible Quantity"),
             "fieldname": "possible_quantity",
             "fieldtype": "Data",
-            "width": 180
+            "width": 140
         }
     ]
 
@@ -97,19 +97,19 @@ def get_columns(filters):
             "label": _("A"),
             "fieldname": "A",
             "fieldtype": "Data",
-            "width": 90
+            "width": 145
         },
         {
             "label": _("B"),
             "fieldname": "B",
             "fieldtype": "Data",
-            "width": 120
+            "width": 80
         },
         {
             "label": _("C"),
             "fieldname": "C",
             "fieldtype": "Data",
-            "width": 110
+            "width": 100
         },
         {
             "label": _("D"),
@@ -121,13 +121,13 @@ def get_columns(filters):
             "label": _("E"),
             "fieldname": "E",
             "fieldtype": "Data",
-            "width": 110
+            "width": 80
         },
         {
             "label": _("F"),
             "fieldname": "F",
             "fieldtype": "Data",
-            "width": 130
+            "width": 150
         },
     ]
 
@@ -163,13 +163,14 @@ def get_data(filters, is_report=True):
     """
 
     quantity_style_plenty_1 = """
-      color: black;
+      color: #1d4fa1;
       background-color: orange;
       float: right;
       text-align: right;
       vertical-align: middle;
       height: 100%;
       width: 100%;
+      padding-inline: 0 1em;
     """
 
     quantity_style_few_1 = """
@@ -181,13 +182,14 @@ def get_data(filters, is_report=True):
     """
 
     quantity_style_sold_1 = """
-      color: black;
+      color: white;
       background-color: #60A917;
       float: right;
       text-align: right;
       vertical-align: middle;
       height: 100%;
       width: 100%;
+      padding-inline: 0 1em;
     """
 
     quantity_style_sold_dk_1 = """
@@ -204,6 +206,7 @@ def get_data(filters, is_report=True):
     # Listas de etiquetas 
     strong = {"markup": "strong", "style": ""}
     strong_gray = {"markup": "strong", "style": "color: #686868"}
+    strong_date = {"markup":"spam", "style":"font-weight: bold;"}
 
     qty_plenty1_strong = [
         {"markup": "span", "style": quantity_style_plenty_1}, strong]
@@ -216,6 +219,8 @@ def get_data(filters, is_report=True):
 
     qty_sold1_dk_strong = [
         {"markup": "span", "style": quantity_style_sold_dk_1}, strong]
+    
+    date_format = [strong_date]
 
     item_link_open = "<a href='#Form/Item"
     item_link_style = "style='color: #1862AA;'"
@@ -299,6 +304,13 @@ def get_data(filters, is_report=True):
 
     # ----- PROCESO TERMINA -----
     # ----- PROCESS DATA END -----
+    if len(data) > 1:
+        val_a = html_wrap(_("Report generated at"), date_format)
+        val_b = html_wrap(_(f'{datetime.now().strftime("%H:%M:%S")}'), date_format)
+        val_c = html_wrap(_(f'{datetime.now().strftime("%d/%m/%Y")}'), date_format)
+
+        data[0] = {'A' :val_a, 'B' :val_b, 'C' :val_c}
+
     return data
 
 def make_list_of_unique_codes(estimated_material_list):
@@ -433,8 +445,9 @@ def process_data(estimated_materials_with_attributes, qty_plenty1_strong, strong
     # ES: Iteración de los estimados de items, incluyendo items de ordenes de venta (notas de entrega, facturas de venta), y convirtiendo las unidades a la unidad de medida objetivo
     if is_report:
         for available_material in estimated_materials_with_attributes:
+
             # en: We build and add the "grouping row"
-            # ES: Construimos y agregamos la fila de agrupamiento
+            # ES: Construimos y agregamos la fila de 
             estimation_name = available_material['estimation_name']
             uom_name = available_material["amount_uom"]
             material_amount = available_material['amount']
@@ -655,6 +668,7 @@ def process_data(estimated_materials_with_attributes, qty_plenty1_strong, strong
             # We add an empty row after a set of products for easier reading.
             # Agregamos una fila vacía luego de un set de productos para facilitar la lectura
             data.append(empty_row)
+
         return data
 
     else:
@@ -879,7 +893,6 @@ def process_data(estimated_materials_with_attributes, qty_plenty1_strong, strong
             # We add an empty row after a set of products for easier reading.
             # Agregamos una fila vacía luego de un set de productos para facilitar la lectura
             data.append(empty_row)
-
         return data
 
 # Para debug
