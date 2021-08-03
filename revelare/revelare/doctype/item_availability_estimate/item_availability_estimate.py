@@ -7,4 +7,12 @@ from __future__ import unicode_literals
 from frappe.model.document import Document
 
 class ItemAvailabilityEstimate(Document):
-	pass
+    def on_submit(self):
+        self.status = 'Submitted'
+
+    def on_cancel(self):
+        self.status = 'Cancelled'
+
+    def validate(self):
+        self.status = 'Draft'
+
