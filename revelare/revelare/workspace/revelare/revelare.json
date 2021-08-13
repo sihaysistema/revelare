@@ -123,7 +123,7 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Delivery Note by Item with 4 Item Column Totalization",
+   "label": "Delivery Note by Item with 4 <br> Item Column Totalization",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Card Break"
@@ -138,7 +138,7 @@
    "type": "Link"
   }
  ],
- "modified": "2021-08-13 11:42:24.119226",
+ "modified": "2021-08-13 11:59:42.594666",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Revelare",
