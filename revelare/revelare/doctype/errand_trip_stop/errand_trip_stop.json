@@ -5,9 +5,13 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "document_type",
+  "column_break_2",
+  "document",
+  "section_break_4",
   "customer",
   "address",
-  "lock",
+  "lock_check",
   "column_break_6",
   "customer_address",
   "visited",
@@ -47,13 +51,6 @@
    "options": "Address",
    "print_hide": 1,
    "reqd": 1
-  },
-  {
-   "default": "0",
-   "fieldname": "lock",
-   "fieldtype": "Check",
-   "in_list_view": 1,
-   "label": "Lock"
   },
   {
    "fieldname": "column_break_6",
@@ -179,12 +176,38 @@
    "fieldname": "details",
    "fieldtype": "Text Editor",
    "label": "Details"
+  },
+  {
+   "fieldname": "document_type",
+   "fieldtype": "Link",
+   "label": "Document Type",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "document",
+   "fieldtype": "Dynamic Link",
+   "label": "Document",
+   "options": "document_type"
+  },
+  {
+   "default": "0",
+   "fieldname": "lock_check",
+   "fieldtype": "Check",
+   "label": "Lock"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-08-13 11:05:59.997185",
+ "modified": "2021-08-13 15:00:49.815846",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip Stop",
