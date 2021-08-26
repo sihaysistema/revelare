@@ -136,9 +136,26 @@
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Report automation",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Report Automator",
+   "link_to": "Report Automator",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2021-08-13 11:59:42.594666",
+ "modified": "2021-08-26 12:28:32.458717",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Revelare",
