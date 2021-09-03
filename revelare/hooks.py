@@ -98,23 +98,23 @@ doctype_list_js = {"Item Availability Estimate" : "public/js/item_availability_e
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"revelare.tasks.all"
-# 	],
-# 	"daily": [
-# 		"revelare.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"revelare.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"revelare.tasks.weekly"
-# 	]
-# 	"monthly": [
-# 		"revelare.tasks.monthly"
-# 	]
-# }
+scheduler_events = {
+    # "all": [
+    #     "revelare.tasks.all"
+    # ],
+    "daily": [
+        "revelare.revelare.doctype.report_automator.report_automator.send_daily",
+    ],
+    # "hourly": [
+    #     "revelare.tasks.hourly"
+    # ],
+    # "weekly": [
+    #     "revelare.tasks.weekly"
+    # ],
+    "monthly": [
+        "revelare.revelare.doctype.report_automator.report_automator.send_monthly",
+    ]
+}
 
 # Testing
 # -------
