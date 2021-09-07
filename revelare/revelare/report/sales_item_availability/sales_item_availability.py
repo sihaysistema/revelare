@@ -975,7 +975,7 @@ def add_styles(data):
     
     date_format = [strong_date]
 
-    item_link_open = "<a href='#app/Form/Item"
+    item_link_open = "<a href='/app/item"
     item_link_style = "style='color: #1862AA;'"
     item_link_open_end = " target='_blank'>"
     item_link_close = "</a>"
