@@ -28,7 +28,7 @@ frappe.ui.form.on('Errand Trip', {
                         frm.add_child('errand_trip_stop',{
                             document_type: String(element.document_type),
                             document: String(element.document),
-                            request_time: element.request_time
+                            requested_time: String(element.requested_time)
                         });
                     });
 

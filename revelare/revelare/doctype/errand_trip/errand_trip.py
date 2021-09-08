@@ -66,35 +66,35 @@ def get_data(driver=''):
                     data.append({
                     'document_type': doctype,
                     'document': doc.get('name'),
-                    'request_time': f'{doc.get("failure_date")} 08:00:00'
+                    'requested_time': f'{doc.get("failure_date")} 08:00:00'
                     })
 
                 elif doctype == 'Asset Maintenance Log':
                     data.append({
                     'document_type': doctype,
                     'document': doc.get('name'),
-                    'request_time': f'{doc.get("due_date")} 08:00:00'
+                    'requested_time': f'{doc.get("due_date")} 08:00:00'
                     })
 
                 elif doctype == 'Purchase Order':
                     data.append({
                     'document_type': doctype,
                     'document': doc.get('name'),
-                    'request_time': f'{doc.get("schedule_date")} 08:00:00'
+                    'requested_time': f'{doc.get("schedule_date")} 08:00:00'
                     })
 
                 elif doctype == 'Stock Entry':
                     data.append({
                     'document_type': doctype,
                     'document': doc.get('name'),
-                    'request_time': ''
+                    'requested_time': f'{nowdate()} 08:00:00'
                     })
 
                 elif doctype == 'ToDo':
                     data.append({
                     'document_type': doctype,
                     'document': doc.get('name'),
-                    'request_time': f'{doc.get("date")} 08:00:00'
+                    'requested_time': f'{doc.get("date")} 08:00:00'
                     })
 
                 elif doctype == 'Delivery Note':
@@ -105,15 +105,17 @@ def get_data(driver=''):
                     data.append({
                     'document_type': doctype,
                     'document': doc.get('name'),
-                    'request_time': get_datetime(f'{nowdate()} 08:00:00')
+                    'requested_time': f'{nowdate()} 08:00:00'
                     })
 
                 else:
                     data.append({
                     'document_type': doctype,
                     'document': doc.get('name'),
-                    'request_time': ''
+                    'requested_time': f'{nowdate()} 08:00:00'
                     })
+
+    # shortear por requested_time
 
     """
     filt = {'docstatus':0}
