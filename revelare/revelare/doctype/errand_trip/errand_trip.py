@@ -32,8 +32,7 @@ def get_data(driver=''):
             for doc in get_list_doctypes:
                 data.append({
                     'document_type': doctype,
-                    'document': doc.get('name'),
-                    'address':'Cliente1-Shipping'
+                    'document': doc.get('name')
                 })
 
     """

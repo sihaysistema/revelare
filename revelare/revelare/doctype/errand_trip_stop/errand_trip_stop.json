@@ -16,7 +16,6 @@
   "customer_address",
   "visited",
   "order_information_section",
-  "delivery_note",
   "cb_order",
   "grand_total",
   "section_break_7",
@@ -26,7 +25,9 @@
   "customer_contact",
   "section_break_9",
   "distance",
+  "requested_time",
   "estimated_arrival",
+  "actual_arrival",
   "lat",
   "column_break_19",
   "uom",
@@ -45,11 +46,9 @@
   {
    "fieldname": "address",
    "fieldtype": "Link",
-   "in_list_view": 1,
    "label": "Address Name",
    "options": "Address",
-   "print_hide": 1,
-   "reqd": 1
+   "print_hide": 1
   },
   {
    "fieldname": "column_break_6",
@@ -75,16 +74,6 @@
    "fieldname": "order_information_section",
    "fieldtype": "Section Break",
    "label": "Order Information"
-  },
-  {
-   "fieldname": "delivery_note",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Delivery Note",
-   "no_copy": 1,
-   "options": "Delivery Note",
-   "print_hide": 1,
-   "read_only": 1
   },
   {
    "fieldname": "cb_order",
@@ -203,12 +192,24 @@
   {
    "fieldname": "section_break_4",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "requested_time",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Requested Time"
+  },
+  {
+   "fieldname": "actual_arrival",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Actual Arrival"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-08-23 16:49:14.038435",
+ "modified": "2021-09-08 10:45:40.324653",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip Stop",
