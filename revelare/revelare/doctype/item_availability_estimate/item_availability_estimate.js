@@ -5,21 +5,22 @@ frappe.ui.form.on('Item Availability Estimate', {
     // en: we use the before load form event to preload the week for this date.
     // es-GT: Usamos el evento del formulato "Before Load" para pre-cargar el titulo de la semana.
     before_load: function (frm) {
-        // en: Create a new date object using now's date and time.
-        // es-GT: Creamos un nuevo objeto de fecha usando la fecha y hora de este momento.
-        var today_date = new Date();
-        // en: we set the title of the new Item Availability Estimate to be the week.
-        // es-GT: Asignamos el titulo del documento de Estimado de Disponibilidad.
-        var title_text = __('Week') + (' ') + today_date.getWeek().toString()
-        frm.set_value('title', title_text);
-        // en: Now we set the posting date value to today's date.
-        // es-GT: Asignamos la fecha de posteo a la fecha de hoy.
         var name_new_doc = frm.doc.name
         name_new_doc = name_new_doc.toString();
         name_new_doc = name_new_doc.replace(' ','-').toLowerCase(); //Sirve para version 12
-
+        // en: If it is loaded for the first time we execute the process
+        // es-GT: Si se carga por primera vez ejecutamos el proceso
         if(name_new_doc.includes('new-item-availability-estimate-')){
+            // en: Create a new date object using now's date and time.
+            // es-GT: Creamos un nuevo objeto de fecha usando la fecha y hora de este momento.
+            var today_date = new Date();
+            // en: we set the title of the new Item Availability Estimate to be the week.
+            // es-GT: Asignamos el titulo del documento de Estimado de Disponibilidad.
+            var title_text = __('Week') + (' ') + today_date.getWeek().toString()
+            // en: Now we set the posting date value to today's date.
+            // es-GT: Asignamos la fecha de posteo a la fecha de hoy.
             frm.set_value('posting_date', today_date);
+            frm.set_value('title', title_text);
         }
     },
     posting_date: function (frm) {
@@ -29,19 +30,36 @@ frappe.ui.form.on('Item Availability Estimate', {
         // en: We estimate what the date of the nearest monday is.
         // es-GT: Estimamos cual es la fecha del lunes mas cercano
         var set_start_date = monday(posting_date_value, 1);
+        // en: Create a new date object using now's date and time.
+        // es-GT: Creamos un nuevo objeto de fecha usando la fecha y hora de este momento.
+        var today_date = new Date(cur_frm.doc.posting_date);
+        // en: we set the title of the new Item Availability Estimate to be the week.
+        // es-GT: Asignamos el titulo del documento de Estimado de Disponibilidad.
+        var title_text = __('Week') + (' ') + monday(today_date,1).getWeek().toString()
         // en: We assign the start date as the monday closest to the pre-loaded posting_date.
         // es-GT: Asignamos la fecha inicial basado en el lunes mas cercano a la fecha de posteo automaticamente seleccionada.
         if(frm.doc.status != 1){
+            frm.set_value('title', title_text);
             frm.set_value('start_date', set_start_date);
         }
     },
-
     start_date: function (frm) {
         // en: When the start date is assigned, we need to calculate what the end date will be. (+7 days including the start date)
         // es-GT: Cuando se asigna la fecha de inicio, necesitamos calcular cual va ser la fecha final (+7 días incluyendo la fecha de inicio)
         var curr_start_date = new Date(cur_frm.doc.start_date);
         var end_of_week_date = addDays(curr_start_date, 7);
         frm.set_value('end_date', end_of_week_date);
+
+        // es-GT: Caculoamos la diferencia entre dos fechas
+        const start_date = new Date(cur_frm.doc.start_date);
+        const end_date = new Date(cur_frm.doc.end_date);
+        frm.set_value('days', caculate_diff_days(start_date, end_date));
+    },
+    end_date : function(frm){
+        // es-GT: Caculoamos la diferencia entre dos fechas
+        const start_date = new Date(cur_frm.doc.start_date);
+        const end_date = new Date(cur_frm.doc.end_date);
+        frm.set_value('days', caculate_diff_days(start_date, end_date));
     },
     /*
     end_date: function(frm) {
@@ -117,21 +135,27 @@ Date.prototype.getWeek = function (dowOffset) {
     return weeknum;
 };
 
+/** Consulted: https://www.w3schools.com/js/js_date_methods.asp */
 var mydate = new Date(2020, 8, 19); // month number starts from 0
 // or like this
 var mydate = new Date('September 19, 2020');
 // alert(mydate.getWeek());
 
+function caculate_diff_days(start_date, end_date) {
+    const diff = end_date.getTime() - start_date.getTime();
+    let days = Math.round(diff / (1000 * 60 * 60 * 24));
+    return days;
+}
 
 
-/** Consulted: https://www.w3schools.com/js/js_date_methods.asp */
 
 frappe.listview_settings['Item Availability Estimate'] = {
     add_fields: ["title", "start_date", "end_date"],
     get_indicator: function (doc) {
         var status_color = {
-            "Draft": "red",
-            "Submitted": "green"
+            "Draft": "red", // Draft
+            "Submitted": "green", // Submitted
+            "Cancelled":"blue" // Cancelled
         };
         return [__(doc.status), status_color[doc.status], "status,=," + doc.status];
     },
