@@ -24,11 +24,11 @@
   "column_break_7",
   "customer_contact",
   "section_break_9",
+  "lat",
   "distance",
   "requested_time",
   "estimated_arrival",
   "actual_arrival",
-  "lat",
   "column_break_19",
   "uom",
   "lng",
@@ -134,7 +134,6 @@
   {
    "fieldname": "lat",
    "fieldtype": "Float",
-   "hidden": 1,
    "label": "Latitude"
   },
   {
@@ -152,7 +151,6 @@
   {
    "fieldname": "lng",
    "fieldtype": "Float",
-   "hidden": 1,
    "label": "Longitude"
   },
   {
@@ -209,7 +207,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-09-08 10:45:40.324653",
+ "modified": "2021-09-08 10:51:35.508255",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip Stop",
