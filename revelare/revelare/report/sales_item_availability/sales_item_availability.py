@@ -227,12 +227,13 @@ def get_data(filters, is_report=True):
 
     #----- New Funtion----
     data = process_data(estimated_materials_with_attributes, material_and_sales_items, 
-                        sales_item_codes, matching_sales_order_items, is_report=False)
+                        sales_item_codes, matching_sales_order_items)
 
     # ----- PROCESO TERMINA -----
     # ----- PROCESS DATA END -----
-    data = add_styles(data)
-    dicToJSON('data',data)
+    if is_report == True and data != None:
+        data = add_styles(data)
+
     return data
 
 def make_list_of_unique_codes(estimated_material_list):
@@ -355,9 +356,10 @@ def sum_and_convert_estimated_material_list(estimated_material_list):
     # Our list is now ready to use, with like item amounts added.
     return new_list
 
-def process_data(estimated_materials_with_attributes, material_and_sales_items, sales_item_codes, matching_sales_order_items, is_report):
+def process_data(estimated_materials_with_attributes, material_and_sales_items, sales_item_codes, matching_sales_order_items):
     """Función para limiar la data del html"""
 
+    is_report = False
     # ----- PROCESS DATA BEGIN -----
     # Iterate over the list of item estimates, including items from matching
     # sales orders and converting units to the target uom
