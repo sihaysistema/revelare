@@ -123,6 +123,15 @@
   {
    "hidden": 0,
    "is_query_report": 0,
+   "label": "Navigator",
+   "link_to": "navigation-dashboard",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
    "label": "Delivery Note by Item with 4 <br> Item Column Totalization",
    "link_type": "DocType",
    "onboard": 0,
@@ -155,7 +164,7 @@
    "type": "Link"
   }
  ],
- "modified": "2021-08-26 12:28:32.458717",
+ "modified": "2021-09-09 16:51:16.467043",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Revelare",
