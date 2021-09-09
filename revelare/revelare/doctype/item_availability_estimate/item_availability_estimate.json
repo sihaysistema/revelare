@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "autoname": "naming_series:",
  "creation": "2020-09-16 20:58:38.380880",
  "doctype": "DocType",
@@ -8,6 +9,7 @@
   "naming_series",
   "section_break_8",
   "title",
+  "status",
   "column_break_5",
   "posting_date",
   "section_break_7",
@@ -144,10 +146,18 @@
    "fieldname": "items_helper",
    "fieldtype": "HTML",
    "options": "<p><strong>es-GT:</strong> Indica cuales Productos de Materia Prima estima tener disponibles entre las fechas especificadas arriba. Para cada uno, especifique la cantidad y la unidad de medida.</p>\n<p><strong>en:</strong> Indicate which material items you have available between the dates specified above. For each, specify amount and the unit of measure.</p>\n"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nSubmited\nCancelled",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
- "modified": "2020-09-27 22:56:49.595178",
+ "links": [],
+ "modified": "2021-08-03 10:39:32.256306",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Item Availability Estimate",
@@ -178,7 +188,6 @@
    "write": 1
   },
   {
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -188,11 +197,9 @@
    "report": 1,
    "role": "Stock User",
    "share": 1,
-   "submit": 1,
    "write": 1
   },
   {
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -202,11 +209,9 @@
    "report": 1,
    "role": "Manufacturing User",
    "share": 1,
-   "submit": 1,
    "write": 1
   },
   {
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -216,11 +221,9 @@
    "report": 1,
    "role": "Stock Manager",
    "share": 1,
-   "submit": 1,
    "write": 1
   },
   {
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -230,11 +233,11 @@
    "report": 1,
    "role": "Sales User",
    "share": 1,
-   "submit": 1,
    "write": 1
   }
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "track_changes": 1
+ "track_changes": 1,
+ "track_seen": 1
 }
