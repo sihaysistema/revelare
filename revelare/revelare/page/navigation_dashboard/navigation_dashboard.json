@@ -1,0 +1,23 @@
+{
+ "content": null,
+ "creation": "2021-09-09 16:12:42.200214",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2021-09-09 16:12:42.200214",
+ "modified_by": "Administrator",
+ "module": "Revelare",
+ "name": "navigation-dashboard",
+ "owner": "Administrator",
+ "page_name": "Navigation Dashboard",
+ "roles": [
+  {
+   "role": "Administrator"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Navigation Dashboard"
+}
