@@ -1,9 +1,7 @@
 <template>
-  <div class="content-body">
-    <div class="container-fluid">
-      <div class="row">
-        <DataCard />
-      </div>
+  <div class="shs-container-fluid">
+    <div class="row">
+      <DataCard />
     </div>
   </div>
 </template>

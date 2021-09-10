@@ -1,31 +1,53 @@
 <template>
-  <div class="col-xl-6 col-lg-12">
-    <div class="card project-card">
-      <div class="card-body">
-        <div class="d-flex mb-4 align-items-start">
-          <div class="dz-media mr-3">
-            <img src="images/logos/pic1.jpg" class="img-fluid" alt="" />
-          </div>
+  <div class="col-xl-6">
+    <div class="card shs-bg-active">
+      <!-- HEADER -->
+      <div class="card-header mt-2">
+        <div class="d-flex align-items-start">
           <div class="mr-auto">
-            <p class="text-primary mb-1">#P-000441425</p>
+            <p class="text-primary mb-1">VIAJE #1</p>
             <h5 class="title font-w600 mb-2">
-              <a href="post-details.html" class="text-black"
-                >Redesign Zenix Mobile App</a
-              >
+              <a href="post-details.html" class="text-black"></a>
+              MAT-DT-2021-00001
             </h5>
-            <span>We Create Your Dream</span>
+            <span>Para el cliente Juan Perez</span>
           </div>
           <span class="badge badge-success d-sm-inline-block d-none"
-            >Compeleted</span
+            >ACTIVO</span
           >
         </div>
-        <p class="mb-4">
-          It is a long established fact that a reader will be distracted by the
-          readable content of a page when looking at its layout.
-        </p>
+      </div>
+
+      <!-- BODY -->
+      <div class="card-body">
         <div class="row mb-4">
+          <!-- Icono Izquierdo -->
           <div class="col-sm-6 mb-sm-0 mb-3 d-flex">
-            <div class="dt-icon bgl-info mr-3">
+            <div class="dt-icon mr-3 bgl-danger">
+              <svg
+                width="19"
+                height="24"
+                viewBox="0 0 19 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M18.6601 8.6858C18.5437 8.44064 18.2965 8.28427 18.025 8.28427H10.9728L15.2413 1.06083C15.3697 0.843469 15.3718 0.573844 15.2466 0.354609C15.1214 0.135375 14.8884 -9.37014e-05 14.6359 4.86277e-08L8.61084 0.000656299C8.3608 0.000750049 8.12957 0.1335 8.00362 0.349453L0.0958048 13.905C-0.0310859 14.1224 -0.0319764 14.3911 0.0934142 14.6094C0.218805 14.8277 0.451352 14.9624 0.703117 14.9624H7.71037L5.66943 23.1263C5.58955 23.4457 5.74213 23.7779 6.03651 23.9255C6.13691 23.9757 6.24459 24 6.35123 24C6.55729 24 6.75923 23.9094 6.89638 23.7413L18.5699 9.43186C18.7415 9.22148 18.7766 8.93105 18.6601 8.6858V8.6858Z"
+                  fill="#FF4C41"
+                />
+              </svg>
+            </div>
+            <div>
+              <span>Para entregar el</span>
+              <p class="mb-0 pt-1 font-w500 text-black">
+                Tuesday,Aug 15th 2020
+              </p>
+            </div>
+          </div>
+
+          <!-- Icono derecho -->
+          <div class="col-sm-6 d-flex">
+            <div class="dt-icon mr-3 bgl-info">
               <svg
                 width="24"
                 height="24"
@@ -44,81 +66,124 @@
               </svg>
             </div>
             <div>
-              <span>Start Date</span>
-              <p class="mb-0 pt-1 font-w500 text-black">
-                Tuesday,Aug 15th 2020
-              </p>
-            </div>
-          </div>
-          <div class="col-sm-6 d-flex">
-            <div class="dt-icon mr-3 bgl-danger">
-              <svg
-                width="19"
-                height="24"
-                viewBox="0 0 19 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M18.6601 8.6858C18.5437 8.44064 18.2965 8.28427 18.025 8.28427H10.9728L15.2413 1.06083C15.3697 0.843469 15.3718 0.573844 15.2466 0.354609C15.1214 0.135375 14.8884 -9.37014e-05 14.6359 4.86277e-08L8.61084 0.000656299C8.3608 0.000750049 8.12957 0.1335 8.00362 0.349453L0.0958048 13.905C-0.0310859 14.1224 -0.0319764 14.3911 0.0934142 14.6094C0.218805 14.8277 0.451352 14.9624 0.703117 14.9624H7.71037L5.66943 23.1263C5.58955 23.4457 5.74213 23.7779 6.03651 23.9255C6.13691 23.9757 6.24459 24 6.35123 24C6.55729 24 6.75923 23.9094 6.89638 23.7413L18.5699 9.43186C18.7415 9.22148 18.7766 8.93105 18.6601 8.6858V8.6858Z"
-                  fill="#FF4C41"
-                />
-              </svg>
-            </div>
-            <div>
-              <span>Deadline</span>
+              <span>Entregado el: </span>
               <p class="mb-0 pt-1 font-w500 text-black">
                 Tuesday,Sep 29th 2020
               </p>
             </div>
           </div>
         </div>
-        <div class="d-flex flex-wrap align-items-center">
-          <div class="mr-auto mb-4">
-            <p class="mb-2 font-w500 text-black">Members</p>
-            <ul class="users-lg">
-              <li><img src="images/users/pic1.jpg" alt="" /></li>
-              <li><img src="images/users/pic2.jpg" alt="" /></li>
-              <li><img src="images/users/pic3.jpg" alt="" /></li>
-              <li><img src="images/users/pic4.jpg" alt="" /></li>
-              <li><img src="images/users/pic5.jpg" alt="" /></li>
-              <li><img src="images/users/pic6.jpg" alt="" /></li>
-              <li><img src="images/users/pic7.jpg" alt="" /></li>
-            </ul>
-          </div>
-          <div class="d-flex align-items-center mb-4">
-            <div class="text-center border-bx mr-3">
-              <span>Budget</span>
-              <p class="mb-0 pt-1 font-w500 text-black">$505,785</p>
-            </div>
-            <div class="text-center border-bx">
-              <span>Expenses</span>
-              <p class="mb-0 pt-1 font-w500 text-black">$458,388</p>
-            </div>
-          </div>
+        <!-- DESCRIPCIONES -->
+        <p class="mb-4">
+          It is a long established fact that a reader will be distracted by the
+          readable content of a page when looking at its layout.
+        </p>
+
+        <div class="mr-auto">
+          <p class="mb-2 text-black">Detalles de cliente</p>
+          <p class="mb-2 text-black">
+            <i class="fa fa-user" aria-hidden="true"></i> Contacto: Juan Perez
+          </p>
+          <p class="mb-2 text-black">
+            <i class="fa fa-phone" aria-hidden="true"></i> Teléfono: 33633893
+          </p>
+          <p class="mb-2 text-black">
+            <i class="fa fa-map-marker" aria-hidden="true"></i> Dirección: It is
+            a long established fact that a reader will be distracted by the
+            readable content of
+          </p>
         </div>
-        <div class="row">
-          <div class="col-6">
-            <div>
-              Questions:<span class="text-black ml-3 font-w600">56</span>
-            </div>
-            <div>
-              Comments:<span class="text-black ml-3 font-w600">200</span>
-            </div>
-          </div>
-          <div class="col-6">
-            <h6>
-              Progress
-              <span class="pull-right">75%</span>
-            </h6>
-            <div class="progress">
-              <div
-                class="progress-bar bg-info progress-animated"
-                style="width: 75%; height: 6px"
-                role="progressbar"
-              ></div>
-            </div>
-          </div>
+      </div>
+
+      <div
+        class="card-footer d-sm-flex justify-content-between align-items-center"
+      >
+        <div class="card-footer-link mb-4 mb-sm-0">
+          <p class="card-text text-dark d-inline">Last updated 3 mins ago</p>
+        </div>
+
+        <div class="text-center">
+          <button type="button" class="btn shs-btn-success btn-lg">
+            Completar
+          </button>
+        </div>
+        <div class="text-center">
+          <button type="button" title="Abrir en waze" class="btn">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 48 48"
+              width="30px"
+              height="30px"
+            >
+              <path
+                fill="#37474f"
+                d="M27,38C9.1,38,5.2,33.2,3.6,31.1c-0.4-0.4-0.6-1-0.6-1.6C3,28.1,4.1,27,5.5,27C6.4,27,9,27,9,22.1 v-0.6C9,12.4,17.1,5,27,5s18,7.4,18,16.5S36.9,38,27,38z"
+              />
+              <path
+                fill="#eceff1"
+                d="M27,36c8.8,0,16-6.5,16-14.5S35.8,7,27,7s-16,6.5-16,14.5v0.6c0,6.2-3.8,6.9-5.5,6.9 C5.2,29,5,29.2,5,29.5c0,0.1,0,0.2,0.1,0.3C6.6,31.7,10,36,27,36z"
+              />
+              <path
+                fill="#37474f"
+                d="M32 16A2 2 0 1 0 32 20 2 2 0 1 0 32 16zM22 16A2 2 0 1 0 22 20 2 2 0 1 0 22 16zM27 29c-4.8 0-6.7-3.5-7-5.3-.1-.5.3-1.1.8-1.2.5-.1 1.1.3 1.2.8 0 .1.7 3.7 5 3.7 4.3 0 5-3.5 5-3.7.1-.5.6-.9 1.2-.8.5.1.9.6.8 1.1C33.7 25.5 31.8 29 27 29zM16.5 34A4.5 4.5 0 1 0 16.5 43 4.5 4.5 0 1 0 16.5 34z"
+              />
+              <path
+                fill="#607d8b"
+                d="M16.5 37A1.5 1.5 0 1 0 16.5 40A1.5 1.5 0 1 0 16.5 37Z"
+              />
+              <path
+                fill="#37474f"
+                d="M32.5 34A4.5 4.5 0 1 0 32.5 43A4.5 4.5 0 1 0 32.5 34Z"
+              />
+              <path
+                fill="#607d8b"
+                d="M32.5 37A1.5 1.5 0 1 0 32.5 40A1.5 1.5 0 1 0 32.5 37Z"
+              />
+            </svg>
+          </button>
+        </div>
+        <div class="text-center">
+          <button type="button" title="Abrir en google maps" class="btn">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 48 48"
+              width="30px"
+              height="30px"
+            >
+              <path
+                fill="#1c9957"
+                d="M42,39V9c0-1.657-1.343-3-3-3H9C7.343,6,6,7.343,6,9v30c0,1.657,1.343,3,3,3h30C40.657,42,42,40.657,42,39z"
+              />
+              <path
+                fill="#3e7bf1"
+                d="M9,42h30c1.657,0-15-16-15-16S7.343,42,9,42z"
+              />
+              <path
+                fill="#cbccc9"
+                d="M42,39V9c0-1.657-16,15-16,15S42,40.657,42,39z"
+              />
+              <path
+                fill="#efefef"
+                d="M39,42c1.657,0,3-1.343,3-3v-0.245L26.245,23L23,26.245L38.755,42H39z"
+              />
+              <path
+                fill="#ffd73d"
+                d="M42,9c0-1.657-1.343-3-3-3h-0.245L6,38.755V39c0,1.657,1.343,3,3,3h0.245L42,9.245V9z"
+              />
+              <path
+                fill="#d73f35"
+                d="M36,2c-5.523,0-10,4.477-10,10c0,6.813,7.666,9.295,9.333,19.851C35.44,32.531,35.448,33,36,33s0.56-0.469,0.667-1.149C38.334,21.295,46,18.813,46,12C46,6.477,41.523,2,36,2z"
+              />
+              <path
+                fill="#752622"
+                d="M36 8.5A3.5 3.5 0 1 0 36 15.5A3.5 3.5 0 1 0 36 8.5Z"
+              />
+              <path
+                fill="#fff"
+                d="M14.493,12.531v2.101h2.994c-0.392,1.274-1.455,2.185-2.994,2.185c-1.833,0-3.318-1.485-3.318-3.318s1.486-3.318,3.318-3.318c0.824,0,1.576,0.302,2.156,0.799l1.548-1.547C17.22,8.543,15.92,8,14.493,8c-3.038,0-5.501,2.463-5.501,5.5s2.463,5.5,5.501,5.5c4.81,0,5.637-4.317,5.184-6.461L14.493,12.531z"
+              />
+            </svg>
+          </button>
         </div>
       </div>
     </div>

@@ -23,7 +23,7 @@ fixtures = fill_fixtures()
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/revelare/css/revelare.css"
+app_include_css = "/assets/revelare/css/revelare.min.css"
 app_include_js = "/assets/revelare/js/revelar.min.js"
 
 # include js, css files in header of web template
