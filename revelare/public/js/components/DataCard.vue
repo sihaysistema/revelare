@@ -1,20 +1,26 @@
 <template>
-  <div class="col-xl-6">
-    <div class="card shs-bg-active">
+  <div class="col-xl-6 mt-4 mb-4">
+    <div :class="cardStyle">
       <!-- HEADER -->
       <div class="card-header mt-2">
         <div class="d-flex align-items-start">
           <div class="mr-auto">
-            <p class="text-primary mb-1">VIAJE #1</p>
+            <p class="text-primary mb-1">
+              {{ __("VIAJE") }} #{{ tripData.idx + 1 }}
+            </p>
             <h5 class="title font-w600 mb-2">
               <a href="post-details.html" class="text-black"></a>
-              MAT-DT-2021-00001
+              {{ tripData.docname }}
             </h5>
-            <span>Para el cliente Juan Perez</span>
+            <h5 class="title font-w600 mb-2">
+              <a href="post-details.html" class="text-black"></a>
+              {{ tripData.doctype }}
+            </h5>
+            <span> {{ __("Para") }} {{ tripData.customer }}</span>
           </div>
-          <span class="badge badge-success d-sm-inline-block d-none"
-            >ACTIVO</span
-          >
+          <h3 class="badge badge-success d-sm-inline-block d-none">
+            {{ __("ACTIVO") }}
+          </h3>
         </div>
       </div>
 
@@ -38,9 +44,9 @@
               </svg>
             </div>
             <div>
-              <span>Para entregar el</span>
+              <span>{{ __("Para entregar el") }}:</span>
               <p class="mb-0 pt-1 font-w500 text-black">
-                Tuesday,Aug 15th 2020
+                {{ tripData.requested_time }}
               </p>
             </div>
           </div>
@@ -66,9 +72,9 @@
               </svg>
             </div>
             <div>
-              <span>Entregado el: </span>
+              <span>{{ __("Entregado el") }}: </span>
               <p class="mb-0 pt-1 font-w500 text-black">
-                Tuesday,Sep 29th 2020
+                {{ tripData.completed_on }}
               </p>
             </div>
           </div>
@@ -80,35 +86,45 @@
         </p>
 
         <div class="mr-auto">
-          <p class="mb-2 text-black">Detalles de cliente</p>
+          <p class="mb-2 text-black">{{ __("Detalles de cliente") }}</p>
           <p class="mb-2 text-black">
-            <i class="fa fa-user" aria-hidden="true"></i> Contacto: Juan Perez
+            <i class="fa fa-user" aria-hidden="true"></i> {{ __("Contacto") }}:
+            Juan Perez
           </p>
           <p class="mb-2 text-black">
-            <i class="fa fa-phone" aria-hidden="true"></i> Teléfono: 33633893
+            <i class="fa fa-phone" aria-hidden="true"></i> {{ __("Teléfono") }}:
+            33633893
           </p>
           <p class="mb-2 text-black">
-            <i class="fa fa-map-marker" aria-hidden="true"></i> Dirección: It is
-            a long established fact that a reader will be distracted by the
-            readable content of
+            <i class="fa fa-map-marker" aria-hidden="true"></i>
+            {{ __("Dirección") }}: It is a long established fact that a reader
+            will be distracted by the readable content of
           </p>
         </div>
       </div>
 
+      <!-- FOOTER -->
       <div
         class="card-footer d-sm-flex justify-content-between align-items-center"
       >
         <div class="card-footer-link mb-4 mb-sm-0">
-          <p class="card-text text-dark d-inline">Last updated 3 mins ago</p>
+          <p class="card-text text-dark d-inline">
+            {{ __("Tiempo retraso ") }}: 00:23:54
+          </p>
         </div>
 
         <div class="text-center">
           <button type="button" class="btn shs-btn-success btn-lg">
-            Completar
+            {{ __("Completar") }}
           </button>
         </div>
         <div class="text-center">
-          <button type="button" title="Abrir en waze" class="btn">
+          <button
+            type="button"
+            title="Abrir en waze"
+            class="btn"
+            @click="openInWaze"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 48 48"
@@ -143,7 +159,12 @@
           </button>
         </div>
         <div class="text-center">
-          <button type="button" title="Abrir en google maps" class="btn">
+          <button
+            type="button"
+            title="Abrir en google maps"
+            class="btn"
+            @click="openInGoogleMaps"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 48 48"
@@ -193,6 +214,60 @@
 <script>
 export default {
   name: "DataCard",
+  props: ["tripData"],
+  data() {},
+  methods: {
+    openInWaze() {
+      // Para abrir en movil
+      let url = `https://waze.com/ul?q=${this.tripData.latitude},${this.tripData.longitude}&navigate=yes&zoom=17`;
+      if (this.detectMob()) {
+        window.open(url).focus();
+      } else {
+        url = `https://www.waze.com/ul?ll=${this.tripData.latitude}%2C${this.tripData.longitude}&navigate=yes&zoom=17`;
+        window.open(url, "_blank").focus();
+      }
+    },
+    openInGoogleMaps() {
+      //   let url = `maps://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.latitude},${this.tripData.longitude}`;
+      let url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.latitude},${this.tripData.longitude}`;
+      if (this.detectMob()) {
+        window.open(url).focus();
+      } else {
+        url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.latitude},${this.tripData.longitude}`;
+        window.open(url, "_blank").focus();
+      }
+    },
+    detectMob() {
+      const toMatch = [
+        /Android/i,
+        /webOS/i,
+        /iPhone/i,
+        /iPad/i,
+        /iPod/i,
+        /BlackBerry/i,
+        /Windows Phone/i,
+      ];
+
+      return toMatch.some((toMatchItem) => {
+        return navigator.userAgent.match(toMatchItem);
+      });
+    },
+  },
+  computed: {
+    cardStyle: function () {
+      if (this.tripData.status === "active") {
+        return "card shs-bg-active";
+      } else if (this.tripData.status === "overdue") {
+        return "card shs-bg-danger";
+      } else if (this.tripData.status === "pending") {
+        return "card shs-bg-warning";
+      } else if (this.tripData.status === "completed") {
+        return "card shs-bg-completed";
+      } else {
+        return "card";
+      }
+    },
+  },
 };
 </script>
 
