@@ -1,5 +1,9 @@
 {
     "revelare/js/revelar.min.js": [
+        "public/js/main_navigator_dashboard.js",
         "public/js/revelar.js"
+    ],
+    "revelare/css/revelare.min.css": [
+        "public/css/navigator.css"
     ]
 }
