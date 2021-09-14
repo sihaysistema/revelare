@@ -2,17 +2,19 @@
 # For license information, please see license.txt
 
 import json
+from datetime import datetime
 
 import frappe
-from frappe.utils import nowdate, cstr, flt, get_datetime
 from frappe.model.document import Document
+from frappe.utils import cstr, flt, get_date_str, nowdate, get_time_str
+
 
 class ErrandTrip(Document):
     pass
 
 @frappe.whitelist()
 def get_data(driver=''):
-    doctype_list = ['Assets Repair', 'Asset Maintenance Log', 
+    doctype_list = ['Asset Repair', 'Asset Maintenance Log', 
                     'Purchase Receipt', 'Purchase Order', 
                     'Stock Entry', 'Timesheet', 'ToDo', 'Delivery Note', 'Shipment']
 
@@ -26,16 +28,18 @@ def get_data(driver=''):
     for doctype in doctype_list:
         get_list_doctypes = []
         filt = {}
+        fieldnames = []
+
         if doctype == 'Asset Repair':
-            filt = {'docstatus' : 0}
+            filt = [['docstatus','=',0]]
             fieldnames = ['name', 'failure_date']
 
         elif doctype == 'Asset Maintenance Log':
-            filt = {'docstatus': 0, 'maintenance_status' : 'Planned', 'maintenance_status':'Overdue'}
+            filt = [['docstatus','=',0],['maintenance_status','=','Planned'],['maintenance_status','=','Overdue']]
             fieldnames = ['name', 'due_date']
 
         elif doctype == 'Purchase Order':
-            filt = {'docstatus' : 0}
+            filt = [['docstatus','=',0]]
             fieldnames = ['name', 'schedule_date']
 
         elif doctype == 'Stock Entry':
@@ -44,20 +48,23 @@ def get_data(driver=''):
             fieldnames = ['name']
 
         elif doctype == 'ToDo':
-            filt = {'docstatus' : 0}
+            filt = [['docstatus','=',0]]
             fieldnames = ['name', 'date']
 
         elif doctype == 'Delivery Note':
             # Si es delivery note tiene que estar el documento validado
-            filt = {'docstatus' : 1}
+            filt = [['docstatus','=',0]]
             fieldnames = ['name']
 
         else:
             # Para los demas doctypes, se obtendran los que esten en draft
-            filt = {'docstatus' : 0}
+            filt = [['docstatus','=',0]]
             fieldnames = ['name']
 
-        get_list_doctypes = frappe.db.get_values(doctype, filters=filt, fieldname=fieldnames, as_dict=1) or []
+        if len(fieldnames) == 2:
+            get_list_doctypes = frappe.db.get_list(doctype, filters=filt, fields=fieldnames, order_by=f'{fieldnames[1]} desc') or []
+        else:
+            get_list_doctypes = frappe.db.get_list(doctype, filters=filt, fields=fieldnames) or []
 
         if get_list_doctypes != []:
             for doc in get_list_doctypes:
@@ -98,10 +105,6 @@ def get_data(driver=''):
                     })
 
                 elif doctype == 'Delivery Note':
-
-                    # date_now = nowdate().split('-')
-                    #date_now = f'{date_now[2]}-{date_now[1]}-{date_now[0]}'
-                    
                     data.append({
                     'document_type': doctype,
                     'document': doc.get('name'),
@@ -116,20 +119,39 @@ def get_data(driver=''):
                     })
 
     # shortear por requested_time
+    for d in data:
+        d['requested_time'] = datetime.strptime(d['requested_time'], '%Y-%m-%d %H:%M:%S')
 
-    """
-    filt = {'docstatus':0}
-    doctype = 'Purchase Receipt'
-    fieldnames = ['name']
-    get_purchase_receipt = frappe.db.get_values(doctype, filters=filt, fieldname=fieldnames, as_dict=1)
-    for purchase_receipt in get_purchase_receipt:
-        purchase_receipt['document_type'] = 'Purchase Receipt'
-        purchase_receipt['document'] = purchase_receipt['name'],
-        purchase_receipt['address'] = 'Cliente1-Shipping',
+    data = sorted(data, key = lambda i: i['requested_time'],reverse=False)
 
-    get_purchase_receipt = get_purchase_receipt + get_purchase_receipt"""
+    for d in data:
+        d['requested_time'] = add_zeros_to_date(f'{get_date_str(d["requested_time"])} {d["requested_time"].hour}:{d["requested_time"].minute}:{d["requested_time"].second}')
 
     return data or []
+
+def add_zeros_to_date(string):
+    string = string.split(' ')
+    string = [string[0]] + string[1].split(':')
+    new_string = []
+    for s in string:
+        if len(s) == 1:
+            if string.index(s) == 2:
+                s = f':0{s}'
+            else:
+                s = f'0{s}'
+            new_string.append(s)
+        else:
+            if string.index(s) == 0:
+                new_string.append(f'{s} ')
+
+            elif string.index(s) == 2:
+                s = f':{s}'
+                new_string.append(s)
+    str_return = ''
+    for new in new_string:
+        str_return += new
+    return str_return
+
 
 def dicToJSON(nomArchivo, diccionario):
     with open(str(nomArchivo+'.json'), 'w') as f:
