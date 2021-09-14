@@ -152,6 +152,13 @@ def add_zeros_to_date(string):
         str_return += new
     return str_return
 
+@frappe.whitelist()
+def get_doctypes():
+    
+    doctype = 'Errand Trip'
+    filt = [['docstatus','=',1]]
+    fieldnames = ['name']
+    get_list_doctypes = frappe.db.get_list(doctype, filters=filt, fields=fieldnames, order_by=f'{fieldnames[1]} desc') or []
 
 def dicToJSON(nomArchivo, diccionario):
     with open(str(nomArchivo+'.json'), 'w') as f:
