@@ -14,8 +14,8 @@ class ErrandTrip(Document):
 
 @frappe.whitelist()
 def get_data(driver=''):
-    doctype_list = ['Asset Repair', 'Asset Maintenance Log', 
-                    'Purchase Receipt', 'Purchase Order', 
+    doctype_list = ['Asset Repair', 'Asset Maintenance Log',
+                    'Purchase Receipt', 'Purchase Order',
                     'Stock Entry', 'Timesheet', 'ToDo', 'Delivery Note', 'Shipment']
 
     # Purchase Receipt: No tiene campo de fecha de solicitud
@@ -68,7 +68,7 @@ def get_data(driver=''):
 
         if get_list_doctypes != []:
             for doc in get_list_doctypes:
-                
+
                 if doctype == 'Asset Repair':
                     data.append({
                     'document_type': doctype,
@@ -101,7 +101,7 @@ def get_data(driver=''):
                     data.append({
                     'document_type': doctype,
                     'document': doc.get('name'),
-                    'requested_time': f'{doc.get("date")} 08:00:00'
+                    'requested_time': f'{doc.get("date")} 08:00:00' if doc.get("date") else f'{nowdate()} 08:00:00'
                     })
 
                 elif doctype == 'Delivery Note':
@@ -118,9 +118,11 @@ def get_data(driver=''):
                     'requested_time': f'{nowdate()} 08:00:00'
                     })
 
+    with open("datos.json", "w") as f:
+        f.write(json.dumps(data, indent=2, default=str))
     # shortear por requested_time
     for d in data:
-        d['requested_time'] = datetime.strptime(d['requested_time'], '%Y-%m-%d %H:%M:%S')
+        d['requested_time'] = datetime.strptime(d.get('requested_time'), '%Y-%m-%d %H:%M:%S')
 
     data = sorted(data, key = lambda i: i['requested_time'],reverse=False)
 
@@ -154,7 +156,7 @@ def add_zeros_to_date(string):
 
 @frappe.whitelist()
 def get_doctypes():
-    
+
     doctype = 'Errand Trip'
     filt = [['docstatus','=',1]]
     fieldnames = ['name']
