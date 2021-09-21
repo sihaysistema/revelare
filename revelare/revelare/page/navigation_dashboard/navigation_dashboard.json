@@ -4,7 +4,7 @@
  "docstatus": 0,
  "doctype": "Page",
  "idx": 0,
- "modified": "2021-09-09 16:12:42.200214",
+ "modified": "2021-09-21 09:47:50.433759",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "navigation-dashboard",
@@ -13,6 +13,12 @@
  "roles": [
   {
    "role": "Administrator"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Accounts Manager"
   }
  ],
  "script": null,
