@@ -80,13 +80,13 @@ frappe.ui.form.on('Journal Entry', {
       };
     });
   },
-  before_save: function (frm) {
-    let length_accounts = frm.doc.accounts.length || [];
-    if (length_accounts > 1) {
-      accounts = cur_frm.doc.accounts;
-      accounts.forEach(element => console.log(element.account_type));
-    }
-  }
+  // before_save: function (frm) {
+  //   let length_accounts = frm.doc.accounts.length || [];
+  //   if (length_accounts > 1) {
+  //     let accounts = cur_frm.doc.accounts;
+  //     accounts.forEach(element => console.log(element.account_type));
+  //   }
+  // }
 });
 
 // Funcionalidad sobre tabla hija en Journal Entry
