@@ -2,6 +2,9 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
+
+import json
+
 import frappe
 from frappe import _, _dict, scrub
 
@@ -11,15 +14,16 @@ def total_item_availability_estimates(filters):
     Returns a list of dictionaries that contain the sum of item availability
     estimate name, amounts and uom that fall within a date range
     """
+    # Esta función no la utilizamos
     result = frappe.db.sql(
         f"""
       SELECT ei.item_code, SUM(ei.amount) as amount, ei.amount_uom
       FROM `tabItem Availability Estimate` as iae
-      INNER JOIN `tabEstimated Item` as ei 
+      INNER JOIN `tabEstimated Item` as ei
       ON iae.name = ei.parent
-      WHERE iae.docstatus = 1 
+      WHERE iae.docstatus = 1
       AND ei.docstatus = 1
-      AND (iae.start_date AND iae.end_date 
+      AND (iae.start_date AND iae.end_date
            BETWEEN '{filters.from_date}' AND '{filters.to_date}')
       GROUP BY ei.item_code;
       """, as_dict=True
@@ -34,20 +38,19 @@ def total_item_availability_estimate_attributes(filters):
     """
     result = frappe.db.sql(
         f"""
-    SELECT name, estimation_name, estimation_uom, stock_uom, 
+    SELECT name, estimation_name, estimation_uom, stock_uom,
                  estimate.item_name, estimate.amount, estimate.amount_uom
-    FROM `tabItem` 
-    INNER JOIN 
+    FROM `tabItem`
+    INNER JOIN
       (SELECT ei.item_code, ei.item_name, SUM(ei.amount) as amount, ei.amount_uom
        FROM `tabItem Availability Estimate` as iae
-       INNER JOIN `tabEstimated Item` as ei 
+       INNER JOIN `tabEstimated Item` as ei
        ON iae.name = ei.parent
-       WHERE iae.docstatus = 1 
+       WHERE iae.docstatus = 1
        AND ei.docstatus = 1
-       AND (iae.start_date AND iae.end_date 
-            BETWEEN '{filters.from_date}' AND '{filters.to_date}')
+       AND (iae.start_date AND iae.end_date BETWEEN '{filters.from_date}' AND '{filters.to_date}')
        GROUP BY ei.item_code) as estimate
-    WHERE name=estimate.item_code;
+       WHERE name=estimate.item_code;
     """, as_dict=True
     )
     return result
@@ -55,19 +58,45 @@ def total_item_availability_estimate_attributes(filters):
 # Este query obtiene todos los items de las ordenes de venta, cuya FECHA DE ENTREGA coincide con las fechas de los filtros del reporte.
 # Se utiliza la fecha de entrea estipulada para hacer más precisa la estimación.
 def total_sales_items(filters):
+
+    doctype = filters.sales_from
+    type_of_report = filters.sales_from
+
+    date_doc = ''
+    if filters.sales_from == 'Sales Order':
+        date_doc = 'delivery_date'
+    elif filters.sales_from == 'Delivery Note':
+        date_doc = 'posting_date'
+    elif filters.sales_from == 'Sales Invoice':
+        date_doc = 'due_date'
+
+    filt = [['docstatus','=',1],[date_doc,'>=',filters.from_date],[date_doc,'<=',filters.to_date]]
+    fieldnames = ['name']
+    get_list_doctypes = frappe.db.get_list(doctype, filters=filt, fields=fieldnames) or []
+
+    data = []
+    for doc in get_list_doctypes:
+        doctype = f'{type_of_report} Item'
+        filt = [['parent','=',doc['name']]]
+        fieldnames = ['parent','item_code', 'delivery_date', 'SUM(stock_qty) AS stock_qty','stock_uom']
+        items = frappe.db.get_list(doctype, filters=filt, fields=fieldnames, group_by='item_code')
+        data = data + items
+
+    # Hemos dejado de utilizar este query y lo omologamos al codigo anterior
     result = frappe.db.sql(
         f"""
-    SELECT soi.item_code, soi.delivery_date, 
-	         SUM(soi.stock_qty) as stock_qty, soi.stock_uom 
+    SELECT soi.item_code, soi.delivery_date,
+	         SUM(soi.stock_qty) as stock_qty, soi.stock_uom
     FROM `tabSales Order Item` as soi
     WHERE soi.parent IN
-      (SELECT so.name FROM `tabSales Order` AS so 
-        WHERE so.docstatus=1 
+      (SELECT so.name FROM `tabSales Order` AS so
+        WHERE so.docstatus=1
         AND (delivery_date BETWEEN '{filters.from_date}' AND '{filters.to_date}'))
     GROUP BY soi.item_code;
     """, as_dict=True
     )
-    return result
+
+    return data
 
 
 def item_availability_estimates_range(filters):
@@ -79,7 +108,7 @@ def item_availability_estimates_range(filters):
     """
     result = frappe.db.sql(
         f"""
-        SELECT name FROM `tabItem Availability Estimate` 
+        SELECT name FROM `tabItem Availability Estimate`
         WHERE docstatus=1 AND start_date AND end_date BETWEEN '{filters.from_date}' AND '{filters.to_date}'
         """, as_dict=True
     )
@@ -98,20 +127,20 @@ def periods_estimated_items(filters, parent):
     """
     result = frappe.db.sql(
         f"""
-        SELECT item_code, amount, amount_uom FROM `tabEstimated Item` 
+        SELECT item_code, amount, amount_uom FROM `tabEstimated Item`
         WHERE docstatus=1 AND parent='{parent}';""", as_dict=True
     )
     return result
 
 
 def estimation_item_attributes(filters, estimation_item_code):
-    """Function that returns the estimation UOM, estimation name and stock_uom for use 
+    """Function that returns the estimation UOM, estimation name and stock_uom for use
     in the calculations and in the report.
 
     Args:
         filters (dict): filters.from_date, filters.to_date, filters.company, filters.show_sales, filters.periodicty
         estimation_item_code:  The estimation item name, to find and obtain data from it.
-    Returns: A list of dictionaries like this: 
+    Returns: A list of dictionaries like this:
     [{'name': 'CULTIVO-0069', 'estimation_name': 'Perejil', 'estimation_uom': 'Pound', 'stock_uom': 'Onza'}]
     """
     result = frappe.db.sql(
@@ -129,7 +158,7 @@ def total_bom_items_sold(filters, estimation_item_code):
 
 
 def find_bom_items(filters, estimation_item_code):
-    """Function that returns the item_code, parent, stock_qty, stock_uom used in BOM Item, to prepare conversion for use 
+    """Function that returns the item_code, parent, stock_qty, stock_uom used in BOM Item, to prepare conversion for use
     in the calculations, and to find BOM names that will help find Sales Items.
 
     Args:
@@ -138,8 +167,8 @@ def find_bom_items(filters, estimation_item_code):
     """
     result = frappe.db.sql(
         f"""
-        SELECT item_code, parent, stock_qty, stock_uom 
-        FROM `tabBOM Item` 
+        SELECT item_code, parent, stock_qty, stock_uom
+        FROM `tabBOM Item`
         WHERE item_code='{estimation_item_code}'
         AND docstatus=1;
         """, as_dict=True
@@ -156,8 +185,8 @@ def find_boms(filters, bom):
     """
     result = frappe.db.sql(
         f"""
-        SELECT item, quantity, uom, item_name 
-        FROM `tabBOM` 
+        SELECT item, quantity, uom, item_name
+        FROM `tabBOM`
         WHERE name='{bom}'
         AND docstatus=1;
         """, as_dict=True
@@ -197,7 +226,7 @@ def find_conversion_factor(from_uom, to_uom):
     """
 
     ## Validar si la dos UOM son iguales, no se hace conversion y se retorna 1,
-    #  Si no se encuentra la conversion se muestra un mensaje que diga, 
+    #  Si no se encuentra la conversion se muestra un mensaje que diga,
     # "Unit conversion factor for {from_uom} uom to {to_uom} uom not found, creating a new one, please make sure to specify the correct conversion factor."
     # Agregar un link, que cree un nuevo doctype de conversion, ya con los datos cargados que faltan.
 
@@ -224,8 +253,8 @@ def find_conversion_factor(from_uom, to_uom):
             'to_uom': to_uom,
             'value': 0
             }]
-        
-         
+
+
         # result = frappe.db.sql(
         #     f"""
         #     SELECT from_uom, to_uom, value FROM `tabUOM Conversion Factor` WHERE from_uom='{from_uom}' AND to_uom='{to_uom}';
@@ -246,7 +275,7 @@ def find_sales_orders(filters):
     """
     result = frappe.db.sql(
         f"""
-        SELECT name FROM `tabSales Order` 
+        SELECT name FROM `tabSales Order`
         WHERE docstatus=1 AND delivery_date BETWEEN '{filters.from_date}' AND '{filters.to_date}'
         """, as_dict=True
     )
@@ -265,7 +294,39 @@ def find_sales_order_items(filters, parent):
     """
     result = frappe.db.sql(
         f"""
-        SELECT item_code, delivery_date, stock_qty, stock_uom FROM `tabSales Order Item` 
+        SELECT item_code, delivery_date, stock_qty, stock_uom FROM `tabSales Order Item`
         WHERE docstatus=1 AND parent='{parent}';""", as_dict=True
     )
     return result
+
+def find_sales_order_draft(filters):
+    """Funtion that return name of each sales order in draft, to obtain the items.
+
+    Args:
+        filters ([type]): [description]
+    """
+    doctype = filters.sales_from
+    type_of_report = filters.sales_from
+
+    date_doc = ''
+    if filters.sales_from == 'Sales Order':
+        date_doc = 'delivery_date'
+    elif filters.sales_from == 'Delivery Note':
+        date_doc = 'posting_date'
+    elif filters.sales_from == 'Sales Invoice':
+        date_doc = 'due_date'
+
+    filt = [['docstatus','=',0],[date_doc,'>=',filters.from_date],[date_doc,'<=',filters.to_date],['auto_repeat','!=',' ']]
+    fieldnames = ['name']
+    get_list_doctypes = frappe.db.get_list(doctype, filters=filt, fields=fieldnames) or []
+
+    data = []
+
+    return get_list_doctypes
+
+
+# Para debug
+def dicToJSON(nomArchivo, diccionario):
+    with open(str(nomArchivo+'.json'), 'w') as f:
+        f.write(json.dumps(diccionario, indent=2, default=str))
+

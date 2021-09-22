@@ -23,12 +23,14 @@
   "departure_time",
   "employee",
   "errand_trip_stop_br",
+  "get_data",
   "errand_trip_stop",
   "calculate_arrival_time",
   "optimize_route",
   "section_break_15",
   "status",
-  "cb_more_info"
+  "cb_more_info",
+  "amended_from"
  ],
  "fields": [
   {
@@ -175,11 +177,25 @@
    "fieldname": "errand_trip_stop_br",
    "fieldtype": "Section Break",
    "label": "Errand Trip Stop"
+  },
+  {
+   "fieldname": "get_data",
+   "fieldtype": "Button",
+   "label": "Get Data"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Errand Trip",
+   "print_hide": 1,
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2021-08-13 11:10:14.755489",
+ "modified": "2021-08-17 15:05:01.480556",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip",
