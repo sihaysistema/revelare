@@ -4,9 +4,12 @@
 from __future__ import unicode_literals
 
 import json
+from datetime import datetime, timedelta
 
 import frappe
+import numpy as np
 from frappe import _, _dict, scrub
+from frappe.utils import cstr, flt, nowdate
 
 
 def total_item_availability_estimates(filters):
@@ -299,12 +302,15 @@ def find_sales_order_items(filters, parent):
     )
     return result
 
-def find_sales_order_draft(filters):
+
+def total_sales_items_draft(filters):
     """Funtion that return name of each sales order in draft, to obtain the items.
 
     Args:
         filters ([type]): [description]
     """
+    data = []
+    # Comentar desde aquí
     doctype = filters.sales_from
     type_of_report = filters.sales_from
 
@@ -317,12 +323,99 @@ def find_sales_order_draft(filters):
         date_doc = 'due_date'
 
     filt = [['docstatus','=',0],[date_doc,'>=',filters.from_date],[date_doc,'<=',filters.to_date],['auto_repeat','!=',' ']]
-    fieldnames = ['name']
+    fieldnames = ['name', date_doc]
     get_list_doctypes = frappe.db.get_list(doctype, filters=filt, fields=fieldnames) or []
 
-    data = []
+    for sales in get_list_doctypes:
+        doctype_i = f'{doctype} Item'
+        filt = [['parent','=',sales['name']]]
+        fieldnames = ['parent','item_code', 'delivery_date', 'SUM(stock_qty) AS stock_qty','stock_uom']
+        items = frappe.db.get_list(doctype_i, filters=filt, fields=fieldnames, group_by='item_code')
+        for i in items:
+            i[date_doc] = sales[date_doc]
 
-    return get_list_doctypes
+        data += items
+    # Comentar hasta aquí
+    data1 = future_documents(filters)
+
+    data += data1
+    return data
+
+def future_documents(filters):
+    """Obtiene las repeticiones futuras en el rando de fecha dado en los filtros
+
+    Args:
+        filters ([type]): [description]
+    """
+    # Verificando auto repeticiones
+    data_items = []
+    try:
+        date_now = datetime.strptime(nowdate(),"%Y-%m-%d").date()
+        end_date = datetime.strptime(filters.to_date,"%Y-%m-%d").date()
+        start_date = datetime.strptime(filters.from_date, "%Y-%m-%d").date()
+        sales_from = filters.sales_from
+
+        filt = [['status','=','Active'],['end_date','>=',filters.from_date], ['reference_doctype','=',sales_from]]
+        fieldnames = ['name', 'start_date', 'end_date','reference_document', 'reference_doctype']
+        l_doctypes = frappe.db.get_list('Auto Repeat', filters=filt, fields=fieldnames) or []
+
+        data = []
+        for doc in l_doctypes:
+            filt = {'parent':doc['name']}
+            fieldnames = ['parent','day']
+            items = frappe.db.get_values('Auto Repeat Day', filters=filt, fieldname=fieldnames, as_dict=1)
+            for i in items:
+                i['start_date'] = doc['start_date']
+                i['end_date'] = doc['end_date']
+                i['reference_document'] = doc['reference_document']
+                i['reference_doctype'] = doc['reference_doctype']
+            data.append({doc['name']:items})
+
+        for d in data:
+            for k,v in d.items():
+                for value in v:
+                    date_now = datetime.strptime(nowdate(),"%Y-%m-%d").date()
+
+                    doctype_i = f'{value["reference_doctype"]} Item'
+                    filt = [['parent','=',value['reference_document']]]
+                    fieldnames = ['parent','item_code', 'delivery_date', 'SUM(stock_qty) AS stock_qty','stock_uom']
+                    items = frappe.db.get_list(doctype_i, filters=filt, fields=fieldnames, group_by='item_code')
+
+                    start_date_to_use = None
+
+                    if value['start_date'] > start_date:
+                        start_date_to_use = value['start_date']
+                    else:
+                        start_date_to_use = start_date
+
+                    end_date_to_use = None
+                    if value['end_date'] <= end_date:
+                        end_date_to_use = value['end_date']
+                    else:
+                        end_date_to_use = end_date
+
+                    # Si la fecha de inicio de repeticion es menor a la fecha actual, empezamos a contar desde hoy
+                    if start_date_to_use < date_now:
+                        start_date_to_use =  date_now
+
+                    end_date1 = end_date + timedelta(1)
+
+                    start_date_to_use = datetime.strftime(start_date_to_use, "%Y-%m-%d")
+                    end_date1 = datetime.strftime(end_date1, "%Y-%m-%d")
+                    date_now = datetime.strftime(date_now, "%Y-%m-%d")
+
+
+                    days_of_week = {'Monday':'Mon', 'Tuesday':'Tue', 'Wednesday':'Wed', 'Thursday':'Thu', 'Friday':'Fri', 'Saturday':'Sat', 'Sunday':'Sun'}
+                    wmask = days_of_week[value['day']]
+                    count_days = np.busday_count(start_date_to_use, end_date1, weekmask=wmask)
+
+                    for i in range(0, count_days):
+                        data_items += items
+
+    except:
+        data_items = [{}]
+
+    return data_items or [{}]
 
 
 # Para debug
