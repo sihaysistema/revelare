@@ -311,18 +311,26 @@ def total_sales_items_draft(filters):
     """
     data = []
     # Comentar desde aquí
+
+    #Obtenemos el doctype de venta a buscar
     doctype = filters.sales_from
     type_of_report = filters.sales_from
 
+    # date_doc obtiene el campo de fecha sobre el que se validara el reporte
     date_doc = ''
     if filters.sales_from == 'Sales Order':
+        # Para Sales Order sera delivery_date
         date_doc = 'delivery_date'
     elif filters.sales_from == 'Delivery Note':
+        # Para Delivery Note sera posting_date
         date_doc = 'posting_date'
     elif filters.sales_from == 'Sales Invoice':
+        # Para Sales Invoice sera due_date
         date_doc = 'due_date'
 
+    # filtros: Docstatus=Draft(0), fecha_pedido entre filtros de fecha, autorepeat: Que no este vacío.
     filt = [['docstatus','=',0],[date_doc,'>=',filters.from_date],[date_doc,'<=',filters.to_date],['auto_repeat','!=',' ']]
+    # Campos: name, fecha_pedido
     fieldnames = ['name', date_doc]
     get_list_doctypes = frappe.db.get_list(doctype, filters=filt, fields=fieldnames) or []
 
