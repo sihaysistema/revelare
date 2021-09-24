@@ -4,18 +4,26 @@
     <div class="project-nav">
       <div class="card-action card-tabs mr-auto">
         <ul class="nav nav-tabs style-2">
+          <!-- Renderiza los Errand Trips -->
           <li class="nav-item">
-            <select class="custom-select custom-select-lg mt-1">
-              <option selected>{{ __("Errand Trip") }}</option>
-              <option value="1">One</option>
-              <option value="2">Two</option>
-              <option value="3">Three</option>
+            <select
+              class="custom-select custom-select-lg mt-1"
+              @change="selectedErrandTrip($event)"
+            >
+              <option selected></option>
+              <option
+                v-for="errandTrip in errandTrips"
+                :key="errandTrip.name"
+                :value="errandTrip.name"
+              >
+                {{ errandTrip.name }}
+              </option>
             </select>
           </li>
-
+          <!-- Renderiza los conductores -->
           <li class="nav-item mr-4">
             <select class="custom-select custom-select-lg mt-1">
-              <option selected>{{ __("Driver") }}</option>
+              <option selected></option>
               <option value="1">Lewis Hamilton</option>
               <option value="2">Pablito</option>
               <option value="3">Paco</option>
@@ -112,6 +120,7 @@ export default {
   },
   data() {
     return {
+      errandTrips: [],
       stops: [],
       nowDateTime: frappe.datetime.now_datetime(),
       tripsToDo: [], // contendra todos los viajes no completado
@@ -120,15 +129,33 @@ export default {
   },
   mounted() {
     // this.getData();
+    this.getErrandTrips();
     // console.log(this.stops);
   },
   methods: {
-    getData() {
+    getErrandTrips() {
       //   this.stops = dummy_data;
       let _this = this;
 
       frappe.call({
-        method: "shs_dashboard.api.sales_order_qty",
+        method: "revelare.api.get_errand_trips",
+        async: true,
+        callback: function (data) {
+          _this.errandTrips = data.message;
+
+          console.log(data.message);
+        },
+      });
+    },
+    selectedErrandTrip(event) {
+      console.log(event.target.value);
+      let _this = this;
+
+      frappe.call({
+        method: "revelare.api.get_errand_trip_stops",
+        args: {
+          name: event.target.value,
+        },
         async: true,
         callback: function (data) {
           _this.stops = data.message;
@@ -146,16 +173,28 @@ export default {
   },
   computed: {
     numberOfActives() {
-      return this.stops.filter((trip) => trip.status === "active").length;
+      let actives = this.stops.filter(
+        (trip) => trip.status === "Active"
+      ).length;
+      return actives;
     },
     numberOfOverdues() {
-      return this.stops.filter((trip) => trip.status === "overdue").length;
+      let overdue = this.stops.filter(
+        (trip) => trip.status === "Overdue"
+      ).length;
+      return overdue;
     },
     numberOfPending() {
-      return this.stops.filter((trip) => trip.status === "pending").length;
+      let pending = this.stops.filter(
+        (trip) => trip.status === "Pending"
+      ).length;
+      return pending;
     },
     numberOfCompleted() {
-      return this.stops.filter((trip) => trip.status === "completed").length;
+      let completed = this.stops.filter(
+        (trip) => trip.status === "Completed"
+      ).length;
+      return completed;
     },
   },
 };

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import frappe
-from frappe import _
+
 import json
 
-from utils_revelare.clean_data import preparar_data_tabla
-from utils_revelare.creator import crear_dn_si
-from utils_revelare.creator import validar_configuracion
+import frappe
+from frappe import _
+from revelare.utils_revelare.clean_data import preparar_data_tabla
+from revelare.utils_revelare.creator import crear_dn_si, validar_configuracion
 
 
 @frappe.whitelist()
@@ -66,9 +66,33 @@ def obtener_series():
 
 @frappe.whitelist()
 def get_errand_trips():
+    """
+    Obtains active errandTrips
+
+    Returns:
+        list: list of dictionaries
+    """
     return frappe.db.get_list('Errand Trip',
-        filters={
-            'status': 'Open'
-        },
+        filters={'active': 1, 'status': 'active', 'docstatus': 0},
         fields=['name', 'driver']
-    )
+    ) or []
+
+
+@frappe.whitelist()
+def get_errand_trip_stops(name=''):
+    """
+    gets the stops of X errand trip
+
+    Args:
+        name (str, optional): Errand Trip `name`. Defaults to ''.
+
+    Returns:
+        list: list of dictionaries
+    """
+    field_child_tbl = ['idx', 'customer', 'requested_time', 'actual_arrival',
+                       'document', 'document_type', 'contact', 'address', 'lat', 'lng',
+                       'is_it_completed', 'details', 'status']
+
+    return frappe.db.get_list('Errand Trip Stop',
+        filters={'parent': name}, fields=field_child_tbl
+    ) or []
