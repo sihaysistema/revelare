@@ -42,7 +42,7 @@ def procesar_data(data):
     if conf_revelare[0] == 2:
         return '''Existe mas de una configuracion para revelare, porfavor verifique que exista
         solo una <a href='#Form/Configuration Revelare/<b>arreglar</b></a>'''
-    
+
     if conf_revelare[0] == 3:
         return '''No existe configuracion valida para revelare, porfavor cree o valide
         una nueva configuracion <a href='#Form/Configuration Revelare/<b>arreglar</b></a>'''
@@ -62,3 +62,13 @@ def obtener_series():
     #out = naming_series[0] or (naming_series[1] if len(naming_series) > 1 else None)
 
     return mis_series
+
+
+@frappe.whitelist()
+def get_errand_trips():
+    return frappe.db.get_list('Errand Trip',
+        filters={
+            'status': 'Open'
+        },
+        fields=['name', 'driver']
+    )
