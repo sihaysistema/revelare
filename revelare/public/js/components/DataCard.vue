@@ -10,11 +10,11 @@
             </p>
             <h5 class="title font-w600 mb-2">
               <a href="post-details.html" class="text-black"></a>
-              {{ tripData.docname }}
+              {{ tripData.document }}
             </h5>
             <h5 class="title font-w600 mb-2">
               <a href="post-details.html" class="text-black"></a>
-              {{ tripData.doctype }}
+              {{ tripData.document_type }}
             </h5>
             <span class="font-weight-bolder">
               {{ __("Para") }}: {{ tripData.customer }}</span
@@ -80,22 +80,21 @@
                 >{{ __("Hora completado") }}:
               </span>
               <p class="mb-0 pt-1 font-w500 text-black">
-                {{ tripData.completed_on }}
+                {{ tripData.actual_arrival }}
               </p>
             </div>
           </div>
         </div>
         <!-- DESCRIPCIONES -->
         <p class="mb-4">
-          It is a long established fact that a reader will be distracted by the
-          readable content of a page when looking at its layout.
+          {{ tripData.details }}
         </p>
 
         <div class="mr-auto">
           <p class="mb-2 text-black">{{ __("Detalles de cliente") }}</p>
           <p class="mb-2 text-black">
             <i class="fa fa-user" aria-hidden="true"></i> {{ __("Contacto") }}:
-            Juan Perez
+            {{ tripData.contact }}
           </p>
           <p class="mb-2 text-black">
             <i class="fa fa-phone" aria-hidden="true"></i> {{ __("Teléfono") }}:
@@ -103,8 +102,12 @@
           </p>
           <p class="mb-2 text-black">
             <i class="fa fa-map-marker" aria-hidden="true"></i>
-            {{ __("Dirección") }}: It is a long established fact that a reader
-            will be distracted by the readable content of
+            <!-- {{ __("Dirección") }}: {{ tripData.address }}
+             -->
+            Address Line1 : km 15.5 Carretera a El Salvador, Edificio Plaza
+            Concepción, Condado Concepción, Cdad. de Guatemala 01051 Address
+            Line2: Condado Concepcion Municipio: Santa Catarina Pinula
+            Departamento: Guatemala Pais: Guatemala Codigo Postal: 01051
           </p>
         </div>
       </div>
@@ -225,21 +228,21 @@ export default {
   methods: {
     openInWaze() {
       // Para abrir en movil
-      let url = `https://waze.com/ul?q=${this.tripData.latitude},${this.tripData.longitude}&navigate=yes&zoom=17`;
+      let url = `https://waze.com/ul?q=${this.tripData.lat},${this.tripData.lng}&navigate=yes&zoom=17`;
       if (this.detectMob()) {
         window.open(url).focus();
       } else {
-        url = `https://www.waze.com/ul?ll=${this.tripData.latitude}%2C${this.tripData.longitude}&navigate=yes&zoom=17`;
+        url = `https://www.waze.com/ul?ll=${this.tripData.lat}%2C${this.tripData.lng}&navigate=yes&zoom=17`;
         window.open(url, "_blank").focus();
       }
     },
     openInGoogleMaps() {
       //   let url = `maps://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.latitude},${this.tripData.longitude}`;
-      let url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.latitude},${this.tripData.longitude}`;
+      let url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.lat},${this.tripData.lng}`;
       if (this.detectMob()) {
         window.open(url).focus();
       } else {
-        url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.latitude},${this.tripData.longitude}`;
+        url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.lat},${this.tripData.lng}`;
         window.open(url, "_blank").focus();
       }
     },
@@ -261,13 +264,13 @@ export default {
   },
   computed: {
     cardStyle: function () {
-      if (this.tripData.status === "active") {
+      if (this.tripData.status === "Active") {
         return "card shs-bg-active";
-      } else if (this.tripData.status === "overdue") {
+      } else if (this.tripData.status === "Overdue") {
         return "card shs-bg-danger";
-      } else if (this.tripData.status === "pending") {
+      } else if (this.tripData.status === "Pending") {
         return "card shs-bg-warning";
-      } else if (this.tripData.status === "completed") {
+      } else if (this.tripData.status === "Completed") {
         return "card shs-bg-completed";
       } else {
         return "card";
