@@ -392,18 +392,21 @@ def process_data(estimated_materials_with_attributes, material_and_sales_items, 
         col_d = _("UOM")
         col_e = _("Sold")
         col_f = _("Available")
+        reserved = _("Reserved")
 
         row_sub_header = {
             "A": col_a,
             "B": col_b,
             "C": col_c,
             "D": col_d,
+            "repeat":reserved,
             "E": col_e,
             "F": col_f,
             "G": ""
         }
 
         explanation_f = _("Possible - Total Sold")
+
 
         row_explanation = {
             "A": "",

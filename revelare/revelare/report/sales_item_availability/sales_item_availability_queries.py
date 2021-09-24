@@ -310,6 +310,7 @@ def total_sales_items_draft(filters):
         filters ([type]): [description]
     """
     data = []
+
     # Comentar desde aquí
 
     #Obtenemos el doctype de venta a buscar
@@ -343,6 +344,7 @@ def total_sales_items_draft(filters):
             i[date_doc] = sales[date_doc]
 
         data += items
+
     # Comentar hasta aquí
     data1 = future_documents(filters)
 
