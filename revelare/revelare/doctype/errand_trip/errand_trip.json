@@ -11,6 +11,7 @@
   "company",
   "column_break_2",
   "email_notification_sent",
+  "active",
   "section_break_3",
   "driver",
   "driver_name",
@@ -145,6 +146,7 @@
    "description": "Use Google Maps Direction API to calculate estimated arrival times",
    "fieldname": "calculate_arrival_time",
    "fieldtype": "Button",
+   "hidden": 1,
    "label": "Calculate Estimated Arrival Times"
   },
   {
@@ -152,6 +154,7 @@
    "description": "Use Google Maps Direction API to optimize route",
    "fieldname": "optimize_route",
    "fieldtype": "Button",
+   "hidden": 1,
    "label": "Optimize Route"
   },
   {
@@ -162,12 +165,12 @@
   {
    "fieldname": "status",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
    "no_copy": 1,
-   "options": "Draft\nScheduled\nIn Transit\nCompleted\nCancelled",
-   "print_hide": 1,
-   "read_only": 1
+   "options": "Active\nErrand Trip Completed\nCancelled",
+   "search_index": 1
   },
   {
    "fieldname": "cb_more_info",
@@ -191,11 +194,17 @@
    "options": "Errand Trip",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "active",
+   "fieldtype": "Check",
+   "label": "Active?"
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2021-08-17 15:05:01.480556",
+ "modified": "2021-09-24 11:45:06.671369",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip",
@@ -227,6 +236,19 @@
    "read": 1,
    "report": 1,
    "role": "Stock User",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Administrator",
    "share": 1,
    "submit": 1,
    "write": 1
