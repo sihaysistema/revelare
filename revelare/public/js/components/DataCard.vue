@@ -16,7 +16,9 @@
               <a href="post-details.html" class="text-black"></a>
               {{ tripData.doctype }}
             </h5>
-            <span> {{ __("Para") }} {{ tripData.customer }}</span>
+            <span class="font-weight-bolder">
+              {{ __("Para") }}: {{ tripData.customer }}</span
+            >
           </div>
           <h3 class="badge badge-success d-sm-inline-block d-none">
             {{ __("ACTIVO") }}
@@ -44,7 +46,9 @@
               </svg>
             </div>
             <div>
-              <span>{{ __("Para entregar el") }}:</span>
+              <span class="font-weight-bolder"
+                >{{ __("Hora solicitada") }}:</span
+              >
               <p class="mb-0 pt-1 font-w500 text-black">
                 {{ tripData.requested_time }}
               </p>
@@ -72,7 +76,9 @@
               </svg>
             </div>
             <div>
-              <span>{{ __("Entregado el") }}: </span>
+              <span class="font-weight-bolder"
+                >{{ __("Hora completado") }}:
+              </span>
               <p class="mb-0 pt-1 font-w500 text-black">
                 {{ tripData.completed_on }}
               </p>

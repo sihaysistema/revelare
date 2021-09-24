@@ -1,8 +1,27 @@
 <template>
   <div class="shs-container-fluid">
+    <!-- Botones header -->
     <div class="project-nav">
       <div class="card-action card-tabs mr-auto">
         <ul class="nav nav-tabs style-2">
+          <li class="nav-item">
+            <select class="custom-select custom-select-lg mt-1">
+              <option selected>{{ __("Errand Trip") }}</option>
+              <option value="1">One</option>
+              <option value="2">Two</option>
+              <option value="3">Three</option>
+            </select>
+          </li>
+
+          <li class="nav-item mr-4">
+            <select class="custom-select custom-select-lg mt-1">
+              <option selected>{{ __("Driver") }}</option>
+              <option value="1">Lewis Hamilton</option>
+              <option value="2">Pablito</option>
+              <option value="3">Paco</option>
+            </select>
+          </li>
+
           <li class="nav-item">
             <a
               type="button"
@@ -16,6 +35,7 @@
               >
             </a>
           </li>
+
           <li class="nav-item">
             <a
               type="button"
@@ -29,6 +49,7 @@
               }}</span>
             </a>
           </li>
+
           <li class="nav-item">
             <a
               type="button"
@@ -42,6 +63,7 @@
               }}</span>
             </a>
           </li>
+
           <li class="nav-item">
             <a
               type="button"
@@ -55,6 +77,7 @@
               }}</span>
             </a>
           </li>
+
           <li class="nav-item">
             <a
               type="button"
@@ -70,7 +93,8 @@
         </ul>
       </div>
     </div>
-    <pre>{{ nowDateTime }} </pre>
+
+    <!-- Render dinamico de cards -->
     <div class="row">
       <DataCard v-for="stop in stops" :key="stop.idx" :tripData="stop" />
     </div>
@@ -95,12 +119,23 @@ export default {
     };
   },
   mounted() {
-    this.getData();
-    console.log(this.stops);
+    // this.getData();
+    // console.log(this.stops);
   },
   methods: {
     getData() {
-      this.stops = dummy_data;
+      //   this.stops = dummy_data;
+      let _this = this;
+
+      frappe.call({
+        method: "shs_dashboard.api.sales_order_qty",
+        async: true,
+        callback: function (data) {
+          _this.stops = data.message;
+
+          console.log(data.message);
+        },
+      });
     },
     autoUpdateData() {
       // Aqui se agregara un timer
@@ -126,5 +161,14 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+.custom-select {
+  width: auto !important;
+  border: none !important;
+}
+
+.project-nav {
+  display: inline-block;
+  vertical-align: middle;
+}
 </style>
