@@ -90,8 +90,8 @@ def get_errand_trip_stops(name=''):
         list: list of dictionaries
     """
     field_child_tbl = ['idx', 'customer', 'requested_time', 'actual_arrival',
-                       'document', 'document_type', 'contact', 'address', 'lat', 'lng',
-                       'is_it_completed', 'details', 'status']
+                       'document', 'document_type', 'contact_details', 'address_details',
+                       'lat', 'lng', 'is_it_completed', 'details', 'status']
 
     return frappe.db.get_list('Errand Trip Stop',
         filters={'parent': name}, fields=field_child_tbl

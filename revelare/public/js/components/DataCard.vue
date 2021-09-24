@@ -94,20 +94,11 @@
           <p class="mb-2 text-black">{{ __("Detalles de cliente") }}</p>
           <p class="mb-2 text-black">
             <i class="fa fa-user" aria-hidden="true"></i> {{ __("Contacto") }}:
-            {{ tripData.contact }}
-          </p>
-          <p class="mb-2 text-black">
-            <i class="fa fa-phone" aria-hidden="true"></i> {{ __("Teléfono") }}:
-            33633893
+            {{ tripData.contact_details }}
           </p>
           <p class="mb-2 text-black">
             <i class="fa fa-map-marker" aria-hidden="true"></i>
-            <!-- {{ __("Dirección") }}: {{ tripData.address }}
-             -->
-            Address Line1 : km 15.5 Carretera a El Salvador, Edificio Plaza
-            Concepción, Condado Concepción, Cdad. de Guatemala 01051 Address
-            Line2: Condado Concepcion Municipio: Santa Catarina Pinula
-            Departamento: Guatemala Pais: Guatemala Codigo Postal: 01051
+            {{ __("Dirección") }}: {{ tripData.address_details }}
           </p>
         </div>
       </div>
@@ -123,7 +114,11 @@
         </div>
 
         <div class="text-center">
-          <button type="button" class="btn shs-btn-success btn-lg">
+          <button
+            type="button"
+            class="btn shs-btn-success btn-lg"
+            @click="complete"
+          >
             {{ __("Completar") }}
           </button>
         </div>
@@ -224,7 +219,11 @@
 export default {
   name: "DataCard",
   props: ["tripData"],
-  data() {},
+  data() {
+    return {
+      completedOn: "",
+    };
+  },
   methods: {
     openInWaze() {
       // Para abrir en movil
@@ -261,6 +260,21 @@ export default {
         return navigator.userAgent.match(toMatchItem);
       });
     },
+    complete() {
+      //   console.log("Completado en: ", frappe.datetime.now_datetime());
+      frappe.confirm(
+        "Would you like to mark as completed?",
+        () => {
+          // action to perform if Yes is selected
+          console.log("Completado en: ", frappe.datetime.now_datetime());
+        },
+        () => {
+          // action to perform if No is selected
+          console.log("Nel");
+        }
+      );
+    },
+    undo() {},
   },
   computed: {
     cardStyle: function () {
