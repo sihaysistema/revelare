@@ -153,9 +153,10 @@ frappe.listview_settings['Item Availability Estimate'] = {
     add_fields: ["title", "start_date", "end_date"],
     get_indicator: function (doc) {
         var status_color = {
-            "Draft": "red", // Draft
+            "Draft": "orange", // Draft
             "Submitted": "green", // Submitted
-            "Cancelled":"blue" // Cancelled
+            "Cancelled":"blue", // Cancelled,
+
         };
         return [__(doc.status), status_color[doc.status], "status,=," + doc.status];
     },
