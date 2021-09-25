@@ -267,6 +267,28 @@ export default {
         () => {
           // action to perform if Yes is selected
           console.log("Completado en: ", frappe.datetime.now_datetime());
+
+          frappe.call({
+            method: "revelare.api.complete_trip",
+            args: {
+              parent: this.tripData.parent,
+              name: this.tripData.name,
+            },
+            async: true,
+            callback: function (data) {
+              console.log(data.message);
+              //   frappe.show_alert("green", __(data.message), 5000);
+
+              frappe.show_alert(
+                {
+                  indicator: "green",
+                  message: __(data.message),
+                },
+                5
+              );
+              frappe.utils.play_sound("submit");
+            },
+          });
         },
         () => {
           // action to perform if No is selected
