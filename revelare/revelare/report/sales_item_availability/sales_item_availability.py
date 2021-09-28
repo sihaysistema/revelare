@@ -513,7 +513,7 @@ def process_data(estimated_materials_with_attributes, material_and_sales_items, 
 
                     # Alertamos al usuario si el factor de conversion no existe para el ms_item
                     if not conversion_factor:
-                        frappe.msgprint("A UOM conversion factor is required to convert " + str(available_material['amount_uom']) + " to " + str(ms_item['stock_uom']))
+                        frappe.msgprint("A UOM conversion factor is required to convert " + str(available_material['amount_uom']) + " to " + str(ms_item['stock_uom'])+ "; Item:"+str(ms_item['item_code']))
 
                     elif not conversion_factor_reversed:
                         frappe.msgprint("A UOM conversion factor is required to convert " + str(ms_item['stock_uom']) + " to " + str(available_material['amount_uom']))
