@@ -423,9 +423,9 @@ def future_documents(filters):
                         data_items += items
 
     except:
-        data_items = [{}]
+        data_items = []
 
-    return data_items or [{}]
+    return data_items or []
 
 
 # Para debug

@@ -18,4 +18,3 @@ class ItemAvailabilityEstimate(Document):
     def validate(self):
         self.status = 'Draft'
         frappe.db.set_value(self.doctype, self.name, "status", self.status)
-

@@ -209,38 +209,42 @@ def get_data(filters, is_report=True):
     # Sales Order query, return all sales order names that fit within
     # the dates in report filter
 
-    try:
-        # ES: Este es un query de ordenes de venta donde retornamos todos los nombres de las ordenes de venta que cumplen con los filtros de las fechas en el reporte.
-        #     Segun su FECHA DE ENTREGA!! no estamos usando la fecha de posteo.
-        matching_sales_order_items = total_sales_items(filters)
+    # try:
 
-        # ES: Estes es un query de ventas donde retornamos los nombre de las documentos de ventas que cumplen con los filtros del reporte con status darft
-        matching_SO_items_draft = total_sales_items_draft(filters)
+    # ES: Este es un query de ordenes de venta donde retornamos todos los nombres de las ordenes de venta que cumplen con los filtros de las fechas en el reporte.
+    #     Segun su FECHA DE ENTREGA!! no estamos usando la fecha de posteo.
+    matching_sales_order_items = total_sales_items(filters)
 
-        # Sort material and sales items list by order of sales item code
-        # Should print the code column in order like: -001, -002, -003, ...
+    # ES: Estes es un query de ventas donde retornamos los nombre de las documentos de ventas que cumplen con los filtros del reporte con status darft
+    matching_SO_items_draft = total_sales_items_draft(filters)
 
-        # ES: Reordenamos los materiales y los items de venta, por orden de "sales_item_code".
-        #     Debe imprimir la columna del codigo en orden ascendente: -001, -002, -003, ...
-        material_and_sales_items = sorted(material_and_sales_items, key=lambda x: x['sales_item_code'])
+    # Sort material and sales items list by order of sales item code
+    # Should print the code column in order like: -001, -002, -003, ...
 
-        # Get the sales order quantities for items
-        # Obtenemos las cantidades de los items en las ordenes de venta
-        sales_item_codes = [item['item_code'] for item in matching_sales_order_items]
+    # ES: Reordenamos los materiales y los items de venta, por orden de "sales_item_code".
+    #     Debe imprimir la columna del codigo en orden ascendente: -001, -002, -003, ...
+    material_and_sales_items = sorted(material_and_sales_items, key=lambda x: x['sales_item_code'])
 
-        # Obtenemos las cantidades de los items de venta en borrador
-        items_SO_draft = [item['item_code'] for item in matching_SO_items_draft]
+    # Get the sales order quantities for items
+    # Obtenemos las cantidades de los items en las ordenes de venta
+    sales_item_codes = [item['item_code'] for item in matching_sales_order_items]
 
-        #----- New Funtion----
-        data = process_data(estimated_materials_with_attributes, material_and_sales_items,
-                            sales_item_codes, matching_sales_order_items, items_SO_draft, matching_SO_items_draft)
+    # Obtenemos las cantidades de los items de venta en borrador
+    items_SO_draft = [item['item_code'] for item in matching_SO_items_draft]
 
-        # ----- PROCESO TERMINA -----
-        # ----- PROCESS DATA END -----
-        if is_report == True and data != None:
-            data = add_styles(data)
-    except:
-        data = [{}]
+    #----- New Funtion----
+    data = process_data(estimated_materials_with_attributes, material_and_sales_items,
+                        sales_item_codes, matching_sales_order_items, items_SO_draft, matching_SO_items_draft)
+
+    # ----- PROCESO TERMINA -----
+    # ----- PROCESS DATA END -----
+    if is_report == True and data != None:
+        data = add_styles(data)
+    # except:
+        # with open("log.txt",'a',encoding = 'utf-8') as f:
+        #     f.write(f"Algo paso aquí")
+        #     f.close()
+        # data = [{}]
     return data
 
 def make_list_of_unique_codes(estimated_material_list):
@@ -513,7 +517,7 @@ def process_data(estimated_materials_with_attributes, material_and_sales_items, 
 
                     # Alertamos al usuario si el factor de conversion no existe para el ms_item
                     if not conversion_factor:
-                        frappe.msgprint("A UOM conversion factor is required to convert " + str(available_material['amount_uom']) + " to " + str(ms_item['stock_uom']))
+                        frappe.msgprint("A UOM conversion factor is required to convert " + str(available_material['amount_uom']) + " to " + str(ms_item['stock_uom'])+ "; Item:"+str(ms_item['item_code']))
 
                     elif not conversion_factor_reversed:
                         frappe.msgprint("A UOM conversion factor is required to convert " + str(ms_item['stock_uom']) + " to " + str(available_material['amount_uom']))
