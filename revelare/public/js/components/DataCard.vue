@@ -10,11 +10,11 @@
             </p>
             <h5 class="title font-w600 mb-2">
               <a href="post-details.html" class="text-black"></a>
-              {{ tripData.docname }}
+              {{ tripData.document }}
             </h5>
             <h5 class="title font-w600 mb-2">
               <a href="post-details.html" class="text-black"></a>
-              {{ tripData.doctype }}
+              {{ tripData.document_type }}
             </h5>
             <span class="font-weight-bolder">
               {{ __("Para") }}: {{ tripData.customer }}</span
@@ -80,31 +80,25 @@
                 >{{ __("Hora completado") }}:
               </span>
               <p class="mb-0 pt-1 font-w500 text-black">
-                {{ tripData.completed_on }}
+                {{ tripData.actual_arrival }}
               </p>
             </div>
           </div>
         </div>
         <!-- DESCRIPCIONES -->
         <p class="mb-4">
-          It is a long established fact that a reader will be distracted by the
-          readable content of a page when looking at its layout.
+          {{ tripData.details }}
         </p>
 
         <div class="mr-auto">
           <p class="mb-2 text-black">{{ __("Detalles de cliente") }}</p>
           <p class="mb-2 text-black">
             <i class="fa fa-user" aria-hidden="true"></i> {{ __("Contacto") }}:
-            Juan Perez
-          </p>
-          <p class="mb-2 text-black">
-            <i class="fa fa-phone" aria-hidden="true"></i> {{ __("Teléfono") }}:
-            33633893
+            {{ tripData.contact_details }}
           </p>
           <p class="mb-2 text-black">
             <i class="fa fa-map-marker" aria-hidden="true"></i>
-            {{ __("Dirección") }}: It is a long established fact that a reader
-            will be distracted by the readable content of
+            {{ __("Dirección") }}: {{ tripData.address_details }}
           </p>
         </div>
       </div>
@@ -120,7 +114,11 @@
         </div>
 
         <div class="text-center">
-          <button type="button" class="btn shs-btn-success btn-lg">
+          <button
+            type="button"
+            class="btn shs-btn-success btn-lg"
+            @click="complete"
+          >
             {{ __("Completar") }}
           </button>
         </div>
@@ -221,25 +219,29 @@
 export default {
   name: "DataCard",
   props: ["tripData"],
-  data() {},
+  data() {
+    return {
+      completedOn: "",
+    };
+  },
   methods: {
     openInWaze() {
       // Para abrir en movil
-      let url = `https://waze.com/ul?q=${this.tripData.latitude},${this.tripData.longitude}&navigate=yes&zoom=17`;
+      let url = `https://waze.com/ul?q=${this.tripData.lat},${this.tripData.lng}&navigate=yes&zoom=17`;
       if (this.detectMob()) {
         window.open(url).focus();
       } else {
-        url = `https://www.waze.com/ul?ll=${this.tripData.latitude}%2C${this.tripData.longitude}&navigate=yes&zoom=17`;
+        url = `https://www.waze.com/ul?ll=${this.tripData.lat}%2C${this.tripData.lng}&navigate=yes&zoom=17`;
         window.open(url, "_blank").focus();
       }
     },
     openInGoogleMaps() {
       //   let url = `maps://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.latitude},${this.tripData.longitude}`;
-      let url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.latitude},${this.tripData.longitude}`;
+      let url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.lat},${this.tripData.lng}`;
       if (this.detectMob()) {
         window.open(url).focus();
       } else {
-        url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.latitude},${this.tripData.longitude}`;
+        url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.lat},${this.tripData.lng}`;
         window.open(url, "_blank").focus();
       }
     },
@@ -258,16 +260,53 @@ export default {
         return navigator.userAgent.match(toMatchItem);
       });
     },
+    complete() {
+      //   console.log("Completado en: ", frappe.datetime.now_datetime());
+      frappe.confirm(
+        "Would you like to mark as completed?",
+        () => {
+          // action to perform if Yes is selected
+          console.log("Completado en: ", frappe.datetime.now_datetime());
+
+          frappe.call({
+            method: "revelare.api.complete_trip",
+            args: {
+              parent: this.tripData.parent,
+              name: this.tripData.name,
+            },
+            async: true,
+            callback: function (data) {
+              console.log(data.message);
+              //   frappe.show_alert("green", __(data.message), 5000);
+
+              frappe.show_alert(
+                {
+                  indicator: "green",
+                  message: __(data.message),
+                },
+                5
+              );
+              frappe.utils.play_sound("submit");
+            },
+          });
+        },
+        () => {
+          // action to perform if No is selected
+          console.log("Nel");
+        }
+      );
+    },
+    undo() {},
   },
   computed: {
     cardStyle: function () {
-      if (this.tripData.status === "active") {
+      if (this.tripData.status === "Active") {
         return "card shs-bg-active";
-      } else if (this.tripData.status === "overdue") {
+      } else if (this.tripData.status === "Overdue") {
         return "card shs-bg-danger";
-      } else if (this.tripData.status === "pending") {
+      } else if (this.tripData.status === "Pending") {
         return "card shs-bg-warning";
-      } else if (this.tripData.status === "completed") {
+      } else if (this.tripData.status === "Completed") {
         return "card shs-bg-completed";
       } else {
         return "card";

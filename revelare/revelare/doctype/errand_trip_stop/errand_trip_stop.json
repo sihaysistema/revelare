@@ -5,33 +5,27 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "status",
   "document_type",
+  "is_it_completed",
   "column_break_2",
   "document",
   "section_break_4",
   "customer",
   "address",
-  "is_it_completed",
-  "column_break_6",
-  "customer_address",
-  "visited",
-  "order_information_section",
-  "cb_order",
-  "grand_total",
+  "colbr1_column",
+  "address_details",
   "section_break_7",
   "contact",
-  "email_sent_to",
   "column_break_7",
-  "customer_contact",
-  "section_break_9",
+  "contact_details",
+  "section_break_15",
   "lat",
-  "distance",
   "requested_time",
   "estimated_arrival",
-  "actual_arrival",
-  "column_break_19",
-  "uom",
+  "column_break_20",
   "lng",
+  "actual_arrival",
   "more_information_section",
   "details"
  ],
@@ -51,41 +45,6 @@
    "print_hide": 1
   },
   {
-   "fieldname": "column_break_6",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "customer_address",
-   "fieldtype": "Small Text",
-   "label": "Customer Address",
-   "read_only": 1
-  },
-  {
-   "allow_on_submit": 1,
-   "default": "0",
-   "depends_on": "eval:doc.docstatus==1",
-   "fieldname": "visited",
-   "fieldtype": "Check",
-   "label": "Visited",
-   "no_copy": 1,
-   "print_hide": 1
-  },
-  {
-   "fieldname": "order_information_section",
-   "fieldtype": "Section Break",
-   "label": "Order Information"
-  },
-  {
-   "fieldname": "cb_order",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "grand_total",
-   "fieldtype": "Currency",
-   "label": "Grand Total",
-   "read_only": 1
-  },
-  {
    "fieldname": "section_break_7",
    "fieldtype": "Section Break",
    "label": "Contact Information"
@@ -98,32 +57,8 @@
    "print_hide": 1
   },
   {
-   "fieldname": "email_sent_to",
-   "fieldtype": "Data",
-   "label": "Email sent to",
-   "read_only": 1
-  },
-  {
    "fieldname": "column_break_7",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "customer_contact",
-   "fieldtype": "Small Text",
-   "label": "Customer Contact",
-   "read_only": 1
-  },
-  {
-   "fieldname": "section_break_9",
-   "fieldtype": "Section Break",
-   "label": "Dispatch Information"
-  },
-  {
-   "fieldname": "distance",
-   "fieldtype": "Float",
-   "label": "Distance",
-   "precision": "2",
-   "read_only": 1
   },
   {
    "fieldname": "estimated_arrival",
@@ -135,18 +70,6 @@
    "fieldname": "lat",
    "fieldtype": "Float",
    "label": "Latitude"
-  },
-  {
-   "fieldname": "column_break_19",
-   "fieldtype": "Column Break"
-  },
-  {
-   "depends_on": "eval:doc.distance",
-   "fieldname": "uom",
-   "fieldtype": "Link",
-   "label": "UOM",
-   "options": "UOM",
-   "read_only": 1
   },
   {
    "fieldname": "lng",
@@ -202,12 +125,40 @@
    "fieldname": "is_it_completed",
    "fieldtype": "Check",
    "label": "Is it completed?"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nOverdue\nPending\nCompleted"
+  },
+  {
+   "fieldname": "colbr1_column",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "address_details",
+   "fieldtype": "Small Text",
+   "label": "Address Details"
+  },
+  {
+   "fieldname": "contact_details",
+   "fieldtype": "Small Text",
+   "label": "Contact Details"
+  },
+  {
+   "fieldname": "section_break_15",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_20",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-09-24 11:36:08.250342",
+ "modified": "2021-09-24 15:33:22.575334",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip Stop",

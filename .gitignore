@@ -5,4 +5,7 @@
 tags
 revelare/docs/current
 .vscode
-revelare/revelare/public/js/revelar.min.js
+revelare/public/js/revelar.min.js.map
+revelare/public/js/revelar.min.js
+revelare/public/css/revelare.min.css
+revelare/public/css-rtl
