@@ -1,0 +1,41 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2021-09-29 13:06:36.237916",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "modified": "2021-09-29 13:07:57.761823",
+ "modified_by": "Administrator",
+ "module": "Revelare",
+ "name": "Historical Weekly Item Amounts",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Item Availability Estimate",
+ "report_name": "Historical Weekly Item Amounts",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Accounts User"
+  },
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Manufacturing User"
+  },
+  {
+   "role": "Stock Manager"
+  },
+  {
+   "role": "Sales User"
+  }
+ ]
+}
