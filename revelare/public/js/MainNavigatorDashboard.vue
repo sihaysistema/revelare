@@ -8,7 +8,7 @@
           <li class="nav-item">
             <select
               class="custom-select custom-select-lg mt-1"
-              @change="selectedErrandTrip($event)"
+              @change="selectedErrandTrip($event.target.value)"
             >
               <option selected></option>
               <option
@@ -30,6 +30,7 @@
             </select>
           </li>
 
+          <!-- Botón para filtros todas las paradas -->
           <li class="nav-item">
             <a
               type="button"
@@ -44,6 +45,7 @@
             </a>
           </li>
 
+          <!-- Botón para filtros todas las paradas activas -->
           <li class="nav-item">
             <a
               type="button"
@@ -58,20 +60,7 @@
             </a>
           </li>
 
-          <li class="nav-item">
-            <a
-              type="button"
-              class="nav-link"
-              data-toggle="tab"
-              aria-expanded="true"
-            >
-              {{ __("Atrasados") }}
-              <span class="badge badge-pill badge-danger shadow-danger">{{
-                numberOfOverdues
-              }}</span>
-            </a>
-          </li>
-
+          <!-- Botón para filtros todas las paradas pendientes cerca de llegar a la fecha estimada-->
           <li class="nav-item">
             <a
               type="button"
@@ -86,6 +75,22 @@
             </a>
           </li>
 
+          <!-- Botón para filtros todas las paradas atrasados -->
+          <li class="nav-item">
+            <a
+              type="button"
+              class="nav-link"
+              data-toggle="tab"
+              aria-expanded="true"
+            >
+              {{ __("Atrasados") }}
+              <span class="badge badge-pill badge-danger shadow-danger">{{
+                numberOfOverdues
+              }}</span>
+            </a>
+          </li>
+
+          <!-- Botón para filtros todas las paradas completadas -->
           <li class="nav-item">
             <a
               type="button"
@@ -104,7 +109,12 @@
 
     <!-- Render dinamico de cards -->
     <div class="row">
-      <DataCard v-for="stop in stops" :key="stop.idx" :tripData="stop" />
+      <DataCard
+        v-for="stop in stops"
+        :key="stop.idx"
+        :tripData="stop"
+        @dataTripCompleted="tripCompleted($event)"
+      />
     </div>
   </div>
 </template>
@@ -133,6 +143,7 @@ export default {
     // console.log(this.stops);
   },
   methods: {
+    // Obtiene los errand trips activos
     getErrandTrips() {
       //   this.stops = dummy_data;
       let _this = this;
@@ -147,20 +158,18 @@ export default {
         },
       });
     },
+    // Obtiene los errand trip stops de X errand trip
     selectedErrandTrip(event) {
-      console.log(event.target.value);
       let _this = this;
 
       frappe.call({
         method: "revelare.api.get_errand_trip_stops",
         args: {
-          name: event.target.value,
+          name: event,
         },
         async: true,
         callback: function (data) {
           _this.stops = data.message;
-
-          console.log(data.message);
         },
       });
     },
@@ -169,6 +178,12 @@ export default {
     },
     updateData() {
       // Aqui se actualizara la data manualmente
+    },
+    // Emisor de evento
+    tripCompleted(option) {
+      console.log("Completo: ", option);
+      this.selectedErrandTrip(option);
+      this.$forceUpdate();
     },
   },
   computed: {

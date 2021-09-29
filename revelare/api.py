@@ -95,9 +95,14 @@ def get_errand_trip_stops(name=''):
                        'actual_arrival', 'document', 'document_type', 'contact_details',
                        'address_details', 'lat', 'lng', 'is_it_completed', 'details', 'status']
 
-    return frappe.db.get_list('Errand Trip Stop',
-        filters={'parent': name}, fields=field_child_tbl
+    res = frappe.db.get_list('Errand Trip Stop',
+        filters={'parent': name}, fields=field_child_tbl,
+        order_by='actual_arrival ASC, requested_time ASC',
     ) or []
+
+    with open("data-errand-trip.json", "w") as f:
+        f.write(json.dumps(res, indent=2, default=str))
+    return res
 
 
 @frappe.whitelist()
@@ -117,7 +122,7 @@ def complete_trip(parent='', name=''):
         # trip.status = 'Completed'
         # trip.notify_update()
         # trip.save()
-        return "Trip completed"
+        return "Completed"
 
     except:
         return frappe.get_traceback()

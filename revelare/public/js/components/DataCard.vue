@@ -20,8 +20,8 @@
               {{ __("Para") }}: {{ tripData.customer }}</span
             >
           </div>
-          <h3 class="badge badge-success d-sm-inline-block d-none">
-            {{ __("ACTIVO") }}
+          <h3 :class="badgeStyle">
+            {{ __(statusCard) }}
           </h3>
         </div>
       </div>
@@ -92,13 +92,15 @@
 
         <div class="mr-auto">
           <p class="mb-2 text-black">{{ __("Detalles de cliente") }}</p>
+
           <p class="mb-2 text-black">
             <i class="fa fa-user" aria-hidden="true"></i> {{ __("Contacto") }}:
+            <br />
             {{ tripData.contact_details }}
           </p>
           <p class="mb-2 text-black">
             <i class="fa fa-map-marker" aria-hidden="true"></i>
-            {{ __("Dirección") }}: {{ tripData.address_details }}
+            {{ __("Dirección") }}: <br />{{ tripData.address_details }}
           </p>
         </div>
       </div>
@@ -117,7 +119,7 @@
           <button
             type="button"
             class="btn shs-btn-success btn-lg"
-            @click="complete"
+            @click="complete()"
           >
             {{ __("Completar") }}
           </button>
@@ -222,7 +224,14 @@ export default {
   data() {
     return {
       completedOn: "",
+      statusCard: "",
     };
+  },
+  mounted() {
+    console.log("Evento mounted desde Card");
+  },
+  updated() {
+    console.log("Evento updated desde Card");
   },
   methods: {
     openInWaze() {
@@ -260,10 +269,12 @@ export default {
         return navigator.userAgent.match(toMatchItem);
       });
     },
+    // Función para marcar viajes como completados
     complete() {
-      //   console.log("Completado en: ", frappe.datetime.now_datetime());
+      let _this = this;
+
       frappe.confirm(
-        "Would you like to mark as completed?",
+        __("Would you like to mark as completed?"),
         () => {
           // action to perform if Yes is selected
           console.log("Completado en: ", frappe.datetime.now_datetime());
@@ -277,39 +288,110 @@ export default {
             async: true,
             callback: function (data) {
               console.log(data.message);
-              //   frappe.show_alert("green", __(data.message), 5000);
+              if (data.message) {
+                frappe.show_alert(
+                  {
+                    indicator: "green",
+                    message: __(data.message),
+                  },
+                  5
+                );
+                frappe.utils.play_sound("submit");
 
-              frappe.show_alert(
-                {
-                  indicator: "green",
-                  message: __(data.message),
-                },
-                5
-              );
-              frappe.utils.play_sound("submit");
+                _this.$emit("dataTripCompleted", _this.tripData.parent);
+                _this.$forceUpdate();
+              } else {
+                frappe.utils.play_sound("error");
+                frappe.msgprint(data.message);
+
+                _this.$emit("dataTripCompleted", _this.tripData.parent);
+                _this.$forceUpdate();
+              }
             },
           });
         },
         () => {
           // action to perform if No is selected
-          console.log("Nel");
         }
       );
+      //   this.$emit("dataTripCompleted", this.tripData.parent);
+      this.$forceUpdate();
     },
+    // Deshacer cambio
     undo() {},
+    // Retorna la diferencia en minutos entre dos fechastiempo
+    diff_minutes(dt2, dt1) {
+      let diff = (dt2 - dt1) / 1000;
+      diff /= 60;
+      let minutes = Math.abs(Math.round(diff));
+      console.log(minutes);
+      return minutes;
+    },
   },
   computed: {
     cardStyle: function () {
-      if (this.tripData.status === "Active") {
-        return "card shs-bg-active";
-      } else if (this.tripData.status === "Overdue") {
-        return "card shs-bg-danger";
-      } else if (this.tripData.status === "Pending") {
+      // Pendiente: Si hay 30 minutos o menos a la fecha requeridad y esta activo,
+      // la tarjeta toma el color amarillo
+      if (
+        this.tripData.status === "Active" &&
+        this.diff_minutes(
+          new Date(this.tripData.requested_time),
+          new Date(frappe.datetime.now_datetime())
+        ) <= 30
+      ) {
+        // console.log("pendiente");
+        this.statusCard = "Pending";
         return "card shs-bg-warning";
-      } else if (this.tripData.status === "Completed") {
+      }
+
+      // Activo: Si la fecha y tiempo es menor a la fecha hora requeridad y esta activo,
+      // la tarjeta toma el color verde
+      if (
+        this.tripData.status === "Active" &&
+        frappe.datetime.now_datetime() <= this.tripData.requested_time
+      ) {
+        // console.log("activo");
+        this.statusCard = "Active";
+        return "card shs-bg-active";
+      }
+
+      // Atraso: Si la fecha y tiempo es mayor a la fecha hora requeridad y esta activo,
+      // la tarjeta toma el color rojo
+      if (
+        this.tripData.status === "Active" &&
+        frappe.datetime.now_datetime() > this.tripData.requested_time
+      ) {
+        // console.log("atrasado");
+        this.statusCard = "Overdue";
+        return "card shs-bg-danger";
+      }
+
+      // Completado: Si el status es Completed y ya hay una fecha en actual_arrival,
+      // la tarjeta toma el color gris
+      if (
+        this.tripData.status === "Completed" &&
+        this.tripData.actual_arrival
+      ) {
+        // console.log("completado");
+        this.statusCard = "Completed";
         return "card shs-bg-completed";
+      }
+
+      // Si no se cumple ninguna condicion se pone en color rojo, para darle atencion
+      this.statusCard = "Overdue";
+      return "card shs-bg-danger";
+    },
+    badgeStyle: function () {
+      if (this.statusCard === "Active") {
+        return "badge badge-success d-sm-inline-block d-none";
+      } else if (this.statusCard === "Overdue") {
+        return "badge badge-danger d-sm-inline-block d-none";
+      } else if (this.statusCard === "Pending") {
+        return "badge badge-warning d-sm-inline-block d-none";
+      } else if (this.statusCard === "Completed") {
+        return "badge shs-badge-dark d-sm-inline-block d-none";
       } else {
-        return "card";
+        return "badge shs-badge-dark d-sm-inline-block d-none";
       }
     },
   },
