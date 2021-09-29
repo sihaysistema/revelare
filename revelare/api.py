@@ -76,7 +76,7 @@ def get_errand_trips():
     """
     return frappe.db.get_list('Errand Trip',
         filters={'active': 1, 'status': 'active', 'docstatus': 0},
-        fields=['name', 'driver']
+        fields=['name', 'driver', 'driver_name']
     ) or []
 
 

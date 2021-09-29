@@ -321,6 +321,7 @@ export default {
     undo() {},
     // Retorna la diferencia en minutos entre dos fechastiempo
     diff_minutes(dt2, dt1) {
+      // NOTA: Es necesario que las fechas sean de tipo Date
       let diff = (dt2 - dt1) / 1000;
       diff /= 60;
       let minutes = Math.abs(Math.round(diff));
@@ -341,6 +342,7 @@ export default {
       ) {
         // console.log("pendiente");
         this.statusCard = "Pending";
+        this.tripData.status = "Pending";
         return "card shs-bg-warning";
       }
 
@@ -352,6 +354,7 @@ export default {
       ) {
         // console.log("activo");
         this.statusCard = "Active";
+        this.tripData.status = "Active";
         return "card shs-bg-active";
       }
 
@@ -363,6 +366,7 @@ export default {
       ) {
         // console.log("atrasado");
         this.statusCard = "Overdue";
+        this.tripData.status = "Overdue";
         return "card shs-bg-danger";
       }
 
@@ -374,11 +378,13 @@ export default {
       ) {
         // console.log("completado");
         this.statusCard = "Completed";
+        this.tripData.status = "Completed";
         return "card shs-bg-completed";
       }
 
       // Si no se cumple ninguna condicion se pone en color rojo, para darle atencion
       this.statusCard = "Overdue";
+      this.tripData.status = "OVerdue";
       return "card shs-bg-danger";
     },
     badgeStyle: function () {

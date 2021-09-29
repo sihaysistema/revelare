@@ -7,8 +7,9 @@
           <!-- Renderiza los Errand Trips -->
           <li class="nav-item">
             <select
-              class="custom-select custom-select-lg mt-1"
+              class="custom-select mt-2"
               @change="selectedErrandTrip($event.target.value)"
+              v-model="errandTripSel"
             >
               <option selected></option>
               <option
@@ -20,25 +21,28 @@
               </option>
             </select>
           </li>
+
           <!-- Renderiza los conductores -->
-          <li class="nav-item mr-4">
-            <select class="custom-select custom-select-lg mt-1">
-              <option selected></option>
-              <option value="1">Lewis Hamilton</option>
-              <option value="2">Pablito</option>
-              <option value="3">Paco</option>
-            </select>
+          <li class="nav-item mr-1">
+            <a
+              class="nav-link disabled"
+              data-toggle="tab"
+              aria-expanded="false"
+              disabled
+              >{{ driver }}</a
+            >
           </li>
 
-          <!-- Botón para filtros todas las paradas -->
+          <!-- Botón para mostrar todas las paradas -->
           <li class="nav-item">
             <a
               type="button"
               class="nav-link active"
               data-toggle="tab"
               aria-expanded="false"
+              @class="allTrips()"
             >
-              {{ __("Todos los viajes") }}
+              {{ __("Todos de viajes") }}
               <span class="badge badge-pill shadow-dark badge-dark">
                 {{ this.stops.length }}</span
               >
@@ -49,9 +53,10 @@
           <li class="nav-item">
             <a
               type="button"
-              class="nav-link"
+              class="nav-link disabled"
               data-toggle="tab"
               aria-expanded="false"
+              disabled
             >
               {{ __("Activos") }}
               <span class="badge badge-pill badge-success shadow-success">{{
@@ -64,9 +69,10 @@
           <li class="nav-item">
             <a
               type="button"
-              class="nav-link"
+              class="nav-link disabled"
               data-toggle="tab"
               aria-expanded="true"
+              disabled
             >
               {{ __("Pendientes") }}
               <span class="badge badge-pill badge-warning shadow-warning">{{
@@ -79,9 +85,10 @@
           <li class="nav-item">
             <a
               type="button"
-              class="nav-link"
+              class="nav-link disabled"
               data-toggle="tab"
               aria-expanded="true"
+              disabled
             >
               {{ __("Atrasados") }}
               <span class="badge badge-pill badge-danger shadow-danger">{{
@@ -94,9 +101,10 @@
           <li class="nav-item">
             <a
               type="button"
-              class="nav-link"
+              class="nav-link disabled"
               data-toggle="tab"
               aria-expanded="true"
+              disabled
               >{{ __("Completados") }}
               <span class="badge badge-pill badge-secondary shadow-secondary">{{
                 numberOfCompleted
@@ -121,7 +129,6 @@
 
 <script>
 import DataCard from "./components/DataCard.vue";
-import dummy_data from "./dummy_data.js";
 
 export default {
   name: "MainNavigatorDashboard",
@@ -130,11 +137,12 @@ export default {
   },
   data() {
     return {
-      errandTrips: [],
-      stops: [],
+      errandTripSel: "", // Guarda cada errand trip seleccionado
+      errandTrips: [], // Guarda datos para opciones de select
+      stops: [], // Guarda datos para generar las paradas de cada ErrandTrip
       nowDateTime: frappe.datetime.now_datetime(),
-      tripsToDo: [], // contendra todos los viajes no completado
-      tripsCompleted: [], // contendra los viajes completados
+      stopsCopy: [], // Copia de todas las paradas para conteos
+      driver: "",
     };
   },
   mounted() {
@@ -142,10 +150,13 @@ export default {
     this.getErrandTrips();
     // console.log(this.stops);
   },
+  updated() {
+    // console.log(this.stops);
+    // reactivamos las propiedades computadas para regenerar el conteo
+  },
   methods: {
     // Obtiene los errand trips activos
     getErrandTrips() {
-      //   this.stops = dummy_data;
       let _this = this;
 
       frappe.call({
@@ -160,6 +171,13 @@ export default {
     },
     // Obtiene los errand trip stops de X errand trip
     selectedErrandTrip(event) {
+      // Obtiene el nombre del conductor que se asigno al errand trip
+      this.driver =
+        this.errandTrips.filter((errandT) => errandT.name === event)[0]
+          .driver_name || "";
+
+      console.log(this.driver);
+
       let _this = this;
 
       frappe.call({
@@ -167,7 +185,6 @@ export default {
         args: {
           name: event,
         },
-        async: true,
         callback: function (data) {
           _this.stops = data.message;
         },
@@ -185,31 +202,23 @@ export default {
       this.selectedErrandTrip(option);
       this.$forceUpdate();
     },
+    allTrips() {
+      this.selectedErrandTrip(this.errandTripSel);
+      this.$forceUpdate();
+    },
   },
   computed: {
     numberOfActives() {
-      let actives = this.stops.filter(
-        (trip) => trip.status === "Active"
-      ).length;
-      return actives;
+      return this.stops.filter((trip) => trip.status === "Active").length;
     },
     numberOfOverdues() {
-      let overdue = this.stops.filter(
-        (trip) => trip.status === "Overdue"
-      ).length;
-      return overdue;
+      return this.stops.filter((trip) => trip.status === "Overdue").length;
     },
     numberOfPending() {
-      let pending = this.stops.filter(
-        (trip) => trip.status === "Pending"
-      ).length;
-      return pending;
+      return this.stops.filter((trip) => trip.status === "Pending").length;
     },
     numberOfCompleted() {
-      let completed = this.stops.filter(
-        (trip) => trip.status === "Completed"
-      ).length;
-      return completed;
+      return this.stops.filter((trip) => trip.status === "Completed").length;
     },
   },
 };
@@ -219,6 +228,10 @@ export default {
 .custom-select {
   width: auto !important;
   border: none !important;
+  font-size: 12pt !important;
+}
+.custom-select option {
+  font-size: 12pt !important;
 }
 
 .project-nav {
