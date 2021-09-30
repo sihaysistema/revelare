@@ -26,7 +26,8 @@
   "lng",
   "actual_arrival",
   "more_information_section",
-  "details"
+  "details",
+  "driver_comment"
  ],
  "fields": [
   {
@@ -81,7 +82,7 @@
   },
   {
    "fieldname": "details",
-   "fieldtype": "Text Editor",
+   "fieldtype": "Long Text",
    "label": "Details"
   },
   {
@@ -146,12 +147,17 @@
   {
    "fieldname": "column_break_20",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "driver_comment",
+   "fieldtype": "Long Text",
+   "label": "Driver Comment"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-09-28 15:18:09.948573",
+ "modified": "2021-09-30 11:51:04.453466",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip Stop",

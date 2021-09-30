@@ -5,7 +5,7 @@ frappe.pages['navigation-dashboard'].on_page_load = function (wrapper) {
     single_column: true
   });
 
-  let $btn = page.set_primary_action('Refresh', () => refresh())
+  // let $btn = page.set_primary_action("Refresh", () => console.log("Refresh"));
 
   this.page.$main_page_navigator_dashboard = new frappe.revelare.NavigationDashboard(this.page);
 }

@@ -4,7 +4,7 @@
     <div class="project-nav">
       <div class="card-action card-tabs mr-auto">
         <ul class="nav nav-tabs style-2">
-          <!-- Renderiza los Errand Trips -->
+          <!-- Renderiza los nombres de Errand Trips Activos-->
           <li class="nav-item">
             <select
               class="custom-select mt-2"
@@ -22,7 +22,7 @@
             </select>
           </li>
 
-          <!-- Renderiza los conductores -->
+          <!-- Renderiza el nombre de X conductor -->
           <li class="nav-item mr-1">
             <a
               class="nav-link disabled"
@@ -49,6 +49,7 @@
             </a>
           </li>
 
+          <!-- NOTA: Los botones se mantienen desactivados -->
           <!-- Botón para filtros todas las paradas activas -->
           <li class="nav-item">
             <a
@@ -141,17 +142,16 @@ export default {
       errandTrips: [], // Guarda datos para opciones de select
       stops: [], // Guarda datos para generar las paradas de cada ErrandTrip
       nowDateTime: frappe.datetime.now_datetime(),
-      stopsCopy: [], // Copia de todas las paradas para conteos
       driver: "",
     };
   },
   mounted() {
-    // this.getData();
+    // Obtiene datos
     this.getErrandTrips();
-    // console.log(this.stops);
+    // console.log("se monto");
   },
   updated() {
-    // console.log(this.stops);
+    // console.log("se atualizo");
     // reactivamos las propiedades computadas para regenerar el conteo
   },
   methods: {
@@ -165,7 +165,7 @@ export default {
         callback: function (data) {
           _this.errandTrips = data.message;
 
-          console.log(data.message);
+          //   console.log(data.message);
         },
       });
     },
@@ -176,7 +176,7 @@ export default {
         this.errandTrips.filter((errandT) => errandT.name === event)[0]
           .driver_name || "";
 
-      console.log(this.driver);
+      //   console.log(this.driver);
 
       let _this = this;
 
@@ -190,23 +190,27 @@ export default {
         },
       });
     },
+    // NOTA: por ahora no es necesario autoupdate, el conductor es el que
+    // actualiza los estados segun vaya completando viajes
     autoUpdateData() {
       // Aqui se agregara un timer
     },
     updateData() {
       // Aqui se actualizara la data manualmente
     },
-    // Emisor de evento
+    // Emisor de evento: detecta los cambios de componente hijo cuando se completa un viaje
     tripCompleted(option) {
-      console.log("Completo: ", option);
+      //   console.log("Completo: ", option);
       this.selectedErrandTrip(option);
       this.$forceUpdate();
     },
+    // Se ejecuta cuando se presiona el boton allTrips y recarga todos los datos del backend
     allTrips() {
       this.selectedErrandTrip(this.errandTripSel);
       this.$forceUpdate();
     },
   },
+  // Propiedades computadas para generar clases css, datos dinamicas
   computed: {
     numberOfActives() {
       return this.stops.filter((trip) => trip.status === "Active").length;
