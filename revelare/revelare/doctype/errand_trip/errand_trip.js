@@ -14,12 +14,16 @@ frappe.ui.form.on('Errand Trip', {
       },
       callback: function (r) {
         if (r.message.length > 0) {
-          // Revisar la signación de la tabla hija, no esta obteniendo todos los documentos y los esta revolviendo.
-          frm.doc.errand_trip_stop.forEach((element, index) => {
-            frm.get_field("errand_trip_stop").grid.grid_rows[index].remove();
+          if (frm.doc.errand_trip_stop.length > 0){
+
+            // Revisar la signación de la tabla hija, no esta obteniendo todos los documentos y los esta revolviendo.
+            frm.doc.errand_trip_stop.forEach((element, index) => {
+              frm.get_field("errand_trip_stop").grid.grid_rows[index].remove();
+            });
             frm.get_field("errand_trip_stop").grid.refresh();
-          });
-          console.log('Items Removidos');
+
+          }
+          //console.log('Items Removidos');
           // frm.get_field("errand_trip_stop").grid.grid_rows[unbooked_idx].remove()
           // frm.get_field("unbooked").grid.refresh()
 
@@ -32,7 +36,7 @@ frappe.ui.form.on('Errand Trip', {
             });
           });
 
-          console.log(r.message);
+          //console.log(r.message);
           frm.refresh_field("errand_trip_top");
           frm.save();
         }
@@ -40,3 +44,17 @@ frappe.ui.form.on('Errand Trip', {
     });
   },
 });
+
+frappe.listview_settings['Errand Trip'] = {
+//  add_fields: ["title", "start_date", "end_date"],
+  get_indicator: function (doc) {
+      var status_color = {
+          "Active": "#EAF5EE", // Draft
+          "Errand Trip Completed": "#D3E9FC", // Submitted
+          "Cancelled":"#FFF5F5", // Cancelled,
+        console.log(doc.status)
+      };
+      return [__(doc.status), status_color[doc.status], "status,=," + doc.status];
+  },
+  right_column: "naming_series"
+};
