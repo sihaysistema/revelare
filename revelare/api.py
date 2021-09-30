@@ -66,6 +66,8 @@ def obtener_series():
     return mis_series
 
 
+# ------------- ERRAND TRIP SECTION ------------- #
+
 @frappe.whitelist()
 def get_errand_trips():
     """
@@ -76,14 +78,13 @@ def get_errand_trips():
     """
     return frappe.db.get_list('Errand Trip',
         filters={'active': 1, 'status': 'active', 'docstatus': 0},
-        fields=['name', 'driver']
+        fields=['name', 'driver', 'driver_name']
     ) or []
 
 
 @frappe.whitelist()
 def get_errand_trip_stops(name=''):
-    """
-    gets the stops of X errand trip
+    """Gets the stops of X errand trip
 
     Args:
         name (str, optional): Errand Trip `name`. Defaults to ''.
@@ -93,15 +94,30 @@ def get_errand_trip_stops(name=''):
     """
     field_child_tbl = ['name', 'parent', 'idx', 'customer', 'requested_time',
                        'actual_arrival', 'document', 'document_type', 'contact_details',
-                       'address_details', 'lat', 'lng', 'is_it_completed', 'details', 'status']
+                       'address_details', 'lat', 'lng', 'is_it_completed', 'details',
+                       'status', 'driver_comment']
 
-    return frappe.db.get_list('Errand Trip Stop',
-        filters={'parent': name}, fields=field_child_tbl
+    res = frappe.db.get_list('Errand Trip Stop',
+        filters={'parent': name}, fields=field_child_tbl,
+        order_by='actual_arrival ASC, requested_time ASC',
     ) or []
+
+    with open("data-errand-trip.json", "w") as f:
+        f.write(json.dumps(res, indent=2, default=str))
+    return res
 
 
 @frappe.whitelist()
 def complete_trip(parent='', name=''):
+    """Assign values to mark as completed
+
+    Args:
+        parent (str, optional): Errand Trip `name`. Defaults to ''.
+        name (str, optional): Errand Trip Stop `name`. Defaults to ''.
+
+    Returns:
+        str: status
+    """
     try:
         # Forma 1, sin notificar
         frappe.db.set_value('Errand Trip Stop', {'name': name, 'parent': parent}, {
@@ -117,7 +133,46 @@ def complete_trip(parent='', name=''):
         # trip.status = 'Completed'
         # trip.notify_update()
         # trip.save()
-        return "Trip completed"
+        return "Completed"
 
     except:
         return frappe.get_traceback()
+
+@frappe.whitelist()
+def update_driver_comment(parent='', name='', comment=''):
+    """Updates comments entered by the author
+
+    Args:
+        parent (str, optional): Errand Trip `name`. Defaults to ''.
+        name (str, optional): Errand Trip Stop `name`. Defaults to ''.
+        comment (str, optional): Driver's comment. Defaults to ''.
+
+    Returns:
+        str: status
+    """
+    frappe.db.set_value('Errand Trip Stop', {'name': name, 'parent': parent}, {
+        'driver_comment': str(comment)
+    })
+
+    return "Updated comment"
+
+
+@frappe.whitelist()
+def undo_status_trip(parent='', name=''):
+    """Reactivate the trip
+
+    Args:
+        parent (str, optional): Errand Trip `name`. Defaults to ''.
+        name (str, optional): Errand Trip Stop `name`. Defaults to ''.
+
+    Returns:
+        str: status
+    """
+    frappe.db.set_value('Errand Trip Stop', {'name': name, 'parent': parent}, {
+        'actual_arrival': None,
+        'status': 'Active'
+    })
+
+    return "Trip has been activated again"
+
+# ------------- END ERRAND TRIP SECTION ------------- #

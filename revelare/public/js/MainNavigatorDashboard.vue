@@ -4,11 +4,12 @@
     <div class="project-nav">
       <div class="card-action card-tabs mr-auto">
         <ul class="nav nav-tabs style-2">
-          <!-- Renderiza los Errand Trips -->
+          <!-- Renderiza los nombres de Errand Trips Activos-->
           <li class="nav-item">
             <select
-              class="custom-select custom-select-lg mt-1"
-              @change="selectedErrandTrip($event)"
+              class="custom-select mt-2"
+              @change="selectedErrandTrip($event.target.value)"
+              v-model="errandTripSel"
             >
               <option selected></option>
               <option
@@ -20,36 +21,43 @@
               </option>
             </select>
           </li>
-          <!-- Renderiza los conductores -->
-          <li class="nav-item mr-4">
-            <select class="custom-select custom-select-lg mt-1">
-              <option selected></option>
-              <option value="1">Lewis Hamilton</option>
-              <option value="2">Pablito</option>
-              <option value="3">Paco</option>
-            </select>
+
+          <!-- Renderiza el nombre de X conductor -->
+          <li class="nav-item mr-1">
+            <a
+              class="nav-link disabled"
+              data-toggle="tab"
+              aria-expanded="false"
+              disabled
+              >{{ driver }}</a
+            >
           </li>
 
+          <!-- Botón para mostrar todas las paradas -->
           <li class="nav-item">
             <a
               type="button"
               class="nav-link active"
               data-toggle="tab"
               aria-expanded="false"
+              @class="allTrips()"
             >
-              {{ __("Todos los viajes") }}
+              {{ __("Todos de viajes") }}
               <span class="badge badge-pill shadow-dark badge-dark">
                 {{ this.stops.length }}</span
               >
             </a>
           </li>
 
+          <!-- NOTA: Los botones se mantienen desactivados -->
+          <!-- Botón para filtros todas las paradas activas -->
           <li class="nav-item">
             <a
               type="button"
-              class="nav-link"
+              class="nav-link disabled"
               data-toggle="tab"
               aria-expanded="false"
+              disabled
             >
               {{ __("Activos") }}
               <span class="badge badge-pill badge-success shadow-success">{{
@@ -58,26 +66,14 @@
             </a>
           </li>
 
+          <!-- Botón para filtros todas las paradas pendientes cerca de llegar a la fecha estimada-->
           <li class="nav-item">
             <a
               type="button"
-              class="nav-link"
+              class="nav-link disabled"
               data-toggle="tab"
               aria-expanded="true"
-            >
-              {{ __("Atrasados") }}
-              <span class="badge badge-pill badge-danger shadow-danger">{{
-                numberOfOverdues
-              }}</span>
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a
-              type="button"
-              class="nav-link"
-              data-toggle="tab"
-              aria-expanded="true"
+              disabled
             >
               {{ __("Pendientes") }}
               <span class="badge badge-pill badge-warning shadow-warning">{{
@@ -86,12 +82,30 @@
             </a>
           </li>
 
+          <!-- Botón para filtros todas las paradas atrasados -->
           <li class="nav-item">
             <a
               type="button"
-              class="nav-link"
+              class="nav-link disabled"
               data-toggle="tab"
               aria-expanded="true"
+              disabled
+            >
+              {{ __("Atrasados") }}
+              <span class="badge badge-pill badge-danger shadow-danger">{{
+                numberOfOverdues
+              }}</span>
+            </a>
+          </li>
+
+          <!-- Botón para filtros todas las paradas completadas -->
+          <li class="nav-item">
+            <a
+              type="button"
+              class="nav-link disabled"
+              data-toggle="tab"
+              aria-expanded="true"
+              disabled
               >{{ __("Completados") }}
               <span class="badge badge-pill badge-secondary shadow-secondary">{{
                 numberOfCompleted
@@ -104,14 +118,18 @@
 
     <!-- Render dinamico de cards -->
     <div class="row">
-      <DataCard v-for="stop in stops" :key="stop.idx" :tripData="stop" />
+      <DataCard
+        v-for="stop in stops"
+        :key="stop.idx"
+        :tripData="stop"
+        @dataTripCompleted="tripCompleted($event)"
+      />
     </div>
   </div>
 </template>
 
 <script>
 import DataCard from "./components/DataCard.vue";
-import dummy_data from "./dummy_data.js";
 
 export default {
   name: "MainNavigatorDashboard",
@@ -120,21 +138,25 @@ export default {
   },
   data() {
     return {
-      errandTrips: [],
-      stops: [],
+      errandTripSel: "", // Guarda cada errand trip seleccionado
+      errandTrips: [], // Guarda datos para opciones de select
+      stops: [], // Guarda datos para generar las paradas de cada ErrandTrip
       nowDateTime: frappe.datetime.now_datetime(),
-      tripsToDo: [], // contendra todos los viajes no completado
-      tripsCompleted: [], // contendra los viajes completados
+      driver: "",
     };
   },
   mounted() {
-    // this.getData();
+    // Obtiene datos
     this.getErrandTrips();
-    // console.log(this.stops);
+    // console.log("se monto");
+  },
+  updated() {
+    // console.log("se atualizo");
+    // reactivamos las propiedades computadas para regenerar el conteo
   },
   methods: {
+    // Obtiene los errand trips activos
     getErrandTrips() {
-      //   this.stops = dummy_data;
       let _this = this;
 
       frappe.call({
@@ -143,58 +165,64 @@ export default {
         callback: function (data) {
           _this.errandTrips = data.message;
 
-          console.log(data.message);
+          //   console.log(data.message);
         },
       });
     },
+    // Obtiene los errand trip stops de X errand trip
     selectedErrandTrip(event) {
-      console.log(event.target.value);
+      // Obtiene el nombre del conductor que se asigno al errand trip
+      this.driver =
+        this.errandTrips.filter((errandT) => errandT.name === event)[0]
+          .driver_name || "";
+
+      //   console.log(this.driver);
+
       let _this = this;
 
       frappe.call({
         method: "revelare.api.get_errand_trip_stops",
         args: {
-          name: event.target.value,
+          name: event,
         },
-        async: true,
         callback: function (data) {
           _this.stops = data.message;
-
-          console.log(data.message);
         },
       });
     },
+    // NOTA: por ahora no es necesario autoupdate, el conductor es el que
+    // actualiza los estados segun vaya completando viajes
     autoUpdateData() {
       // Aqui se agregara un timer
     },
     updateData() {
       // Aqui se actualizara la data manualmente
     },
+    // Emisor de evento: detecta los cambios de componente hijo cuando se completa un viaje
+    tripCompleted(option) {
+      //   console.log("Completo: ", option);
+      this.selectedErrandTrip(option);
+      this.$forceUpdate();
+    },
+    // Se ejecuta cuando se presiona el boton allTrips y recarga todos los datos del backend
+    allTrips() {
+      this.selectedErrandTrip(this.errandTripSel);
+      this.$forceUpdate();
+    },
   },
+  // Propiedades computadas para generar clases css, datos dinamicas
   computed: {
     numberOfActives() {
-      let actives = this.stops.filter(
-        (trip) => trip.status === "Active"
-      ).length;
-      return actives;
+      return this.stops.filter((trip) => trip.status === "Active").length;
     },
     numberOfOverdues() {
-      let overdue = this.stops.filter(
-        (trip) => trip.status === "Overdue"
-      ).length;
-      return overdue;
+      return this.stops.filter((trip) => trip.status === "Overdue").length;
     },
     numberOfPending() {
-      let pending = this.stops.filter(
-        (trip) => trip.status === "Pending"
-      ).length;
-      return pending;
+      return this.stops.filter((trip) => trip.status === "Pending").length;
     },
     numberOfCompleted() {
-      let completed = this.stops.filter(
-        (trip) => trip.status === "Completed"
-      ).length;
-      return completed;
+      return this.stops.filter((trip) => trip.status === "Completed").length;
     },
   },
 };
@@ -204,6 +232,10 @@ export default {
 .custom-select {
   width: auto !important;
   border: none !important;
+  font-size: 12pt !important;
+}
+.custom-select option {
+  font-size: 12pt !important;
 }
 
 .project-nav {

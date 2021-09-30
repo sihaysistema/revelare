@@ -7,7 +7,6 @@
  "field_order": [
   "status",
   "document_type",
-  "is_it_completed",
   "column_break_2",
   "document",
   "section_break_4",
@@ -27,7 +26,8 @@
   "lng",
   "actual_arrival",
   "more_information_section",
-  "details"
+  "details",
+  "driver_comment"
  ],
  "fields": [
   {
@@ -63,7 +63,6 @@
   {
    "fieldname": "estimated_arrival",
    "fieldtype": "Datetime",
-   "in_list_view": 1,
    "label": "Estimated Arrival"
   },
   {
@@ -83,7 +82,7 @@
   },
   {
    "fieldname": "details",
-   "fieldtype": "Text Editor",
+   "fieldtype": "Long Text",
    "label": "Details"
   },
   {
@@ -121,14 +120,9 @@
    "label": "Actual Arrival"
   },
   {
-   "default": "0",
-   "fieldname": "is_it_completed",
-   "fieldtype": "Check",
-   "label": "Is it completed?"
-  },
-  {
    "fieldname": "status",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Status",
    "options": "Active\nOverdue\nPending\nCompleted"
   },
@@ -153,12 +147,17 @@
   {
    "fieldname": "column_break_20",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "driver_comment",
+   "fieldtype": "Long Text",
+   "label": "Driver Comment"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-09-24 15:33:22.575334",
+ "modified": "2021-09-30 11:51:04.453466",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip Stop",
