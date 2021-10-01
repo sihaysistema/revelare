@@ -45,7 +45,7 @@ frappe.ui.form.on('Errand Trip', {
   },
 });
 
-frappe.listview_settings['Errand Trip'] = {
+/* frappe.listview_settings['Errand Trip'] = {
 //  add_fields: ["title", "start_date", "end_date"],
   get_indicator: function (doc) {
       var status_color = {
@@ -57,4 +57,4 @@ frappe.listview_settings['Errand Trip'] = {
       return [__(doc.status), status_color[doc.status], "status,=," + doc.status];
   },
   right_column: "naming_series"
-};
+};*/
