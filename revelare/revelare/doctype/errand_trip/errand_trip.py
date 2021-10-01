@@ -10,6 +10,8 @@ from frappe.utils import cstr, flt, get_date_str, nowdate, get_time_str
 
 
 class ErrandTrip(Document):
+    #NOTA: SE COMENTO EL CODIGO PARA USAR EL SCRIPT `errand_trip_list.js` y
+    # se desactivo la validacion de doctype
     # Draft
     pass
     # def validate(self):

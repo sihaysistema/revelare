@@ -124,7 +124,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "Active\nOverdue\nPending\nCompleted"
+   "options": "Active\nCompleted"
   },
   {
    "fieldname": "colbr1_column",
@@ -157,7 +157,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-09-30 11:51:04.453466",
+ "modified": "2021-10-01 12:15:32.288920",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip Stop",

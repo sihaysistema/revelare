@@ -8,6 +8,7 @@
  "field_order": [
   "naming_series",
   "company",
+  "status_doctype",
   "column_break_2",
   "email_notification_sent",
   "section_break_3",
@@ -26,9 +27,6 @@
   "errand_trip_stop",
   "calculate_arrival_time",
   "optimize_route",
-  "section_break_15",
-  "status_doctype",
-  "cb_more_info",
   "amended_from"
  ],
  "fields": [
@@ -55,6 +53,7 @@
    "default": "0",
    "fieldname": "email_notification_sent",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Initial Email Notification Sent",
    "read_only": 1
   },
@@ -95,6 +94,7 @@
   {
    "fieldname": "total_distance",
    "fieldtype": "Float",
+   "hidden": 1,
    "label": "Total Estimated Distance",
    "precision": "2",
    "read_only": 1
@@ -157,15 +157,6 @@
    "label": "Optimize Route"
   },
   {
-   "allow_on_submit": 1,
-   "fieldname": "section_break_15",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "cb_more_info",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "errand_trip_stop_br",
    "fieldtype": "Section Break",
    "label": "Errand Trip Stop"
@@ -196,7 +187,7 @@
   }
  ],
  "links": [],
- "modified": "2021-10-01 12:02:58.363471",
+ "modified": "2021-10-01 12:19:21.174775",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip",

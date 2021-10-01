@@ -77,7 +77,7 @@ def get_errand_trips():
         list: list of dictionaries
     """
     return frappe.db.get_list('Errand Trip',
-        filters={'active': 1, 'status': 'active', 'docstatus': 0},
+        filters={'status_doctype': 'active', 'docstatus': 0},
         fields=['name', 'driver', 'driver_name']
     ) or []
 
@@ -174,5 +174,17 @@ def undo_status_trip(parent='', name=''):
     })
 
     return "Trip has been activated again"
+
+
+@frappe.whitelist()
+def change_status_errand_trip(name):
+    try:
+        frappe.db.set_value('Errand Trip', {'name': name}, {
+            'status_doctype': 'Errand Trip Completed',
+        })
+        return True
+
+    except:
+        return frappe.get_traceback()
 
 # ------------- END ERRAND TRIP SECTION ------------- #
