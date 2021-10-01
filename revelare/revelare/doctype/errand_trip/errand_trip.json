@@ -3,7 +3,6 @@
  "autoname": "naming_series:",
  "creation": "2021-08-13 11:06:38.194183",
  "doctype": "DocType",
- "document_type": "Document",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
@@ -11,7 +10,6 @@
   "company",
   "column_break_2",
   "email_notification_sent",
-  "active",
   "section_break_3",
   "driver",
   "driver_name",
@@ -29,7 +27,7 @@
   "calculate_arrival_time",
   "optimize_route",
   "section_break_15",
-  "status",
+  "status_doctype",
   "cb_more_info",
   "amended_from"
  ],
@@ -43,6 +41,7 @@
   {
    "fieldname": "company",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Company",
    "options": "Company",
    "reqd": 1
@@ -67,6 +66,7 @@
   {
    "fieldname": "driver",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Driver",
    "options": "Driver",
    "reqd": 1
@@ -75,7 +75,6 @@
    "fetch_from": "driver.full_name",
    "fieldname": "driver_name",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Driver Name",
    "read_only": 1
   },
@@ -115,6 +114,7 @@
   {
    "fieldname": "vehicle",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Vehicle",
    "options": "Vehicle",
    "reqd": 1
@@ -122,7 +122,6 @@
   {
    "fieldname": "departure_time",
    "fieldtype": "Datetime",
-   "in_list_view": 1,
    "label": "Departure Time",
    "reqd": 1
   },
@@ -163,16 +162,6 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Status",
-   "no_copy": 1,
-   "options": "Active\nErrand Trip Completed\nCancelled",
-   "search_index": 1
-  },
-  {
    "fieldname": "cb_more_info",
    "fieldtype": "Column Break"
   },
@@ -196,23 +185,24 @@
    "read_only": 1
   },
   {
-   "default": "0",
-   "fieldname": "active",
-   "fieldtype": "Check",
-   "label": "Active?"
+   "fieldname": "status_doctype",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "Active\nErrand Trip Completed\nCancelled",
+   "search_index": 1
   }
  ],
- "is_submittable": 1,
  "links": [],
- "modified": "2021-09-24 11:45:06.671369",
+ "modified": "2021-10-01 12:02:58.363471",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip",
  "owner": "Administrator",
  "permissions": [
   {
-   "amend": 1,
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -222,12 +212,9 @@
    "report": 1,
    "role": "Fulfillment User",
    "share": 1,
-   "submit": 1,
    "write": 1
   },
   {
-   "amend": 1,
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -237,7 +224,6 @@
    "report": 1,
    "role": "Stock User",
    "share": 1,
-   "submit": 1,
    "write": 1
   },
   {
@@ -250,11 +236,9 @@
    "report": 1,
    "role": "Administrator",
    "share": 1,
-   "submit": 1,
    "write": 1
   }
  ],
  "sort_field": "modified",
- "sort_order": "DESC",
- "title_field": "driver_name"
+ "sort_order": "DESC"
 }

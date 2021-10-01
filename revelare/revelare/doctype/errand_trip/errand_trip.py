@@ -11,26 +11,27 @@ from frappe.utils import cstr, flt, get_date_str, nowdate, get_time_str
 
 class ErrandTrip(Document):
     # Draft
-    def validate(self):
-        if self.docstatus == 0 and self.active == 1:
-            self.status = 'Active'
-            frappe.db.set_value(self.doctype, self.name, "status", self.status)
-        elif self.active == 0:
-            self.status = ''
-            frappe.db.set_value(self.doctype, self.name, "status", self.status)
+    pass
+    # def validate(self):
+    #     if self.docstatus == 0 and self.active == 1:
+    #         self.status = 'Active'
+    #         frappe.db.set_value(self.doctype, self.name, "status", self.status)
+    #     elif self.active == 0:
+    #         self.status = ''
+    #         frappe.db.set_value(self.doctype, self.name, "status", self.status)
 
-    # Submit
-    def on_submit(self):
-        if self.docstatus == 1 and self.active == 0:
-            self.status = 'Errand Trip Completed'
-            frappe.db.set_value(self.doctype, self.name, "status", self.status)
-        elif self.docstatus == 1 and self.active == 1:
-            self.status = 'Active'
-            frappe.db.set_value(self.doctype, self.name, "status", self.status)
+    # # Submit
+    # def on_submit(self):
+    #     if self.docstatus == 1 and self.active == 0:
+    #         self.status = 'Errand Trip Completed'
+    #         frappe.db.set_value(self.doctype, self.name, "status", self.status)
+    #     elif self.docstatus == 1 and self.active == 1:
+    #         self.status = 'Active'
+    #         frappe.db.set_value(self.doctype, self.name, "status", self.status)
 
-    def on_cancel(self):
-            self.status = 'Cancelled'
-            frappe.db.set_value(self.doctype, self.name, "status", self.status)
+    # def on_cancel(self):
+    #         self.status = 'Cancelled'
+    #         frappe.db.set_value(self.doctype, self.name, "status", self.status)
 
 """
 validate:

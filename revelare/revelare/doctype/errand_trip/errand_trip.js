@@ -46,15 +46,17 @@ frappe.ui.form.on('Errand Trip', {
 });
 
 // frappe.listview_settings['Errand Trip'] = {
-// //  add_fields: ["title", "start_date", "end_date"],
+//   //  add_fields: ["title", "start_date", "end_date"],
 //   get_indicator: function (doc) {
-//       var status_color = {
-//           "Active": "#EAF5EE", // Draft
-//           "Errand Trip Completed": "#D3E9FC", // Submitted
-//           "Cancelled":"#FFF5F5", // Cancelled,
-//         console.log(doc.status)
-//       };
-//       return [__(doc.status), status_color[doc.status], "status,=," + doc.status];
+//     const status_color = {
+//       "Active": "#EAF5EE", // Draft
+//       "Errand Trip Completed": "#D3E9FC", // Submitted
+//       "Cancelled": "#FFF5F5", // Cancelled,
+//     };
+
+//     let condi = [__(doc.status), status_color[doc.status], "status,=," + doc.status];
+//     console.log(condi);
+//     return condi;
 //   },
 //   right_column: "naming_series"
 // };
