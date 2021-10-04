@@ -1,5 +1,7 @@
 {
  "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
  "autoname": "naming_series:",
  "creation": "2021-08-13 11:06:38.194183",
  "doctype": "DocType",
@@ -187,7 +189,7 @@
   }
  ],
  "links": [],
- "modified": "2021-10-01 12:19:21.174775",
+ "modified": "2021-10-04 11:35:41.017495",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip",
@@ -226,6 +228,48 @@
    "read": 1,
    "report": 1,
    "role": "Administrator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Revelare-L1",
+   "share": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Revelare-L3",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Revelare-L4",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Revelare-L6",
+   "select": 1,
    "share": 1,
    "write": 1
   }
