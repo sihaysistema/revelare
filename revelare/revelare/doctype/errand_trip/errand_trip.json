@@ -1,17 +1,18 @@
 {
  "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
  "autoname": "naming_series:",
  "creation": "2021-08-13 11:06:38.194183",
  "doctype": "DocType",
- "document_type": "Document",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "naming_series",
   "company",
+  "status_doctype",
   "column_break_2",
   "email_notification_sent",
-  "active",
   "section_break_3",
   "driver",
   "driver_name",
@@ -28,9 +29,6 @@
   "errand_trip_stop",
   "calculate_arrival_time",
   "optimize_route",
-  "section_break_15",
-  "status",
-  "cb_more_info",
   "amended_from"
  ],
  "fields": [
@@ -43,6 +41,7 @@
   {
    "fieldname": "company",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Company",
    "options": "Company",
    "reqd": 1
@@ -56,6 +55,7 @@
    "default": "0",
    "fieldname": "email_notification_sent",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Initial Email Notification Sent",
    "read_only": 1
   },
@@ -67,6 +67,7 @@
   {
    "fieldname": "driver",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Driver",
    "options": "Driver",
    "reqd": 1
@@ -75,7 +76,6 @@
    "fetch_from": "driver.full_name",
    "fieldname": "driver_name",
    "fieldtype": "Data",
-   "in_list_view": 1,
    "label": "Driver Name",
    "read_only": 1
   },
@@ -96,6 +96,7 @@
   {
    "fieldname": "total_distance",
    "fieldtype": "Float",
+   "hidden": 1,
    "label": "Total Estimated Distance",
    "precision": "2",
    "read_only": 1
@@ -115,6 +116,7 @@
   {
    "fieldname": "vehicle",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Vehicle",
    "options": "Vehicle",
    "reqd": 1
@@ -122,7 +124,6 @@
   {
    "fieldname": "departure_time",
    "fieldtype": "Datetime",
-   "in_list_view": 1,
    "label": "Departure Time",
    "reqd": 1
   },
@@ -158,25 +159,6 @@
    "label": "Optimize Route"
   },
   {
-   "allow_on_submit": 1,
-   "fieldname": "section_break_15",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Status",
-   "no_copy": 1,
-   "options": "Active\nErrand Trip Completed\nCancelled",
-   "search_index": 1
-  },
-  {
-   "fieldname": "cb_more_info",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "errand_trip_stop_br",
    "fieldtype": "Section Break",
    "label": "Errand Trip Stop"
@@ -184,6 +166,7 @@
   {
    "fieldname": "get_data",
    "fieldtype": "Button",
+   "hidden": 1,
    "label": "Get Data"
   },
   {
@@ -196,23 +179,24 @@
    "read_only": 1
   },
   {
-   "default": "0",
-   "fieldname": "active",
-   "fieldtype": "Check",
-   "label": "Active?"
+   "fieldname": "status_doctype",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "Active\nErrand Trip Completed\nCancelled",
+   "search_index": 1
   }
  ],
- "is_submittable": 1,
  "links": [],
- "modified": "2021-09-24 11:45:06.671369",
+ "modified": "2021-10-05 11:12:53.983663",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip",
  "owner": "Administrator",
  "permissions": [
   {
-   "amend": 1,
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -222,12 +206,9 @@
    "report": 1,
    "role": "Fulfillment User",
    "share": 1,
-   "submit": 1,
    "write": 1
   },
   {
-   "amend": 1,
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -237,7 +218,6 @@
    "report": 1,
    "role": "Stock User",
    "share": 1,
-   "submit": 1,
    "write": 1
   },
   {
@@ -250,11 +230,51 @@
    "report": 1,
    "role": "Administrator",
    "share": 1,
-   "submit": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Revelare-L1",
+   "share": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Revelare-L3",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Revelare-L4",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "import": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Revelare-L6",
+   "select": 1,
+   "share": 1,
    "write": 1
   }
  ],
  "sort_field": "modified",
- "sort_order": "DESC",
- "title_field": "driver_name"
+ "sort_order": "DESC"
 }
