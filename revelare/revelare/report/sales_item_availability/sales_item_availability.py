@@ -168,7 +168,6 @@ def get_data(filters, is_report=True):
 
     # [{'name': 'CULTIVO-0069', 'estimation_name': 'Perejil', 'estimation_uom': 'Pound', 'stock_uom': 'Onza', 'amount':'15.0', 'amount_uom': 'Pound'}]
     estimated_materials_with_attributes = total_item_availability_estimate_attributes(filters)
-
     # ----- QUERY # 2 BEGIN -----
     # Now we find the BOM names based on the names of material items in our item_attributes_list
 
