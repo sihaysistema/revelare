@@ -5,29 +5,31 @@
       <div class="card-header mt-2">
         <div class="d-flex align-items-start">
           <div class="mr-auto">
-            <p class="text-primary mb-1">
+            <a class="text-primary mb-1" @click="errandTrip()">
               {{ __("VIAJE") }} #{{ tripData.idx + 1 }}
-            </p>
+            </a>
             <h5 class="title font-w600 mb-2">
-              <a href="post-details.html" class="text-black"></a>
-              {{ tripData.docname }}
+              <a class="text-black"></a>
+              {{ tripData.document }}
             </h5>
             <h5 class="title font-w600 mb-2">
-              <a href="post-details.html" class="text-black"></a>
-              {{ tripData.doctype }}
+              <a class="text-black"></a>
+              {{ tripData.document_type }}
             </h5>
-            <span> {{ __("Para") }} {{ tripData.customer }}</span>
+            <span class="font-weight-bolder">
+              {{ __("Para") }}: {{ tripData.customer }}</span
+            >
           </div>
-          <h3 class="badge badge-success d-sm-inline-block d-none">
-            {{ __("ACTIVO") }}
+          <h3 :class="badgeStyle">
+            {{ __(statusCard) }}
           </h3>
         </div>
       </div>
 
       <!-- BODY -->
       <div class="card-body">
-        <div class="row mb-4">
-          <!-- Icono Izquierdo -->
+        <div class="row mb-3">
+          <!-- Icono Izquierdo: Hora solicitada-->
           <div class="col-sm-6 mb-sm-0 mb-3 d-flex">
             <div class="dt-icon mr-3 bgl-danger">
               <svg
@@ -44,14 +46,16 @@
               </svg>
             </div>
             <div>
-              <span>{{ __("Para entregar el") }}:</span>
+              <span class="font-weight-bolder"
+                >{{ __("Hora solicitada") }}:</span
+              >
               <p class="mb-0 pt-1 font-w500 text-black">
                 {{ tripData.requested_time }}
               </p>
             </div>
           </div>
 
-          <!-- Icono derecho -->
+          <!-- Icono derecho: Hora completado -->
           <div class="col-sm-6 d-flex">
             <div class="dt-icon mr-3 bgl-info">
               <svg
@@ -72,93 +76,66 @@
               </svg>
             </div>
             <div>
-              <span>{{ __("Entregado el") }}: </span>
+              <span class="font-weight-bolder"
+                >{{ __("Hora completado") }}:
+              </span>
               <p class="mb-0 pt-1 font-w500 text-black">
-                {{ tripData.completed_on }}
+                {{ tripData.actual_arrival }}
               </p>
             </div>
           </div>
         </div>
-        <!-- DESCRIPCIONES -->
-        <p class="mb-4">
-          It is a long established fact that a reader will be distracted by the
-          readable content of a page when looking at its layout.
+
+        <!-- DESCRIPCIONES PARA EL VIAJE -->
+        <p class="mb-2">
+          <span class="font-weight-bolder">{{ __("Detalles") }} :</span> <br />
+          {{ tripData.details }}
         </p>
 
         <div class="mr-auto">
-          <p class="mb-2 text-black">{{ __("Detalles de cliente") }}</p>
+          <p class="mb-2 text-black font-weight-bolder">
+            {{ __("Detalles de cliente") }}
+          </p>
+
           <p class="mb-2 text-black">
             <i class="fa fa-user" aria-hidden="true"></i> {{ __("Contacto") }}:
-            Juan Perez
+            <br />
+            {{ tripData.contact_details }}
           </p>
-          <p class="mb-2 text-black">
-            <i class="fa fa-phone" aria-hidden="true"></i> {{ __("Teléfono") }}:
-            33633893
-          </p>
+
           <p class="mb-2 text-black">
             <i class="fa fa-map-marker" aria-hidden="true"></i>
-            {{ __("Dirección") }}: It is a long established fact that a reader
-            will be distracted by the readable content of
+            {{ __("Dirección") }}: <br />{{ tripData.address_details }}
           </p>
+
+          <!-- Ingreso comentarios por conductor -->
+          <div class="md-form form-group">
+            <label for="example8" class="font-weight-bolder"
+              >{{ __("Driver comment") }}:
+            </label>
+            <input
+              type="text"
+              class="form-control"
+              id="example8"
+              placeholder="Ingrese su comentario"
+              v-model="tripData.driver_comment"
+              @change="updateComment()"
+            />
+          </div>
         </div>
       </div>
 
       <!-- FOOTER -->
       <div
-        class="card-footer d-sm-flex justify-content-between align-items-center"
+        class="card-footer d-sm-flex justify-content-center align-items-center"
       >
-        <div class="card-footer-link mb-4 mb-sm-0">
-          <p class="card-text text-dark d-inline">
-            {{ __("Tiempo retraso ") }}: 00:23:54
-          </p>
-        </div>
+        <!-- <div class="card-footer-link mb-4 mb-sm-0">
+          {{ __("Tiempo retraso ") }}: 00:23:54
+          <p class="card-text text-dark d-inline"></p>
+        </div> -->
 
-        <div class="text-center">
-          <button type="button" class="btn shs-btn-success btn-lg">
-            {{ __("Completar") }}
-          </button>
-        </div>
-        <div class="text-center">
-          <button
-            type="button"
-            title="Abrir en waze"
-            class="btn"
-            @click="openInWaze"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 48 48"
-              width="30px"
-              height="30px"
-            >
-              <path
-                fill="#37474f"
-                d="M27,38C9.1,38,5.2,33.2,3.6,31.1c-0.4-0.4-0.6-1-0.6-1.6C3,28.1,4.1,27,5.5,27C6.4,27,9,27,9,22.1 v-0.6C9,12.4,17.1,5,27,5s18,7.4,18,16.5S36.9,38,27,38z"
-              />
-              <path
-                fill="#eceff1"
-                d="M27,36c8.8,0,16-6.5,16-14.5S35.8,7,27,7s-16,6.5-16,14.5v0.6c0,6.2-3.8,6.9-5.5,6.9 C5.2,29,5,29.2,5,29.5c0,0.1,0,0.2,0.1,0.3C6.6,31.7,10,36,27,36z"
-              />
-              <path
-                fill="#37474f"
-                d="M32 16A2 2 0 1 0 32 20 2 2 0 1 0 32 16zM22 16A2 2 0 1 0 22 20 2 2 0 1 0 22 16zM27 29c-4.8 0-6.7-3.5-7-5.3-.1-.5.3-1.1.8-1.2.5-.1 1.1.3 1.2.8 0 .1.7 3.7 5 3.7 4.3 0 5-3.5 5-3.7.1-.5.6-.9 1.2-.8.5.1.9.6.8 1.1C33.7 25.5 31.8 29 27 29zM16.5 34A4.5 4.5 0 1 0 16.5 43 4.5 4.5 0 1 0 16.5 34z"
-              />
-              <path
-                fill="#607d8b"
-                d="M16.5 37A1.5 1.5 0 1 0 16.5 40A1.5 1.5 0 1 0 16.5 37Z"
-              />
-              <path
-                fill="#37474f"
-                d="M32.5 34A4.5 4.5 0 1 0 32.5 43A4.5 4.5 0 1 0 32.5 34Z"
-              />
-              <path
-                fill="#607d8b"
-                d="M32.5 37A1.5 1.5 0 1 0 32.5 40A1.5 1.5 0 1 0 32.5 37Z"
-              />
-            </svg>
-          </button>
-        </div>
-        <div class="text-center">
+        <!-- Boton abrir en google maps -->
+        <div class="text-center mr-2">
           <button
             type="button"
             title="Abrir en google maps"
@@ -206,6 +183,72 @@
             </svg>
           </button>
         </div>
+
+        <!-- Boton completar -->
+        <div class="text-center" v-if="!tripData.actual_arrival">
+          <button
+            type="button"
+            class="btn shs-btn-success btn-lg"
+            @click="complete()"
+          >
+            {{ __("Complete") }}
+          </button>
+        </div>
+        <!-- Boton deshacer -->
+        <div
+          class="text-center"
+          v-if="tripData.actual_arrival && tripData.status === 'Completed'"
+        >
+          <button
+            type="button"
+            class="btn shs-btn-success btn-lg"
+            @click="undo()"
+          >
+            {{ __("Undo") }}
+          </button>
+        </div>
+
+        <!-- Boton abrir en waze -->
+        <div class="text-center ml-2">
+          <button
+            type="button"
+            title="Abrir en waze"
+            class="btn"
+            @click="openInWaze"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 48 48"
+              width="30px"
+              height="30px"
+            >
+              <path
+                fill="#37474f"
+                d="M27,38C9.1,38,5.2,33.2,3.6,31.1c-0.4-0.4-0.6-1-0.6-1.6C3,28.1,4.1,27,5.5,27C6.4,27,9,27,9,22.1 v-0.6C9,12.4,17.1,5,27,5s18,7.4,18,16.5S36.9,38,27,38z"
+              />
+              <path
+                fill="#eceff1"
+                d="M27,36c8.8,0,16-6.5,16-14.5S35.8,7,27,7s-16,6.5-16,14.5v0.6c0,6.2-3.8,6.9-5.5,6.9 C5.2,29,5,29.2,5,29.5c0,0.1,0,0.2,0.1,0.3C6.6,31.7,10,36,27,36z"
+              />
+              <path
+                fill="#37474f"
+                d="M32 16A2 2 0 1 0 32 20 2 2 0 1 0 32 16zM22 16A2 2 0 1 0 22 20 2 2 0 1 0 22 16zM27 29c-4.8 0-6.7-3.5-7-5.3-.1-.5.3-1.1.8-1.2.5-.1 1.1.3 1.2.8 0 .1.7 3.7 5 3.7 4.3 0 5-3.5 5-3.7.1-.5.6-.9 1.2-.8.5.1.9.6.8 1.1C33.7 25.5 31.8 29 27 29zM16.5 34A4.5 4.5 0 1 0 16.5 43 4.5 4.5 0 1 0 16.5 34z"
+              />
+              <path
+                fill="#607d8b"
+                d="M16.5 37A1.5 1.5 0 1 0 16.5 40A1.5 1.5 0 1 0 16.5 37Z"
+              />
+              <path
+                fill="#37474f"
+                d="M32.5 34A4.5 4.5 0 1 0 32.5 43A4.5 4.5 0 1 0 32.5 34Z"
+              />
+              <path
+                fill="#607d8b"
+                d="M32.5 37A1.5 1.5 0 1 0 32.5 40A1.5 1.5 0 1 0 32.5 37Z"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -215,28 +258,35 @@
 export default {
   name: "DataCard",
   props: ["tripData"],
-  data() {},
+  data() {
+    return {
+      completedOn: "",
+      statusCard: "",
+      driverComment: "",
+    };
+  },
   methods: {
     openInWaze() {
       // Para abrir en movil
-      let url = `https://waze.com/ul?q=${this.tripData.latitude},${this.tripData.longitude}&navigate=yes&zoom=17`;
+      let url = `https://waze.com/ul?q=${this.tripData.lat},${this.tripData.lng}&navigate=yes&zoom=17`;
       if (this.detectMob()) {
         window.open(url).focus();
       } else {
-        url = `https://www.waze.com/ul?ll=${this.tripData.latitude}%2C${this.tripData.longitude}&navigate=yes&zoom=17`;
+        url = `https://www.waze.com/ul?ll=${this.tripData.lat}%2C${this.tripData.lng}&navigate=yes&zoom=17`;
         window.open(url, "_blank").focus();
       }
     },
     openInGoogleMaps() {
       //   let url = `maps://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.latitude},${this.tripData.longitude}`;
-      let url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.latitude},${this.tripData.longitude}`;
+      let url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.lat},${this.tripData.lng}`;
       if (this.detectMob()) {
         window.open(url).focus();
       } else {
-        url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.latitude},${this.tripData.longitude}`;
+        url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${this.tripData.lat},${this.tripData.lng}`;
         window.open(url, "_blank").focus();
       }
     },
+    // Si es navegador PC abre en pagina web, si es un telefono abre en app instalada
     detectMob() {
       const toMatch = [
         /Android/i,
@@ -252,24 +302,230 @@ export default {
         return navigator.userAgent.match(toMatchItem);
       });
     },
+    // Función para marcar viajes como completados
+    complete() {
+      let _this = this;
+
+      frappe.confirm(
+        __("Would you like to mark as completed?"),
+        () => {
+          frappe.call({
+            method: "revelare.api.complete_trip",
+            args: {
+              parent: this.tripData.parent,
+              name: this.tripData.name,
+            },
+            async: true,
+            callback: function (data) {
+              //   console.log(data.message);
+              if (data.message) {
+                frappe.show_alert(
+                  {
+                    indicator: "green",
+                    message: __(data.message),
+                  },
+                  5
+                );
+                frappe.utils.play_sound("submit");
+
+                // Emite evento al componente padre para recargar los datos
+                _this.$emit("dataTripCompleted", _this.tripData.parent);
+                _this.$forceUpdate();
+              } else {
+                frappe.utils.play_sound("error");
+                frappe.msgprint(data.message);
+                // Emite evento al componente padre para recargar los datos
+                _this.$emit("dataTripCompleted", _this.tripData.parent);
+                _this.$forceUpdate();
+              }
+            },
+          });
+        },
+        () => {
+          // action to perform if No is selected
+        }
+      );
+      //   this.$emit("dataTripCompleted", this.tripData.parent);
+      this.$forceUpdate();
+    },
+    // Vuelve activar X viaje
+    undo() {
+      let _this = this;
+
+      frappe.confirm(
+        __("You are sure to activate the trip again?"),
+        () => {
+          frappe.call({
+            method: "revelare.api.undo_status_trip",
+            args: {
+              parent: this.tripData.parent,
+              name: this.tripData.name,
+            },
+            async: true,
+            callback: function (data) {
+              if (data.message) {
+                // Si hay respuesta
+                frappe.show_alert(
+                  {
+                    indicator: "green",
+                    message: __(data.message),
+                  },
+                  5
+                );
+                // frappe.utils.play_sound("submit");
+                frappe.utils.play_sound("click");
+                // Emite evento al componente padre para recargar los datos
+                _this.$emit("dataTripCompleted", _this.tripData.parent);
+                _this.$forceUpdate();
+              } else {
+                frappe.utils.play_sound("error");
+                frappe.msgprint(data.message);
+                // Emite evento al componente padre para recargar los datos
+                _this.$emit("dataTripCompleted", _this.tripData.parent);
+                _this.$forceUpdate();
+              }
+            },
+          });
+        },
+        () => {
+          // action to perform if No is selected
+        }
+      );
+      //   this.$emit("dataTripCompleted", this.tripData.parent);
+      this.$forceUpdate();
+    },
+    // Retorna la diferencia en minutos entre dos fechastiempo
+    diff_minutes(dt2, dt1) {
+      // NOTA: Es necesario que las fechas sean de tipo Date
+      let diff = (dt2 - dt1) / 1000;
+      diff /= 60;
+      let minutes = Math.abs(Math.round(diff));
+      //   console.log(minutes);
+      return minutes;
+    },
+    // Actualizador de comentarios
+    updateComment() {
+      let _this = this;
+
+      // Actualiza el comentario en la tabla hija de Errand Trip
+      frappe.call({
+        method: "revelare.api.update_driver_comment",
+        args: {
+          parent: this.tripData.parent,
+          name: this.tripData.name,
+          comment: this.tripData.driver_comment,
+        },
+        async: true,
+        callback: function (data) {
+          if (data.message) {
+            frappe.show_alert(
+              {
+                indicator: "green",
+                message: __(data.message),
+              },
+              3
+            );
+            // frappe.utils.play_sound("email");
+            frappe.utils.play_sound("click");
+
+            _this.$forceUpdate();
+          } else {
+            frappe.utils.play_sound("error");
+            frappe.msgprint(data.message);
+
+            _this.$forceUpdate();
+          }
+        },
+      });
+    },
+    // Redirecciona al Errand Trip Origen
+    errandTrip() {
+      //   Forma 1: abre en la misma página
+      //   frappe.set_route("Form", "Errand Trip", this.tripData.parent);
+
+      // Forma 2: abre en una nueva página
+      window.open(`/app/errand-trip/${this.tripData.parent}`);
+    },
   },
+  // En caché
   computed: {
     cardStyle: function () {
-      if (this.tripData.status === "active") {
-        return "card shs-bg-active";
-      } else if (this.tripData.status === "overdue") {
-        return "card shs-bg-danger";
-      } else if (this.tripData.status === "pending") {
+      // Si es Pendiente: Si hay 30 minutos o menos a la fecha requeridad y esta activo,
+      // la tarjeta toma el color amarillo
+      if (
+        this.tripData.status === "Active" &&
+        this.diff_minutes(
+          new Date(this.tripData.requested_time),
+          new Date(frappe.datetime.now_datetime())
+        ) <= 30
+      ) {
+        // console.log("pendiente");
+        this.statusCard = "Pending";
+        this.tripData.status = "Pending";
         return "card shs-bg-warning";
-      } else if (this.tripData.status === "completed") {
+      }
+
+      // Activo: Si la fecha y tiempo es menor a la fecha hora requeridad y esta activo,
+      // la tarjeta toma el color verde
+      if (
+        this.tripData.status === "Active" &&
+        frappe.datetime.now_datetime() <= this.tripData.requested_time
+      ) {
+        // console.log("activo");
+        this.statusCard = "Active";
+        this.tripData.status = "Active";
+        return "card shs-bg-active";
+      }
+
+      // Atraso: Si la fecha y tiempo es mayor a la fecha hora requeridad y esta activo,
+      // la tarjeta toma el color rojo
+      if (
+        this.tripData.status === "Active" &&
+        frappe.datetime.now_datetime() > this.tripData.requested_time
+      ) {
+        // console.log("atrasado");
+        this.statusCard = "Overdue";
+        this.tripData.status = "Overdue";
+        return "card shs-bg-danger";
+      }
+
+      // Completado: Si el status es Completed y ya hay una fecha en actual_arrival,
+      // la tarjeta toma el color gris
+      if (
+        this.tripData.status === "Completed" &&
+        this.tripData.actual_arrival
+      ) {
+        // console.log("completado");
+        this.statusCard = "Completed";
+        this.tripData.status = "Completed";
         return "card shs-bg-completed";
+      }
+
+      // Si no se cumple ninguna condicion se pone en color rojo, para darle atencion
+      this.statusCard = "Overdue";
+      this.tripData.status = "Overdue";
+      return "card shs-bg-danger";
+    },
+    badgeStyle: function () {
+      if (this.statusCard === "Active") {
+        return "badge badge-success d-sm-inline-block d-none";
+      } else if (this.statusCard === "Overdue") {
+        return "badge badge-danger d-sm-inline-block d-none";
+      } else if (this.statusCard === "Pending") {
+        return "badge badge-warning d-sm-inline-block d-none";
+      } else if (this.statusCard === "Completed") {
+        return "badge shs-badge-dark d-sm-inline-block d-none";
       } else {
-        return "card";
+        return "badge shs-badge-dark d-sm-inline-block d-none";
       }
     },
   },
 };
 </script>
 
-<style>
+<style scoped>
+input[type="text"] {
+  background: transparent;
+  border: none;
+}
 </style>

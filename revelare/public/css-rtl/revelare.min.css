@@ -133,16 +133,16 @@ a.badge-secondary.focus {
 }
 
 .shs-badge-success {
-  color: #212529;
+  color: #fff;
   background-color: #68cf29;
 }
-a.badge-success:hover,
-a.badge-success:focus {
+a.shs-badge-success:hover,
+a.shs-badge-success:focus {
   color: #212529;
   background-color: #53a421;
 }
-a.badge-success:focus,
-a.badge-success.focus {
+a.shs-badge-success:focus,
+a.shs-badge-success.focus {
   outline: 0;
   box-shadow: 0 0 0 0.2rem rgba(104, 207, 41, 0.5);
 }
@@ -211,13 +211,13 @@ a.badge-light.focus {
   color: #fff;
   background-color: #6e6e6e;
 }
-a.badge-dark:hover,
-a.badge-dark:focus {
+a.shs-badge-dark:hover,
+a.shs-badge-dark:focus {
   color: #fff;
   background-color: #555555;
 }
-a.badge-dark:focus,
-a.badge-dark.focus {
+a.shs-badge-dark:focus,
+a.shs-badge-dark.focus {
   outline: 0;
   box-shadow: 0 0 0 0.2rem rgba(110, 110, 110, 0.5);
 }

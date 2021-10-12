@@ -1,20 +1,33 @@
 [
  {
   "cash_effect": "Group",
+  "direct_cash_flow_component_name": "Stock",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Direct Cash Flow Component",
+  "is_group": 1,
+  "modified": "2021-09-21 20:32:51.807206",
+  "name": "Stock",
+  "old_parent": "Financing",
+  "parent": "Financing",
+  "parent_direct_cash_flow_component": "Financing",
+  "parentfield": null,
+  "parenttype": null
+ },
+ {
+  "cash_effect": "Group",
   "direct_cash_flow_component_name": "Company",
   "disabled": 0,
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 1,
-  "modified": "2021-02-02 13:53:23.788106",
+  "modified": "2021-09-21 20:32:51.807206",
   "name": "Company",
   "old_parent": "",
   "parent": null,
   "parent_direct_cash_flow_component": null,
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 104
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -23,15 +36,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 35,
-  "modified": "2021-02-02 13:26:18.548510",
+  "modified": "2021-09-21 20:32:51.807206",
   "name": "Interest and Dividends Received",
   "old_parent": "Operations",
   "parent": "Operations",
   "parent_direct_cash_flow_component": "Operations",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 42
+  "parenttype": null
  },
  {
   "cash_effect": "Inflow",
@@ -40,15 +51,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 40,
-  "modified": "2021-02-02 13:26:18.548510",
+  "modified": "2021-09-21 20:32:51.807206",
   "name": "Coupons Received from Bonds",
   "old_parent": "Interest and Dividends Received",
   "parent": "Interest and Dividends Received",
   "parent_direct_cash_flow_component": "Interest and Dividends Received",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 41
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -57,15 +66,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 2,
-  "modified": "2021-02-03 11:47:49.485546",
+  "modified": "2021-09-21 20:32:50.628899",
   "name": "Operations",
   "old_parent": "Company",
   "parent": "Company",
   "parent_direct_cash_flow_component": "Company",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 43
+  "parenttype": null
  },
  {
   "cash_effect": "Inflow",
@@ -74,15 +81,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 18,
-  "modified": "2021-02-02 12:30:08.430058",
+  "modified": "2021-09-21 20:32:51.807206",
   "name": "Receipts from Customers",
   "old_parent": "Cash Receipts from Customers",
   "parent": "Operations",
   "parent_direct_cash_flow_component": "Cash Receipts from Customers",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 19
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -91,15 +96,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 14,
-  "modified": "2021-02-02 12:30:08.430058",
+  "modified": "2021-09-21 20:32:51.807206",
   "name": "Payments to Suppliers",
   "old_parent": "Cash Payments to Suppliers",
   "parent": "Operations",
   "parent_direct_cash_flow_component": "Cash Payments to Suppliers",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 15
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -108,15 +111,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 3,
-  "modified": "2021-02-02 12:30:08.430058",
+  "modified": "2021-09-21 20:32:50.327176",
   "name": "Cash Payments for Taxes",
   "old_parent": "Operations",
   "parent": "Operations",
   "parent_direct_cash_flow_component": "Operations",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 12
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -125,15 +126,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 44,
-  "modified": "2021-02-02 13:26:18.548510",
+  "modified": "2021-09-21 20:32:51.262882",
   "name": "Investment",
   "old_parent": "Company",
   "parent": "Company",
   "parent_direct_cash_flow_component": "Company",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 71
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -142,15 +141,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 72,
-  "modified": "2021-02-02 13:53:23.788106",
+  "modified": "2021-09-21 20:32:51.807206",
   "name": "Financing",
   "old_parent": "Company",
   "parent": "Company",
   "parent_direct_cash_flow_component": "Company",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 99
+  "parenttype": null
  },
  {
   "cash_effect": "Inflow",
@@ -159,15 +156,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 68,
-  "modified": "2021-02-02 13:26:18.548510",
+  "modified": "2021-09-21 20:32:51.807206",
   "name": "Board Compensation from Participation Interest",
   "old_parent": "Board Compensation Cash Flows",
   "parent": "Investment",
   "parent_direct_cash_flow_component": "Board Compensation Cash Flows",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 69
+  "parenttype": null
  },
  {
   "cash_effect": "Inflow",
@@ -176,15 +171,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 74,
-  "modified": "2021-02-02 13:53:23.788106",
+  "modified": "2021-09-21 20:32:51.807206",
   "name": "Money Loaned from Institutions",
   "old_parent": "Loans Obtained from Others",
   "parent": "Financing",
   "parent_direct_cash_flow_component": "Loans Obtained from Others",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 75
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -193,15 +186,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 13,
-  "modified": "2021-02-02 12:30:08.430058",
+  "modified": "2021-09-21 20:32:50.327176",
   "name": "Cash Payments to Suppliers",
   "old_parent": "Operations",
   "parent": "Operations",
   "parent_direct_cash_flow_component": "Operations",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 16
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -210,15 +201,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 17,
-  "modified": "2021-02-02 12:30:08.430058",
+  "modified": "2021-09-21 20:32:50.327176",
   "name": "Cash Receipts from Customers",
   "old_parent": "Operations",
   "parent": "Operations",
   "parent_direct_cash_flow_component": "Operations",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 20
+  "parenttype": null
  },
  {
   "cash_effect": "Inflow",
@@ -227,15 +216,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 4,
   "modified": "2021-02-02 12:27:11.958480",
   "name": "Payments for Income Taxes",
   "old_parent": "Cash Payments for Taxes",
   "parent": "Payments for Income Taxes",
   "parent_direct_cash_flow_component": "Cash Payments for Taxes",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 5
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -244,15 +231,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 6,
   "modified": "2021-02-02 12:32:10.461334",
   "name": "Payments for Sales Taxes",
   "old_parent": "Cash Payments for Taxes",
   "parent": "Cash Payments for Taxes",
   "parent_direct_cash_flow_component": "Cash Payments for Taxes",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 7
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -261,15 +246,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 8,
   "modified": "2021-02-02 12:29:25.319858",
   "name": "Payments for Payroll Taxes",
   "old_parent": "Cash Payments for Taxes",
   "parent": "Cash Payments for Taxes",
   "parent_direct_cash_flow_component": "Cash Payments for Taxes",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 9
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -278,15 +261,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 10,
   "modified": "2021-02-02 12:30:08.430058",
   "name": "Payments for Property Taxes",
   "old_parent": "Cash Payments for Taxes",
   "parent": "Cash Payments for Taxes",
   "parent_direct_cash_flow_component": "Cash Payments for Taxes",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 11
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -295,15 +276,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 21,
-  "modified": "2021-02-02 12:35:19.674441",
+  "modified": "2021-09-21 20:32:50.502943",
   "name": "Cash Payment for Operating Expenses",
   "old_parent": "Operations",
   "parent": "Operations",
   "parent_direct_cash_flow_component": "Operations",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 28
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -312,15 +291,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 22,
   "modified": "2021-02-02 12:33:30.592157",
   "name": "Standard Payroll Payments",
   "old_parent": "Cash Payment for Operating Expenses",
   "parent": "Cash Payment for Operating Expenses",
   "parent_direct_cash_flow_component": "Cash Payment for Operating Expenses",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 23
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -329,15 +306,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 24,
-  "modified": "2021-02-02 12:35:19.674441",
+  "modified": "2021-09-21 20:32:50.502943",
   "name": "Bonus Payroll Payments",
   "old_parent": "Cash Payment for Operating Expenses",
   "parent": "Cash Payment for Operating Expenses",
   "parent_direct_cash_flow_component": "Cash Payment for Operating Expenses",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 27
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -346,15 +321,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 25,
   "modified": "2021-02-02 12:35:19.674441",
   "name": "Bonus Payroll Payment",
   "old_parent": "Bonus Payroll Payments",
   "parent": "Bonus Payroll Payments",
   "parent_direct_cash_flow_component": "Bonus Payroll Payments",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 26
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -363,15 +336,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 29,
-  "modified": "2021-02-02 12:44:07.373482",
+  "modified": "2021-09-21 20:32:50.628899",
   "name": "Cash Payments for Severance or Retirement",
   "old_parent": "Operations",
   "parent": "Operations",
   "parent_direct_cash_flow_component": "Operations",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 34
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -380,15 +351,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 30,
   "modified": "2021-02-02 12:43:50.853257",
   "name": "Payments for Severance",
   "old_parent": "Cash Payments for Severance or Retirement",
   "parent": "Cash Payments for Severance or Retirement",
   "parent_direct_cash_flow_component": "Cash Payments for Severance or Retirement",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 31
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -397,15 +366,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 32,
   "modified": "2021-02-02 12:44:19.668757",
   "name": "Payments for Retirement",
   "old_parent": "Cash Payments for Severance or Retirement",
   "parent": "Cash Payments for Severance or Retirement",
   "parent_direct_cash_flow_component": "Cash Payments for Severance or Retirement",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 33
+  "parenttype": null
  },
  {
   "cash_effect": "Inflow",
@@ -414,15 +381,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 36,
-  "modified": "2021-02-02 12:48:08.745825",
+  "modified": "2021-09-21 20:32:51.807206",
   "name": "Dividends Received from Investment",
   "old_parent": "Interest and Dividends Received",
   "parent": "Dividends Received",
   "parent_direct_cash_flow_component": "Interest and Dividends Received",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 37
+  "parenttype": null
  },
  {
   "cash_effect": "Inflow",
@@ -431,15 +396,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 100,
-  "modified": "2021-05-24 16:19:00.486009",
+  "modified": "2021-09-21 20:32:51.807206",
   "name": "Uncategorized Inflows",
   "old_parent": "Company",
   "parent": "Company",
   "parent_direct_cash_flow_component": "Company",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 101
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -448,15 +411,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 102,
-  "modified": "2021-05-24 16:18:43.544160",
+  "modified": "2021-09-21 20:32:51.807206",
   "name": "Uncategorized Outflows",
   "old_parent": "Company",
   "parent": "Company",
   "parent_direct_cash_flow_component": "Company",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 103
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -465,15 +426,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 45,
-  "modified": "2021-02-02 13:26:18.548510",
+  "modified": "2021-09-21 20:32:50.893595",
   "name": "Fixed Asset Cash Flows",
   "old_parent": "Investment",
   "parent": "Investment",
   "parent_direct_cash_flow_component": "Investment",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 50
+  "parenttype": null
  },
  {
   "cash_effect": "Inflow",
@@ -482,15 +441,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 46,
   "modified": "2021-02-02 13:26:18.548510",
   "name": "Purchases of fixed assets (Property, Plant & Equipment)",
   "old_parent": "Fixed Asset Cash Flows",
   "parent": "Fixed Asset Cash Flows",
   "parent_direct_cash_flow_component": "Fixed Asset Cash Flows",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 47
+  "parenttype": null
  },
  {
   "cash_effect": "Inflow",
@@ -499,15 +456,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 48,
   "modified": "2021-02-02 13:26:18.548510",
   "name": "Sale of fixed assets (Property, Plant & Equipment)",
   "old_parent": "Fixed Asset Cash Flows",
   "parent": "Fixed Asset Cash Flows",
   "parent_direct_cash_flow_component": "Fixed Asset Cash Flows",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 49
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -516,15 +471,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 51,
-  "modified": "2021-02-02 13:26:18.548510",
+  "modified": "2021-09-21 20:32:51.013242",
   "name": "Long-term Securities Cash Flows",
   "old_parent": "Investment",
   "parent": "Investment",
   "parent_direct_cash_flow_component": "Investment",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 56
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -533,15 +486,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 52,
   "modified": "2021-02-02 13:26:18.548510",
   "name": "Investment in long-term securities (stocks or bonds)",
   "old_parent": "Long-term Securities Cash Flows",
   "parent": "Long-term Securities Cash Flows",
   "parent_direct_cash_flow_component": "Long-term Securities Cash Flows",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 53
+  "parenttype": null
  },
  {
   "cash_effect": "Inflow",
@@ -550,15 +501,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 54,
   "modified": "2021-02-02 13:26:18.548510",
   "name": "Sale of long-term securities (stocks or bonds)",
   "old_parent": "Long-term Securities Cash Flows",
   "parent": "Long-term Securities Cash Flows",
   "parent_direct_cash_flow_component": "Long-term Securities Cash Flows",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 55
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -567,15 +516,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 57,
-  "modified": "2021-02-02 13:26:18.548510",
+  "modified": "2021-09-21 20:32:51.101838",
   "name": "Cash Flows of Taxes Related to Investing Activities",
   "old_parent": "Investment",
   "parent": "Investment",
   "parent_direct_cash_flow_component": "Investment",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 60
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -584,15 +531,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 58,
   "modified": "2021-02-02 13:26:18.548510",
   "name": "Cash Payments for Taxes Related to Investing",
   "old_parent": "Cash Flows of Taxes Related to Investing Activities",
   "parent": "Cash Flows of Taxes Related to Investing Activities",
   "parent_direct_cash_flow_component": "Cash Flows of Taxes Related to Investing Activities",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 59
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -601,15 +546,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 61,
-  "modified": "2021-02-02 13:26:18.548510",
+  "modified": "2021-09-21 20:32:51.220793",
   "name": "Loans Given to Others",
   "old_parent": "Investment",
   "parent": "Investment",
   "parent_direct_cash_flow_component": "Investment",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 66
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -618,15 +561,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 62,
   "modified": "2021-02-02 13:26:18.548510",
   "name": "Money Lent to Individuals",
   "old_parent": "Loans Given to Others",
   "parent": "Loans to other individuals or institutions",
   "parent_direct_cash_flow_component": "Loans Given to Others",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 63
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -635,15 +576,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 64,
   "modified": "2021-02-02 13:26:18.548510",
   "name": "Money Lent to Institutions",
   "old_parent": "Loans Given to Others",
   "parent": "Loans to other individuals or institutions",
   "parent_direct_cash_flow_component": "Loans Given to Others",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 65
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -652,15 +591,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 67,
   "modified": "2021-02-02 13:26:18.548510",
   "name": "Board Compensation Cash Flows",
   "old_parent": "Investment",
   "parent": "Investment",
   "parent_direct_cash_flow_component": "Investment",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 70
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -669,15 +606,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 73,
-  "modified": "2021-02-02 13:53:23.788106",
+  "modified": "2021-09-21 20:32:51.348541",
   "name": "Loans Obtained from Others",
   "old_parent": "Financing",
   "parent": "Financing",
   "parent_direct_cash_flow_component": "Financing",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 78
+  "parenttype": null
  },
  {
   "cash_effect": "Inflow",
@@ -686,15 +621,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 76,
   "modified": "2021-02-02 13:53:23.788106",
   "name": "Money Loaned from Individuals",
   "old_parent": "Loans Obtained from Others",
   "parent": "Loans Obtained from Others",
   "parent_direct_cash_flow_component": "Loans Obtained from Others",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 77
+  "parenttype": null
  },
  {
   "cash_effect": "Inflow",
@@ -703,15 +636,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 38,
-  "modified": "2021-02-02 13:25:49.384517",
+  "modified": "2021-09-21 20:32:51.807206",
   "name": "Interest Received from Investment",
   "old_parent": "Interest and Dividends Received",
   "parent": "Interest and Dividends Received",
   "parent_direct_cash_flow_component": "Interest and Dividends Received",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 39
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -720,15 +651,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 79,
-  "modified": "2021-02-02 13:53:23.788106",
+  "modified": "2021-09-21 20:32:51.646826",
   "name": "Debt Service",
   "old_parent": "Financing",
   "parent": "Financing",
   "parent_direct_cash_flow_component": "Financing",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 86
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -737,15 +666,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 80,
   "modified": "2021-02-02 13:53:23.788106",
   "name": "Debt Repayment",
   "old_parent": "Debt Service",
   "parent": "Debt Service",
   "parent_direct_cash_flow_component": "Debt Service",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 81
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -754,15 +681,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 82,
   "modified": "2021-02-02 13:53:23.788106",
   "name": "Coupon Payments",
   "old_parent": "Debt Service",
   "parent": "Debt Service",
   "parent_direct_cash_flow_component": "Debt Service",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 83
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -771,15 +696,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 87,
-  "modified": "2021-02-02 13:53:23.788106",
+  "modified": "2021-09-21 20:32:51.646826",
   "name": "Financial Institution Flows",
   "old_parent": "Financing",
   "parent": "Financing",
   "parent_direct_cash_flow_component": "Financing",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 90
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -788,15 +711,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 88,
-  "modified": "2021-02-02 13:53:23.788106",
+  "modified": "2021-09-21 20:32:51.646826",
   "name": "Financial Institution Transaction Fees",
   "old_parent": "Financial Institution Flows",
   "parent": "Financial Institution Flows",
   "parent_direct_cash_flow_component": "Financial Institution Flows",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 89
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -805,15 +726,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 84,
   "modified": "2021-02-02 13:53:23.788106",
   "name": "Interest Expenses",
   "old_parent": "Debt Service",
   "parent": "Debt Service",
   "parent_direct_cash_flow_component": "Debt Service",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 85
+  "parenttype": null
  },
  {
   "cash_effect": "Group",
@@ -822,15 +741,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 1,
-  "lft": 91,
-  "modified": "2021-02-02 13:53:23.788106",
+  "modified": "2021-09-21 20:32:51.807206",
   "name": "Shares (Stock)",
   "old_parent": "Financing",
   "parent": "Financing",
   "parent_direct_cash_flow_component": "Financing",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 98
+  "parenttype": null
  },
  {
   "cash_effect": "Inflow",
@@ -839,15 +756,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 92,
   "modified": "2021-02-02 13:53:23.788106",
   "name": "New Stock Issue",
   "old_parent": "Shares (Stock)",
   "parent": "Stock",
   "parent_direct_cash_flow_component": "Shares (Stock)",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 93
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -856,15 +771,13 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 94,
   "modified": "2021-02-02 13:53:23.788106",
   "name": "Stock Repurchases",
   "old_parent": "Shares (Stock)",
   "parent": "Stock",
   "parent_direct_cash_flow_component": "Shares (Stock)",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 95
+  "parenttype": null
  },
  {
   "cash_effect": "Outflow",
@@ -873,14 +786,12 @@
   "docstatus": 0,
   "doctype": "Direct Cash Flow Component",
   "is_group": 0,
-  "lft": 96,
   "modified": "2021-02-02 13:53:23.788106",
   "name": "Dividend Payments",
   "old_parent": "Shares (Stock)",
   "parent": "Stock",
   "parent_direct_cash_flow_component": "Shares (Stock)",
   "parentfield": null,
-  "parenttype": null,
-  "rgt": 97
+  "parenttype": null
  }
 ]
