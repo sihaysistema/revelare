@@ -81,12 +81,12 @@ def get_data(driver=''):
 
         elif doctype == 'Purchase Order':
             filt = [['docstatus','=',0]]
-            fieldnames = ['name', 'schedule_date']
+            fieldnames = ['name', 'schedule_date', 'billing_address','contact_person ']
 
         elif doctype == 'Stock Entry':
             # Si es stock entry tiene estar validado
-            filt = {'docstatus' : 1, 'stock_entry_type':'Material Transfer'}
-            fieldnames = ['name']
+            filt = [['docstatus','=',1],['stock_entry_type','=','Material Transfer']]
+            fieldnames = ['name','target_warehouse_address']
 
         elif doctype == 'ToDo':
             filt = [['docstatus','=',0]]
@@ -94,9 +94,16 @@ def get_data(driver=''):
 
         elif doctype == 'Delivery Note':
             # Si es delivery note tiene que estar el documento validado
-            filt = [['docstatus','=',0]]
-            fieldnames = ['name']
+            filt = [['docstatus','=',1]]
+            fieldnames = ['name','shipping_address_name','contact_person']
 
+        elif doctype == 'Purchase Receipt':
+            filt = [['docstatus','=',0]]
+            fieldnames = ['name', 'shipping_address','contact_person']
+
+        elif doctype == 'Shipmnet':
+            filt = [['docstatus','=',0]]
+            fieldnames = ['name', 'delivery_address_name']
         else:
             # Para los demas doctypes, se obtendran los que esten en draft
             filt = [['docstatus','=',0]]
