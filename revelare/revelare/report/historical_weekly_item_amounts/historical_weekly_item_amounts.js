@@ -19,7 +19,7 @@ frappe.query_reports["Historical Weekly Item Amounts"] = {
         label: __("Year"),
         fieldtype: "Select",
         options: year_list,
-        default: "2010",
+        default: "2021",
         reqd: 0
     }
 

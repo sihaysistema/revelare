@@ -9,10 +9,20 @@ from datetime import date, datetime, time, timedelta
 
 import frappe
 from frappe import _, _dict, scrub
-from revelare.revelare.report.sales_item_availability.sales_item_availability import get_data
-from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import total_sales_items
 
-# get_data(filters, is_report=False)
+from revelare.revelare.report.sales_item_availability.sales_item_availability import get_data
+from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import (find_conversion_factor,
+                                                                                              total_sales_items)
+
+from revelare.revelare.report.historical_weekly_item_amounts.utils
+import get_range_of_date
+import is_digit
+import is_string
+import list_of_ranges_date
+import search_list_of_dict_k
+import search_list_of_dict_v
+
+
 def execute(filters=None):
     columns, data = get_columns(filters), get_data_(filters)
     return columns, data
@@ -82,85 +92,6 @@ def get_data_(filters):
     estimations = estimations_reports(flt, data_of_date)
     return [{}]
 
-def get_range_of_date(filters):
-    # Año actual
-    current_year = datetime.today().year
-    # Año desde el que se va a calcular
-    flt_year = int(filters.year)
-
-    data = []
-    # Mientras el año del filtro sea menor obtenemos el listado de fechas
-    while flt_year <= current_year:
-        data.append(list_of_ranges_date(flt_year))
-        # le sumamos un año al año desde el que se calculara
-        flt_year += 1
-
-    return data
-
-def list_of_ranges_date(flt_year):
-    # año sobre el cual se calcularan las fechas
-    year = flt_year
-    # Buscamos primer semana del año respecto al ISO-8601
-    # Nota: El ISO-8601 es un forma que toma en cuenta el primer lunes de cada año, como primer día de la semana en cada año.
-    # en el caso del año 2021 el lunes 04 de enero, es el primer día de la semana 1. el dia 03-01-2021, aun es semana 52 del año 2020
-    first_week = date(year,1,1)
-
-    while True:
-        # Obtenemos una tupla
-        # retorna tupla('año','#semana','#dia')
-        data_of_year = datetime.isocalendar(first_week)
-        # Ej: Validate = '2021 week2'
-        validate = f'{data_of_year[0]} week{data_of_year[1]}'
-        # si el año a validar esta en el string de validacion
-        # '2020 week' in '2021 week2'
-        if f'{year} week' in validate:
-            # Si ya es el mismo año, rompemos el ciclo
-            break
-        else:
-            # De lo contrario le sumamos un día a la fecha de la primer semana
-            first_week = first_week + timedelta(days=1)
-
-    # Fecha de inicio, es el primer día de la primer semana de cada año
-    from_date = first_week.strftime('%Y-%m-%d')
-
-    # Año a comparar
-    year_ = year
-
-    # Diccionario a retornar
-    dic_date = []
-    # Mientras year_ sea igual que year
-    while year_ == year:
-        # La fecha fin, sera el primer día (from_date) + 6 días
-        to_date = datetime.strptime(from_date, '%Y-%m-%d') + timedelta(days=6)
-        # De tipo Date la pasamos a tipo String
-        to_date = to_date.strftime('%Y-%m-%d')
-
-        # Obtenemos el numero de semana de la fecha de inicio bajo el ISO-8601
-        wk = datetime.strptime(from_date, '%Y-%m-%d').strftime('%V')
-        # Fecha a evualar sera la fecha de inicio para que no se pase de la fecha actual
-        eval_date = datetime.strptime(from_date, '%Y-%m-%d')
-        # Fecha actual.
-        date_now = datetime.today()
-
-        if eval_date < date_now:
-            # Si la fecha a evaluar es menor, generamos el diccionario con el rango de fechs y el nombre del diccionario por # de semana
-            dic_date.append({'from_date':from_date, 'to_date':to_date, 'wk':wk, 'year':year, 'dic_name':f'{year} Week{wk}'})
-        else:
-            # De lo contrario nos salimos del ciclo
-            break
-
-        # Agregamos 7 dias a la fecha de inicio
-        from_date = datetime.strptime(from_date, '%Y-%m-%d') + timedelta(days=7)
-
-        # Revisamos si la fecha de la fecha de inicio aun esta en el año a obtener el rango de fechas
-        year_ = from_date.year
-
-        # Convetirmos la fecha de tipo Date a String
-        from_date = from_date.strftime('%Y-%m-%d')
-
-    # Retornamos el rango de fechas
-    return dic_date
-
 def estimations_reports(flt, data_of_date):
 
     reports = []
@@ -170,54 +101,221 @@ def estimations_reports(flt, data_of_date):
             # Por cada semana modificamos el filtro generado artificialmente
             flt.from_date = week['from_date']
             flt.to_date = week['to_date']
-            # Llamamos la funcion get_data del reporte sales_item_availability
-            rep = get_data(flt, False)
+            rep = prepair_data_of_report(flt)
             # Si hay data, entonce la agregamos la lista de diccionarios
             if rep != [{}]:
                 reports.append(rep)
             else:
-                pass
-                # reports.append(sold(flt))
-    sold(flt)
-    # dicToJSON('reports',reports)
+                sold(flt)
     return reports
 
+def prepair_data_of_report(flt):
+    # Llamamos la funcion get_data del reporte sales_item_availability
+    rep = get_data(flt, False)
+    if rep != [{}]:
+        # TODO: Obtener el formato de semana para agregar lo a la lista de diccionarios
+        # for row in rep:
+
+
+    return [{}]
+
 def sold(flt):
-    #TODO: Ver la manera de emular la función de la columna sold
 
-    # ES: Este es un query de ordenes de venta donde retornamos todos los nombres de las ordenes de venta que cumplen con los filtros de las fechas en el reporte.
-    #     Segun su FECHA DE ENTREGA!! no estamos usando la fecha de posteo.
-    matching_sales_order_items = total_sales_items(flt)
+    # 1) Obtenemos los items venditos
+    # 2) La lista de los items base con el nombre de los items de venta a utilizar
+    sums_items_sales, items_sales = get_sums_sales_items_qty(flt)
+    solds_totals = []
+    # Si hubieron ventas esa semana ejecutamos lo siguiten
+    if sums_items_sales != []:
 
-    # Obtenemos las cantidades de los items en las ordenes de venta
-    sales_item_codes = [item['item_code'] for item in matching_sales_order_items]
+        # Reorganizamos una lista de diccionario de items vendidos de la forma:
+        """
+        [{
+            item : [ lista_items, ...]
+        },
+        {
+            item : [ lista_items, ...]
+        }]
+        """
+        dic_sold = []
+        for i_s in items_sales:
+            index = search_list_of_dict_k(i_s['item_code_base'], dic_sold)
+            if index != None:
+                dic_sold[index][i_s['item_code_base']].append(i_s)
+            else:
+                dic_sold.append({i_s['item_code_base']:[i_s]})
 
-    data = item_availability_estimate_attributes(flt)
-    dicToJSON('data_',data)
-    return []
+        #---Realizaremos la conversion
+        for dic_s in dic_sold:
+            for item in list(dic_s.values()):
+                # accedemos hasta los items de venta que tienen el mismo item base en comun
+                for i in item:
 
-def item_availability_estimate_attributes(filters):
-    # -----Buscamos todos los items que tengan BOM y sean de venta
-    filt = [['default_bom','!=',''],['is_sales_item','=','1'] ]
-    fieldnames = ['name', 'stock_uom', 'default_bom']
-    item_estimate = frappe.db.get_list('Item', filters=filt, fields=fieldnames) or []
+                    # Revisamos si uno de los items de venta esta entre los items vendidos esa semana
+                    index = search_list_of_dict_v(i['item'],'item_code',sums_items_sales)
 
-    items_estimate = []
-    for item in item_estimate:
-        # -----Obtenemos el Bom de cada item con Bom
-        filt1 = [['parent','=',item['default_bom']]]
-        fieldnames1 = ['name']
-        item_ = frappe.db.get_list('BOM Item', filters=filt1, fields=fieldnames1) or []
+                    # Si esta entonces le generamos la conversión
+                    if index != None:
+                        # Formula para obtener la conversion: ((cantidad consumida por unidad a crear) * (factor de conversion) * (cantidad vendida en esa semana))
+                        # Ej:
+                        # Item base: Lechuga lista para consechar en libras
+                        # Item de venta: Lechuga en bolsa de 8OZ
+                        # Cantidad vendida: 15 unidades
+                        # Factor de conversion de onzas a libras es 0.0625
+                        # venta convertida = (8 *0.0625 * 15) = 7.5
+                        sum_item = sums_items_sales[index]['sum_item']
+                        i['conversion_sold'] = (i['qty_consumed_per_units'] * i['conversion_factor'] * sum_item)
 
-        for i in item_:
-            filt2 = [['name','=',i['name']],['include_in_estimations','=','1']]
-            fieldnames2 = ['name','include_in_estimations']
-            estimate = frappe.db.get_list('Item', filters=filt2, fields=fieldnames2) or []
-            if estimate != []:
-                items_estimate.append(estimate)
+        solds_totals = []
+        for dic_s in dic_sold:
+            item_code = list(dic_s.keys())[0]
+            sum_items_sold = 0
+            for item in list(dic_s.values()):
 
-    return items_estimate
+                for i in item:
+                    if i.get('conversion_sold','') != '':
+                        sum_items_sold += i['conversion_sold']
+            if  sum_items_sold != 0:
+                solds_totals.append({'item_code': item_code, 'sold':sum_items_sold})
+
+    return solds_totals
+
+def item_availability_estimate_attributes(flts):
+    date_doc = ''
+    if flts.sales_from == 'Sales Order':
+        date_doc = 'delivery_date'
+    elif flts.sales_from == 'Delivery Note':
+        date_doc = 'posting_date'
+    elif flts.sales_from == 'Sales Invoice':
+        date_doc = 'due_date'
+    doctype = flts.sales_from
+
+    # ----Query 1
+    # Vamos a buscar todos los items que tengan marcado el campo de incluir en estimacion
+    fieldnames = ['name','estimation_name','estimation_uom']
+    conditions = [['include_item_in_manufacturing','=',1],['include_in_estimations','=',1]]
+    purchase_items = frappe.db.get_list('Item', filters=conditions, fields =fieldnames)
+
+    list_of_boms = []
+
+    # Buscamos los BOMs que tengan estos items en su lista de requerimientos
+    for pur_it in purchase_items:
+        name = pur_it['name']
+        # ----Query 2
+        parents_boms = frappe.db.get_list('BOM Item', filters=[['item_code','=',name]], fields =['parent','item_code','item_name','qty','stock_uom']) or []
+        if parents_boms != []:
+            for p in parents_boms:
+                p['estimation_name'] = pur_it['estimation_name']
+                p['estimation_uom'] = pur_it['estimation_uom']
+
+
+            list_of_boms.extend(parents_boms)
+
+    # Buscamos los items de venta que generan esos boms
+    sales_items = []
+    for boms in list_of_boms:
+        name = boms['parent']
+        # ----Query 3
+        boms_item = frappe.db.get_list('BOM', filters=[['name','=',name],['is_active','=',1]], fields =['item','item_name']) or []
+        if boms_item != []:
+            for b in boms_item:
+                b['estimation_name'] = boms['estimation_name']
+                b['estimation_uom'] = boms['estimation_uom']
+                b['item_code_base'] = boms['item_code']
+                b['item_name_base'] = boms['item_name']
+                b['bom_uom'] = boms['stock_uom']
+                b['qty_consumed_per_units'] = boms['qty']
+            sales_items.extend(boms_item)
+
+    for si in sales_items:
+        # Buscamos el facto de conversion, a la inversa que en el reporte Sales Item availability, desde el BOM ITEM para la estimacion
+        si['conversion_factor'] = find_conversion_factor(si['bom_uom'], si['estimation_uom'])[0]['value']
+
+    sales_items = sorted(sales_items, key = lambda i: i['item_code_base'],reverse=False)
+
+    return sales_items
+
+def get_sums_sales_items_qty(flt):
+    sums_items_qty = []
+
+    items_sales = item_availability_estimate_attributes(flt)
+    sales_order = obtain_sales_orders_in_range(flt)
+    if sales_order != []:
+
+        # Obtenemos la lista solo con los nombre de los items de venta a sumar
+        list_items = [i['item'] for i in items_sales]
+
+        # Reordenamos los items de las ordenes de venta
+        sales_order = sorted(sales_order, key = lambda i: i['item_code'],reverse=False)
+
+        # Reorganizamos una lista de diccionario de la forma:
+        """
+        [{
+            item : [ lista_items, ...]
+        },
+        {
+            item : [ lista_items, ...]
+        }]
+        """
+        dic_sales_order = []
+        for s in sales_order:
+            index = search_list_of_dict_k(s['item_code'], dic_sales_order)
+            if index != None:
+                dic_sales_order[index][s['item_code']].append(s)
+            else:
+                dic_sales_order.append({s['item_code']:[s]})
+
+        # lista de diccionarios con la suma de cada item vendido en el rango de tiempo
+        sums_items_qty = []
+        # Por cada item de la lista de dicciciones de ordenes de venta
+        for dic in dic_sales_order:
+            # Obtenemos el item que validaremos
+            key = list(dic.keys())[0]
+            # Si esta en la lista de items a estimar
+            if key in list_items:
+                # Recorremos la lista que viene dentro, sumando el campo qty
+                for item in list(dic.values()):
+                    sum_of_item = 0
+                    for i in item:
+                        sum_of_item += i['qty']
+                    # Agregamos a sumas de los items, el dicciciario con el nombre del item y la suma
+                    sums_items_qty.append({'item_code':key,'sum_item':sum_of_item})
+
+    return sums_items_qty,items_sales
+
+def obtain_sales_orders_in_range(flts):
+    date_doc = ''
+    if flts.sales_from == 'Sales Order':
+        date_doc = 'delivery_date'
+    elif flts.sales_from == 'Delivery Note':
+        date_doc = 'posting_date'
+    elif flts.sales_from == 'Sales Invoice':
+        date_doc = 'due_date'
+    doctype = flts.sales_from
+
+    # Obtenemos las ordenes de venta entre el rango de fechas.
+    flts_ = [['docstatus','=',1],[date_doc,'>=',flts.from_date],[date_doc,'<=',flts.to_date]]
+    fieldname = ['name',date_doc]
+    sales_orders = frappe.db.get_list(f"{doctype}", filters=flts_, fields =fieldname) or []
+
+    # Obtenemos los items de cada orden de venta
+    so_items = []
+    for so in sales_orders:
+        flts1 = [['parent','=',so['name']]]
+        fieldname1 = ['item_code','item_name','qty','amount','stock_uom']
+        sales_orders_items = frappe.db.get_list(f"{doctype} Item", filters=flts1, fields =fieldname1) or []
+        if sales_orders_items != []:
+            for s in sales_orders_items:
+                s[date_doc] = so[date_doc]
+            so_items.extend(sales_orders_items)
+
+    return so_items
+
+
+
+
+
 
 def dicToJSON(nomArchivo, diccionario):
-    with open(str(nomArchivo+'.json'), 'w') as f:
+    with open(str(nomArchivo+'.json'), 'a') as f:
         f.write(json.dumps(diccionario, indent=2, default=str))

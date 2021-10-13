@@ -361,6 +361,7 @@ def process_data(estimated_materials_with_attributes, material_and_sales_items, 
                 # Convert the items sold an amt in the target UOM
                 # Convertimos los items vendidos a su cantidad en la unidad de medida objetivo
                 conversion = ms_item['conversion_factor'][0]['value']
+
                 target_uom_sold = (items_sold * ms_item['stock_qty']) / conversion
 
                 # Agregamos la parte apartada a los totales
