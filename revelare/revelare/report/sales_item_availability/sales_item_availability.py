@@ -251,6 +251,8 @@ def process_data(estimated_materials_with_attributes, material_and_sales_items, 
         estimation_name = available_material['estimation_name']
         uom_name = available_material["amount_uom"]
         material_amount = available_material['amount']
+        item_code = available_material['name']
+        item_name = available_material['item_name']
 
         #material_amount_html = html_wrap(
         #    str(material_amount), qty_plenty1_strong)
@@ -261,7 +263,9 @@ def process_data(estimated_materials_with_attributes, material_and_sales_items, 
             "D": _(f"Total {uom_name} Sold"),
             "E": "",
             "F": "",
-            "G": ""
+            "G": "",
+            "H": item_code,
+            "J":item_name
         }
 
         # We add bold style to the subtitles for the headers.
