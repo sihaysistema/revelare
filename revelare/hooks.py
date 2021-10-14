@@ -26,7 +26,7 @@ fixtures = fill_fixtures()
 app_include_css = "/assets/revelare/css/revelare.min.css"
 app_include_js = ["/assets/revelare/js/revelar.min.js", "/assets/revelare/js/leafletmap/leaflet.js",
                   "/assets/revelare/js/leafletmap/esri-leaflet.js",
-                  "/assets/revelare/js/leafletmap/esri-leaflet-geocoder.js",]
+                  "/assets/revelare/js/leafletmap/esri-leaflet-geocoder.js"]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/revelare/css/revelare.css"
