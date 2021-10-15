@@ -34,7 +34,9 @@ def fill_fixtures():
                     "Payment Entry-inflow_component",
                     "Payment Entry-outflow_component",
                     "Address-shs_longitude", "Address-shs_latitude", "Address-geo_location",
-                    "Address-leaflet_map"
+                    "Address-leaflet_map", "Address-address_geo_location",
+                    "Address-waze_permalink", "Address-waze_lat", "Address-waze_lon",
+                    "Address-waze_map", "Address-waze_map_iframe"
                 ]
             ]
         ]
