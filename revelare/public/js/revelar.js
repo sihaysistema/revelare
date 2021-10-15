@@ -293,8 +293,9 @@ function open_one_tab(name, type) {
 
 frappe.ui.form.on('Address', {
   onload_post_render: function (frm) {
-    let latitude = frm.doc.shs_latitude;
-    let longitude = frm.doc.shs_longitude;
+
+    let latitude = frm.doc.shs_latitude || 14.552619924048559;
+    let longitude = frm.doc.shs_longitude || -90.45376770582736;
     let zoom = 15;
 
     // Crea una nueva instancia de mapa, con una ubicacion default
