@@ -318,7 +318,18 @@ frappe.ui.form.on('Address', {
       for (var i = data.results.length - 1; i >= 0; i--) {
         results.addLayer(L.marker(data.results[i].latlng));
         console.log("Resultado", data.results[i].latlng)
+        frm.set_value({
+          shs_latitude: data.results[i].latlng.lat,
+          shs_longitude: data.results[i].latlng.lng
+        })
       }
+      frm.refresh_field('shs_latitude');
+      frm.refresh_field('shs_longitude');
+
+      // Regeneracion permalink
+      let permalink = `https://www.waze.com/livemap?zoom=14&lat=${frm.doc.shs_latitude}&lon=${frm.doc.shs_longitude}&pin=1`;
+      frm.set_value({ waze_permalink: permalink })
+      frm.refresh_field('waze_permalink');
     });
   },
 });

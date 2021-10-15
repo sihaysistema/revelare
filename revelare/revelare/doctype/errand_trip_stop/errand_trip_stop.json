@@ -10,6 +10,7 @@
   "column_break_2",
   "document",
   "section_break_4",
+  "party_type",
   "customer",
   "address",
   "colbr1_column",
@@ -33,9 +34,10 @@
   {
    "columns": 2,
    "fieldname": "customer",
-   "fieldtype": "Link",
-   "label": "Customer",
-   "options": "Customer"
+   "fieldtype": "Dynamic Link",
+   "in_standard_filter": 1,
+   "label": "Party",
+   "options": "party_type"
   },
   {
    "fieldname": "address",
@@ -66,14 +68,18 @@
    "label": "Estimated Arrival"
   },
   {
+   "fetch_from": "address.shs_latitude",
    "fieldname": "lat",
    "fieldtype": "Float",
-   "label": "Latitude"
+   "label": "Latitude",
+   "reqd": 1
   },
   {
+   "fetch_from": "address.shs_longitude",
    "fieldname": "lng",
    "fieldtype": "Float",
-   "label": "Longitude"
+   "label": "Longitude",
+   "reqd": 1
   },
   {
    "fieldname": "more_information_section",
@@ -111,7 +117,8 @@
    "fieldname": "requested_time",
    "fieldtype": "Datetime",
    "in_list_view": 1,
-   "label": "Requested Time"
+   "label": "Requested Time",
+   "reqd": 1
   },
   {
    "fieldname": "actual_arrival",
@@ -152,12 +159,18 @@
    "fieldname": "driver_comment",
    "fieldtype": "Long Text",
    "label": "Driver Comment"
+  },
+  {
+   "fieldname": "party_type",
+   "fieldtype": "Link",
+   "label": "Party Type",
+   "options": "DocType"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-10-01 12:15:32.288920",
+ "modified": "2021-10-15 15:14:27.884969",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip Stop",

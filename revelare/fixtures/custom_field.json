@@ -776,7 +776,7 @@
   "name": "Address-leaflet_map",
   "no_copy": 0,
   "non_negative": 0,
-  "options": "\n<style>\n  #map {\n    height: 400px;\n    width: auto;\n  }\n</style>\n<p><b>NOTA:<b> Al buscar direcciones en este mapa los campos de Latitud y Longitud ser\u00e1n modificados, sobreescribiendo los datos que ya existan. Si necesita mas precisi\u00f3n puede usar Google Maps.\n\nNo Modificar las coordenadas de una direcci\u00f3n creada desde Ecommerce puede afectar la entrega de productos al cliente (a menos que sea necesario)<p>\n<div id=\"map\"></div>",
+  "options": "\n<style>\n  #map {\n    height: 400px;\n    width: auto;\n  }\n</style>\n<p><b>NOTA:<b> Al buscar direcciones en este mapa los campos de Latitud y Longitud ser\u00e1n modificados, sobreescribiendo los datos que ya existan. Si necesita mas precisi\u00f3n puede usar Google Maps.\nNo Modificar las coordenadas de una direcci\u00f3n creada desde Ecommerce puede afectar la entrega de productos al cliente (a menos que sea necesario)<p>\n\n<br>\n<p>Si el mapa no se ve recargue la pagina.</p>\n<div id=\"map\"></div>",
   "parent": null,
   "parentfield": null,
   "parenttype": null,
