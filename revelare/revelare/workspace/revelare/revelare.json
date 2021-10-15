@@ -43,6 +43,15 @@
   },
   {
    "hidden": 0,
+   "is_query_report": 1,
+   "label": "Historical Weekly Item Amounts",
+   "link_to": "Historical Weekly Item Amounts",
+   "link_type": "Report",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
    "is_query_report": 0,
    "label": "Cash Flow",
    "link_type": "DocType",
@@ -164,7 +173,7 @@
    "type": "Link"
   }
  ],
- "modified": "2021-09-09 16:51:16.467043",
+ "modified": "2021-10-06 14:59:25.819506",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Revelare",
