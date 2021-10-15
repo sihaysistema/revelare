@@ -22,6 +22,13 @@ def get_data():
 					"is_query_report": True,
 					"onboard": 1,
 				},
+                {
+					"type": "report",
+					"name": "Historical Weekly Item Amounts",
+					"description": _("Historical Weekly Item Amounts"),
+					"is_query_report": True,
+					"onboard": 1,
+				},
 			]
 
 		},

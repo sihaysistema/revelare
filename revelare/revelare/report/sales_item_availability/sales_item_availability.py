@@ -168,7 +168,6 @@ def get_data(filters, is_report=True):
 
     # [{'name': 'CULTIVO-0069', 'estimation_name': 'Perejil', 'estimation_uom': 'Pound', 'stock_uom': 'Onza', 'amount':'15.0', 'amount_uom': 'Pound'}]
     estimated_materials_with_attributes = total_item_availability_estimate_attributes(filters)
-
     # ----- QUERY # 2 BEGIN -----
     # Now we find the BOM names based on the names of material items in our item_attributes_list
 
@@ -252,6 +251,8 @@ def process_data(estimated_materials_with_attributes, material_and_sales_items, 
         estimation_name = available_material['estimation_name']
         uom_name = available_material["amount_uom"]
         material_amount = available_material['amount']
+        item_code = available_material['name']
+        item_name = available_material['item_name']
 
         #material_amount_html = html_wrap(
         #    str(material_amount), qty_plenty1_strong)
@@ -262,7 +263,9 @@ def process_data(estimated_materials_with_attributes, material_and_sales_items, 
             "D": _(f"Total {uom_name} Sold"),
             "E": "",
             "F": "",
-            "G": ""
+            "G": "",
+            "H": item_code,
+            "J":item_name
         }
 
         # We add bold style to the subtitles for the headers.
@@ -362,6 +365,7 @@ def process_data(estimated_materials_with_attributes, material_and_sales_items, 
                 # Convert the items sold an amt in the target UOM
                 # Convertimos los items vendidos a su cantidad en la unidad de medida objetivo
                 conversion = ms_item['conversion_factor'][0]['value']
+
                 target_uom_sold = (items_sold * ms_item['stock_qty']) / conversion
 
                 # Agregamos la parte apartada a los totales

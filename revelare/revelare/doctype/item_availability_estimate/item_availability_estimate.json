@@ -157,13 +157,14 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2021-08-03 10:39:32.256306",
+ "modified": "2021-10-05 11:50:18.372902",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Item Availability Estimate",
  "owner": "Administrator",
  "permissions": [
   {
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -173,9 +174,11 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
+   "submit": 1,
    "write": 1
   },
   {
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -185,9 +188,11 @@
    "report": 1,
    "role": "Accounts User",
    "share": 1,
+   "submit": 1,
    "write": 1
   },
   {
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -197,9 +202,11 @@
    "report": 1,
    "role": "Stock User",
    "share": 1,
+   "submit": 1,
    "write": 1
   },
   {
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -209,6 +216,7 @@
    "report": 1,
    "role": "Manufacturing User",
    "share": 1,
+   "submit": 1,
    "write": 1
   },
   {

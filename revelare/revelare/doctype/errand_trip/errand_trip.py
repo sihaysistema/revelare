@@ -52,6 +52,29 @@ cancelled:
 - Si se va a cancelar en cualquier caso
     status = Cancelled
 """
+@frappe.whitelist()
+def fetch_address(address =''):
+
+    address_doc = ''
+
+    if address != '':
+        # if 'factura_electronica' frappe.get_installed_apps():
+        filt_addres = {'name':address}
+        fieldnames_addres = ['address_line1','address_line2','city','county', 'state', 'country', 'pincode', 'shs_latitude', 'shs_longitude']
+        ad = frappe.db.get_value('Address', filters=filt_addres, fieldname=fieldnames_addres, as_dict=1)
+        string_address = f'Address Line 1: {ad["address_line1"]}\nAddress Line 2: {ad["address_line2"]}\nCiudad: {ad["city"]}\nMunicipio: {ad["county"]}\nDepartamento: {ad["state"]}\nPais: {ad["country"]}'
+    return {'string_address': string_address, 'latitude':ad['shs_latitude'], 'longitude':ad['shs_longitude']}
+
+@frappe.whitelist()
+def fetch_contact(contact=''):
+    contact_doc = ''
+
+    if contact != '':
+        filt_contact = {'name':contact}
+        fieldnames_contact = ['mobile_no','email_id']
+        contact = frappe.db.get_value('Contact', filters=filt_contact, fieldname=fieldnames_contact, as_dict=1)
+        string_contact = f'Telefono: {contact["mobile_no"]}\nCorreo: {contact["email_id"]}'
+    return string_contact
 
 @frappe.whitelist()
 def get_data(driver=''):
@@ -81,12 +104,12 @@ def get_data(driver=''):
 
         elif doctype == 'Purchase Order':
             filt = [['docstatus','=',0]]
-            fieldnames = ['name', 'schedule_date']
+            fieldnames = ['name', 'schedule_date', 'billing_address','contact_person ']
 
         elif doctype == 'Stock Entry':
             # Si es stock entry tiene estar validado
-            filt = {'docstatus' : 1, 'stock_entry_type':'Material Transfer'}
-            fieldnames = ['name']
+            filt = [['docstatus','=',1],['stock_entry_type','=','Material Transfer']]
+            fieldnames = ['name','target_warehouse_address']
 
         elif doctype == 'ToDo':
             filt = [['docstatus','=',0]]
@@ -94,9 +117,16 @@ def get_data(driver=''):
 
         elif doctype == 'Delivery Note':
             # Si es delivery note tiene que estar el documento validado
-            filt = [['docstatus','=',0]]
-            fieldnames = ['name']
+            filt = [['docstatus','=',1]]
+            fieldnames = ['name','shipping_address_name','contact_person']
 
+        elif doctype == 'Purchase Receipt':
+            filt = [['docstatus','=',0]]
+            fieldnames = ['name', 'shipping_address','contact_person']
+
+        elif doctype == 'Shipmnet':
+            filt = [['docstatus','=',0]]
+            fieldnames = ['name', 'delivery_address_name']
         else:
             # Para los demas doctypes, se obtendran los que esten en draft
             filt = [['docstatus','=',0]]
@@ -195,13 +225,6 @@ def add_zeros_to_date(string):
         str_return += new
     return str_return
 
-@frappe.whitelist()
-def get_doctypes():
-
-    doctype = 'Errand Trip'
-    filt = [['docstatus','=',1]]
-    fieldnames = ['name']
-    get_list_doctypes = frappe.db.get_list(doctype, filters=filt, fields=fieldnames, order_by=f'{fieldnames[1]} desc') or []
 
 def dicToJSON(nomArchivo, diccionario):
     with open(str(nomArchivo+'.json'), 'w') as f:

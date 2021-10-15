@@ -166,6 +166,7 @@
   {
    "fieldname": "get_data",
    "fieldtype": "Button",
+   "hidden": 1,
    "label": "Get Data"
   },
   {
@@ -189,7 +190,7 @@
   }
  ],
  "links": [],
- "modified": "2021-10-04 11:35:41.017495",
+ "modified": "2021-10-05 11:12:53.983663",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Errand Trip",

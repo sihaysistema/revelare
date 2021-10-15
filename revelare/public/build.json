@@ -1,9 +1,12 @@
 {
     "revelare/js/revelar.min.js": [
         "public/js/main_navigator_dashboard.js",
-        "public/js/revelar.js"
+        "public/js/revelar.js",
+        "public/js/mapAddress.js"
     ],
     "revelare/css/revelare.min.css": [
-        "public/css/navigator.css"
+        "public/css/navigator.css",
+        "public/css/leaflet.css",
+        "public/css/esri-leaflet-geocoder.css"
     ]
 }
