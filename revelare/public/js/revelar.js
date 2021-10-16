@@ -289,3 +289,63 @@ function open_one_tab(name, type) {
   }
   return true;
 };
+
+
+frappe.ui.form.on('Address', {
+  onload_post_render: function (frm) {
+    // load_dependencies_mapa()
+    console.log("Si jalo")
+    var map = L.map('map').setView([14.552792466859572, -90.45385210407252], 15);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    var searchControl = L.esri.Geocoding.geosearch().addTo(map);
+
+    var results = L.layerGroup().addTo(map);
+
+    searchControl.on('results', function (data) {
+      console.log("Buscando")
+      results.clearLayers();
+      for (var i = data.results.length - 1; i >= 0; i--) {
+        results.addLayer(L.marker(data.results[i].latlng));
+        console.log("Resultado", data.results[i].latlng)
+      }
+    });
+  },
+  refresh: function (frm) {
+
+    // load_dependencies_mapa()
+
+  }
+});
+
+function load_dependencies_mapa() {
+  frappe.require([
+    "/assets/revelare/css/leaflet.css",
+    "/assets/revelare/css/esri-leaflet-geocoder.css",
+    "/assets/revelare/js/leafletmap/leaflet.js",
+    "/assets/revelare/js/leafletmap/esri-leaflet.js",
+    "/assets/revelare/js/leafletmap/esri-leaflet-geocoder.js"
+  ], () => {
+    // console.log("Si jalo")
+    // var map = L.map('map').setView([14.552792466859572, -90.45385210407252], 20);
+
+    // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    //   attribution: '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+    // }).addTo(map);
+
+    // var searchControl = L.esri.Geocoding.geosearch().addTo(map);
+
+    // var results = L.layerGroup().addTo(map);
+
+    // searchControl.on('results', function (data) {
+    //   results.clearLayers();
+    //   for (var i = data.results.length - 1; i >= 0; i--) {
+    //     results.addLayer(L.marker(data.results[i].latlng));
+    //     console.log("Resultado", data.results[i].latlng)
+    //   }
+    // });
+  });
+}

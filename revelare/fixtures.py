@@ -33,7 +33,8 @@ def fill_fixtures():
                     "Journal Entry Account-outflow_component",
                     "Payment Entry-inflow_component",
                     "Payment Entry-outflow_component",
-                    "Address-shs_longitude", "Address-shs_latitude"
+                    "Address-shs_longitude", "Address-shs_latitude", "Address-geo_location",
+                    "Address-leaflet_map"
                 ]
             ]
         ]
