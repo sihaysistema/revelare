@@ -75,7 +75,8 @@ def fill_fixtures():
                     "Revelare Configuration",
                     "Configuration",
                     "Pound",
-                    "Sales Estimates"
+                    "Sales Estimates",
+                    "Target Warehouse"
                 ]
             ]
         ]

@@ -478,5 +478,21 @@
   "parenttype": null,
   "source_text": "Interval duration in days",
   "translated_text": "Duraci\u00f3n del intervalo en d\u00edas"
+ },
+ {
+  "context": null,
+  "contributed": 0,
+  "contribution_docname": null,
+  "contribution_status": "",
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2021-10-15 18:07:56.818638",
+  "name": "a9f805dc70",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_text": "Target Warehouse",
+  "translated_text": "Bodega de Destino"
  }
 ]
