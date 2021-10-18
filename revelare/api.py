@@ -94,7 +94,7 @@ def get_errand_trip_stops(name=''):
     """
     field_child_tbl = ['name', 'parent', 'idx', 'customer', 'requested_time',
                        'actual_arrival', 'document', 'document_type', 'contact_details',
-                       'address_details', 'lat', 'lng', 'is_it_completed', 'details',
+                       'address_details', 'lat', 'lng', 'details',
                        'status', 'driver_comment']
 
     res = frappe.db.get_list('Errand Trip Stop',
