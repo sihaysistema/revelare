@@ -36,7 +36,8 @@ def fill_fixtures():
                     "Address-shs_longitude", "Address-shs_latitude", "Address-geo_location",
                     "Address-leaflet_map", "Address-address_geo_location",
                     "Address-waze_permalink", "Address-waze_lat", "Address-waze_lon",
-                    "Address-waze_map", "Address-waze_map_iframe"
+                    "Address-waze_map",
+                    # "Address-waze_map_iframe"
                 ]
             ]
         ]
@@ -75,7 +76,8 @@ def fill_fixtures():
                     "Revelare Configuration",
                     "Configuration",
                     "Pound",
-                    "Sales Estimates"
+                    "Sales Estimates",
+                    "Target Warehouse"
                 ]
             ]
         ]
@@ -110,7 +112,10 @@ def fill_fixtures():
     # NEW FUNCTIONALITY FOR EXPORTING
     fixtures_fillup.append(custom_field)
     fixtures_fillup.append(translation)
-    fixtures_fillup.append(dcf_component)
+
+    # 18/10/2021 Descomentar para fixtures Direct Cash Flow Component
+    # fixtures_fillup.append(dcf_component)
+
     # fixtures_fillup.append(tax_category)
     # fixtures_fillup.append(id_doctype)
 
