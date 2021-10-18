@@ -36,7 +36,8 @@ def fill_fixtures():
                     "Address-shs_longitude", "Address-shs_latitude", "Address-geo_location",
                     "Address-leaflet_map", "Address-address_geo_location",
                     "Address-waze_permalink", "Address-waze_lat", "Address-waze_lon",
-                    "Address-waze_map", "Address-waze_map_iframe"
+                    "Address-waze_map",
+                    # "Address-waze_map_iframe"
                 ]
             ]
         ]
