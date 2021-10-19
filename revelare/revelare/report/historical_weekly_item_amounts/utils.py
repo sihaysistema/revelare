@@ -62,11 +62,14 @@ def list_of_ranges_date(flt_year):
         # si el año a validar esta en el string de validacion
         # '2020 week' in '2021 week2'
         if f'{year} week' in validate:
-            # Si ya es el mismo año, rompemos el ciclo
-            break
+            if data_of_year[2] == 1:
+                # Si ya es el mismo año y dia 1, rompemos el ciclo
+                break
+            else:
+                first_week -= timedelta(days=1)
         else:
             # De lo contrario le sumamos un día a la fecha de la primer semana
-            first_week = first_week + timedelta(days=1)
+            first_week += timedelta(days=1)
 
     # Fecha de inicio, es el primer día de la primer semana de cada año
     from_date = first_week.strftime('%Y-%m-%d')
@@ -84,19 +87,27 @@ def list_of_ranges_date(flt_year):
         to_date = to_date.strftime('%Y-%m-%d')
 
         # Obtenemos el numero de semana de la fecha de inicio bajo el ISO-8601
-        wk = datetime.strptime(from_date, '%Y-%m-%d').strftime('%V')
+        week_ = datetime.isocalendar(datetime.strptime(from_date, '%Y-%m-%d'))
+        wk = str(week_[1]).zfill(2)
+
+        if year == week_[0]:
+            dic_date.append({'from_date':from_date, 'to_date':to_date, 'wk':wk, 'year':year, 'dic_name':f'{year} Week{wk}'})
+        else:
+            break
+        """
         # Fecha a evualar sera la fecha de inicio para que no se pase de la fecha actual
         eval_date = datetime.strptime(from_date, '%Y-%m-%d')
+
         # Fecha actual.
         date_now = datetime.today()
 
-        dic_date.append({'from_date':from_date, 'to_date':to_date, 'wk':wk, 'year':year, 'dic_name':f'{year} Week{wk}'})
-        """if eval_date < date_now:
+        if eval_date < date_now:
             # Si la fecha a evaluar es menor, generamos el diccionario con el rango de fechs y el nombre del diccionario por # de semana
             dic_date.append({'from_date':from_date, 'to_date':to_date, 'wk':wk, 'year':year, 'dic_name':f'{year} Week{wk}'})
         else:
             # De lo contrario nos salimos del ciclo
-            break"""
+            break
+        """
 
         # Agregamos 7 dias a la fecha de inicio
         from_date = datetime.strptime(from_date, '%Y-%m-%d') + timedelta(days=7)
