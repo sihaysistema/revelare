@@ -62,7 +62,7 @@ def fetch_address(address =''):
         filt_addres = {'name':address}
         fieldnames_addres = ['address_line1','address_line2','city','county', 'state', 'country', 'pincode', 'shs_latitude', 'shs_longitude']
         ad = frappe.db.get_value('Address', filters=filt_addres, fieldname=fieldnames_addres, as_dict=1)
-        string_address = f'Address Line 1: {ad["address_line1"]}\nAddress Line 2: {ad["address_line2"]}\nCiudad: {ad["city"]}\nMunicipio: {ad["county"]}\nDepartamento: {ad["state"]}\nPais: {ad["country"]}'
+        string_address = f'{ad["address_line1"]}\n{ad["address_line2"]}\n{ad["city"]}\n{ad["county"]}\n{ad["state"]}\n{ad["country"]}'
     return {'string_address': string_address, 'latitude':ad['shs_latitude'], 'longitude':ad['shs_longitude']}
 
 @frappe.whitelist()
@@ -73,7 +73,7 @@ def fetch_contact(contact=''):
         filt_contact = {'name':contact}
         fieldnames_contact = ['mobile_no','email_id']
         contact = frappe.db.get_value('Contact', filters=filt_contact, fieldname=fieldnames_contact, as_dict=1)
-        string_contact = f'Telefono: {contact["mobile_no"]}\nCorreo: {contact["email_id"]}'
+        string_contact = f'{contact["mobile_no"]}\n{contact["email_id"]}'
     return string_contact
 
 @frappe.whitelist()
