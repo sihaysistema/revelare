@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import calendar
 import json
+import statistics as stdic
 from datetime import date, datetime, time, timedelta
 
 import frappe
@@ -78,62 +79,14 @@ def get_data_(filters):
             })
     # Obtener fechas y rango por numero de semana
     data_of_date = get_range_of_date(filters)
+    # Obtenemos las estimaciones en reporte y las ordenes de venta
     estimations = estimations_reports(flt, data_of_date)
 
-    list_of_items = []
-    for row in estimations:
-        for item in row:
-            index_ = search_list_of_dict_v(item['item_code_base'], 'item_code',list_of_items)
-            index_1, index_2 = search_week_in_range(item['year'],item['from_date'],data_of_date)
-            d_date = data_of_date[index_1][index_2]
-            if index_ != None:
-                list_of_items[index_]['time_series_data'].append({
-                    d_date['dic_name'] :
-                    {
-                        'estimated':item.get('estimated', 0),
-                        'reserved':item.get('reserved', 0),
-                        'sold':item.get('sold', 0),
-                        'available':item.get('available', 0)
-                    }
-                })
-            else:
-                list_of_items.append({
-                    'item_code':item['item_code_base'],
-                    'item_name':item['item_name_base'],
-                    'item_name_estimate':item['item_name_estimate'],
-                    'uom':item['uom'],
-                    'time_series_data':[
-                        {
-                            d_date['dic_name']:
-                            {
-                                'estimated':item.get('estimated', 0),
-                                'reserved':item.get('reserved', 0),
-                                'sold':item.get('sold', 0),
-                                'available':item.get('available', 0)
-                            }
-                        }
-                    ]
-                })
+    # Formatemos los obtenidos
+    list_of_items = formating_data(estimations, data_of_date)
 
-    for row in list_of_items:
-        week_list = []
-        for i in row['time_series_data']:
-            week = list(i.keys())[0]
-            week_list.append(week)
-
-        for year in data_of_date:
-            for week in year:
-                if not week['dic_name'] in week_list:
-                    row['time_series_data'].append({
-                        week['dic_name']:
-                            {
-                                'estimated':0,
-                                'reserved':0,
-                                'sold':0,
-                                'available':0
-                            }
-                        })
-
+    #Agregando estadisticas
+    list_of_items = add_stadistics(list_of_items)
     dicToJSON('data',list_of_items)
     return list_of_items
 
@@ -148,7 +101,9 @@ def estimations_reports(flt, data_of_date):
         list: Lista de diccionarios con los datos necesarios para su analisis
         Ej: [{'item_code_base':lechuga-01, 'estimated':250, 'reserved':50, 'availability':200, 'item_name_base':'lechuga lista para consechar', ...}]
     """
+    # Creamos lista a devolver con los reportes y las ventas
     reports = []
+    # Por cada año en el rango de fechas seleccionado
     for year in data_of_date:
         # Por cada año
         for week in year:
@@ -156,8 +111,10 @@ def estimations_reports(flt, data_of_date):
             flt.from_date = week['from_date']
             flt.to_date = week['to_date']
             flt.year = week['year']
-            rep = prepair_data_of_report(flt)
 
+            # Obtenemos la data del reporte en el rango de fechas
+            rep = prepair_data_of_report(flt)
+            # Obtenemo las ventas en el rango de fechas
             sold_ = sold(flt)
             # Si hay data, entonce la agregamos la lista de diccionarios
             if rep != []:
@@ -165,16 +122,28 @@ def estimations_reports(flt, data_of_date):
             elif sold_ != []:
                 reports.append(sold_)
 
-
     return reports
 
 def prepair_data_of_report(flt):
+    """Funcion que prepara la data del reporte
+
+    Args:
+        flt ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
     # Llamamos la funcion get_data del reporte sales_item_availability
     rep = get_data(flt, False)
+    # Creamos la lista de los items base del reporte
     items_in_report = []
+    # Si hay data en el reporte
     if rep != [{}]:
+        # Por cada fila del reporte
         for row in rep:
+            # Buscamos si la columna B es digito, dicho digito obtiene el total de estimaciónes para el item base
             if is_digit(row.get('B','')):
+                # Si es digito, obtenemos las demas columnas de esa fila y la agregamos a los items del reporte
                 items_in_report.append(
                     {
                         'item_name_estimate':row['A'], 'estimated':row['B'],
@@ -186,6 +155,14 @@ def prepair_data_of_report(flt):
     return items_in_report
 
 def sold(flt):
+    """ Funcion que obtiene las ordenes de venta, formateadas para ser agregadas a la lista de items
+
+    Args:
+        flt ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
 
     # 1) Obtenemos los items venditos
     # 2) La lista de los items base con el nombre de los items de venta a utilizar
@@ -263,68 +240,19 @@ def sold(flt):
                     'uom':uom})
     return solds_totals
 
-def item_availability_estimate_attributes(flts):
-    date_doc = ''
-    if flts.sales_from == 'Sales Order':
-        date_doc = 'delivery_date'
-    elif flts.sales_from == 'Delivery Note':
-        date_doc = 'posting_date'
-    elif flts.sales_from == 'Sales Invoice':
-        date_doc = 'due_date'
-    doctype = flts.sales_from
-
-    # ----Query 1
-    # Vamos a buscar todos los items que tengan marcado el campo de incluir en estimacion
-    fieldnames = ['name','estimation_name','estimation_uom']
-    conditions = [['include_item_in_manufacturing','=',1],['include_in_estimations','=',1]]
-    purchase_items = frappe.db.get_list('Item', filters=conditions, fields =fieldnames)
-
-    list_of_boms = []
-
-    # Buscamos los BOMs que tengan estos items en su lista de requerimientos
-    for pur_it in purchase_items:
-        name = pur_it['name']
-        # ----Query 2
-        parents_boms = frappe.db.get_list('BOM Item', filters=[['item_code','=',name]], fields =['parent','item_code','item_name','qty','stock_uom']) or []
-        if parents_boms != []:
-            for p in parents_boms:
-                p['estimation_name'] = pur_it['estimation_name']
-                p['estimation_uom'] = pur_it['estimation_uom']
-
-
-            list_of_boms.extend(parents_boms)
-
-    # Buscamos los items de venta que generan esos boms
-    sales_items = []
-    for boms in list_of_boms:
-        name = boms['parent']
-        # ----Query 3
-        boms_item = frappe.db.get_list('BOM', filters=[['name','=',name],['is_active','=',1]], fields =['item','item_name']) or []
-        if boms_item != []:
-            for b in boms_item:
-                b['estimation_name'] = boms['estimation_name']
-                b['estimation_uom'] = boms['estimation_uom']
-                b['item_code_base'] = boms['item_code']
-                b['item_name_base'] = boms['item_name']
-                b['bom_uom'] = boms['stock_uom']
-                b['qty_consumed_per_units'] = boms['qty']
-            sales_items.extend(boms_item)
-
-    for si in sales_items:
-        # Buscamos el facto de conversion, a la inversa que en el reporte Sales Item availability, desde el BOM ITEM para la estimacion
-        si['conversion_factor'] = find_conversion_factor(si['bom_uom'], si['estimation_uom'])[0]['value']
-        si['uom'] = si['estimation_uom']
-
-    # Reordenamos por el codigo de item base
-    sales_items = sorted(sales_items, key = lambda i: i['item_code_base'],reverse=False)
-
-    return sales_items
-
 def get_sums_sales_items_qty(flt):
+    """Funcion que obtiene la suma de cada item de venta, del campo cantidad
+
+    Args:
+        flt ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
     sums_items_qty = []
 
     # Obtenemos los items de compra que tengan marcado el campo de estimacion y de manufactura
-    items_sales = item_availability_estimate_attributes(flt)
+    items_sales = get_items_sales(flt)
     # Obtenemos todas las ventas durante el periodo de tiempo en el rango
     sales_order = obtain_sales_orders_in_range(flt)
 
@@ -372,7 +300,82 @@ def get_sums_sales_items_qty(flt):
 
     return sums_items_qty,items_sales
 
+def get_items_sales(flts):
+    """Funcion que obtiene las ordenes de venta que estan en el rango de fechas seleccionado
+
+    Args:
+        flts ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    # Dependiendo de doctype se obtiene el campo de fecha
+    date_doc = ''
+    if flts.sales_from == 'Sales Order':
+        date_doc = 'delivery_date'
+    elif flts.sales_from == 'Delivery Note':
+        date_doc = 'posting_date'
+    elif flts.sales_from == 'Sales Invoice':
+        date_doc = 'due_date'
+    doctype = flts.sales_from
+
+    # ----Query 1
+    # Vamos a buscar todos los items que tengan marcado el campo de incluir en estimacion
+    fieldnames = ['name','estimation_name','estimation_uom']
+    conditions = [['include_item_in_manufacturing','=',1],['include_in_estimations','=',1]]
+    purchase_items = frappe.db.get_list('Item', filters=conditions, fields =fieldnames)
+
+    list_of_boms = []
+
+    # Buscamos los BOMs que tengan estos items en su lista de requerimientos
+    for pur_it in purchase_items:
+        name = pur_it['name']
+        # ----Query 2
+        parents_boms = frappe.db.get_list('BOM Item', filters=[['item_code','=',name]], fields =['parent','item_code','item_name','qty','stock_uom']) or []
+        if parents_boms != []:
+            for p in parents_boms:
+                p['estimation_name'] = pur_it['estimation_name']
+                p['estimation_uom'] = pur_it['estimation_uom']
+
+
+            list_of_boms.extend(parents_boms)
+
+    # Buscamos los items de venta que generan esos boms
+    sales_items = []
+    for boms in list_of_boms:
+        name = boms['parent']
+        # ----Query 3
+        boms_item = frappe.db.get_list('BOM', filters=[['name','=',name],['is_active','=',1]], fields =['item','item_name']) or []
+        if boms_item != []:
+            for b in boms_item:
+                b['estimation_name'] = boms['estimation_name']
+                b['estimation_uom'] = boms['estimation_uom']
+                b['item_code_base'] = boms['item_code']
+                b['item_name_base'] = boms['item_name']
+                b['bom_uom'] = boms['stock_uom']
+                b['qty_consumed_per_units'] = boms['qty']
+            sales_items.extend(boms_item)
+
+    # Por cada item de venta buscamos su factor de conversión
+    for si in sales_items:
+        # Buscamos el facto de conversion, a la inversa que en el reporte Sales Item availability, desde el BOM ITEM para la estimacion
+        si['conversion_factor'] = find_conversion_factor(si['bom_uom'], si['estimation_uom'])[0]['value']
+        si['uom'] = si['estimation_uom']
+
+    # Reordenamos por el codigo de item base
+    sales_items = sorted(sales_items, key = lambda i: i['item_code_base'],reverse=False)
+
+    return sales_items
+
 def obtain_sales_orders_in_range(flts):
+    """Obtenemos las ordenes de venta que estan en el rango de fechas seleccionados
+
+    Args:
+        flts ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
     date_doc = ''
     if flts.sales_from == 'Sales Order':
         date_doc = 'delivery_date'
@@ -400,11 +403,200 @@ def obtain_sales_orders_in_range(flts):
 
     return so_items
 
+def formating_data(estimations, data_of_date):
+    """Generamos la estructura de datos con las estimaciones obteniedas
 
+    Args:
+        estimations ([type]): [description]
+        data_of_date ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    # Lista de items
+    list_of_items = []
+    # Por cada fila de estimacion
+    for row in estimations:
+        # Por cada elemento o item, de la estimaciónes
+        for item in row:
+            # Buscamos el item_base en la lista de diccicionarios de la lista de los items
+            index_ = search_list_of_dict_v(item['item_code_base'], 'item_code',list_of_items)
+            # Buscamos la fecha en el rango de fechas para ir a obtener el nombre de la semana y el año
+            index_1, index_2 = search_week_in_range(item['year'],item['from_date'],data_of_date)
+            # Obtenemos el nombre de la semana y el año "2021 Week01"
+            d_date = data_of_date[index_1][index_2]
+
+            # Si encuentra el valor en la lista de items
+            if index_ != None:
+                # Solo agregamos la fecha con las columnas de estimación en ese lugar
+                list_of_items[index_]['time_series_data'].append({
+                    d_date['dic_name'] :
+                    {
+                        'estimated':item.get('estimated', 0),
+                        'reserved':item.get('reserved', 0),
+                        'sold':item.get('sold', 0),
+                        'available':item.get('available', 0)
+                    }
+                })
+            else:
+                # Si no esta la fecha, creamos un diccionario con una lista en la llave "time_series_data"
+                # De la forma
+                """
+                    {
+                        "item_code": "CULTIVO-0001",
+                        "item_name": "Lechuga Butter Lista para Cosechar",
+                        "UOM": "Libra",
+                        "time_series_data": {
+                            "2016W01": {
+                                "estimated": null,
+                                "reserved": null,
+                                "sold": "10.0",
+                                "available": null
+                            },
+                            "..."
+                            "2021W01": {
+                                "estimated": "500",
+                                "reserved": "12.5",
+                                "sold": "8.5",
+                                "available": "479.0"
+                            }
+                        }
+                    }
+                """
+                list_of_items.append({
+                    'item_code':item['item_code_base'],
+                    'item_name':item['item_name_base'],
+                    'item_name_estimate':item['item_name_estimate'],
+                    'uom':item['uom'],
+                    'time_series_data':[
+                        {
+                            d_date['dic_name']:
+                            {
+                                'estimated':item.get('estimated', 0),
+                                'reserved':item.get('reserved', 0),
+                                'sold':item.get('sold', 0),
+                                'available':item.get('available', 0)
+                            }
+                        }
+                    ]
+                })
+
+    # Agregmos las semanas en donde no tengamos ventas ni estimaciones en el reporte,
+    # dependiendo del rango de fechas que hayamos seleccionado
+    for row in list_of_items:
+        week_list = []
+        for i in row['time_series_data']:
+            week = list(i.keys())[0]
+            week_list.append(week)
+
+        for year in data_of_date:
+            for week in year:
+                if not week['dic_name'] in week_list:
+                    row['time_series_data'].append({
+                        week['dic_name']:
+                            {
+                                'estimated':0, 'reserved':0,
+                                'sold':0, 'available':0
+                            }
+                        })
+    return list_of_items
+
+def add_stadistics(data):
+    """Agregamos las estadisticas por semana por cada item base
+
+    Args:
+        data ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    # Por cada item en la data
+    for dat in data:
+        # Creamos la lista de registros por semana
+        records_of_weeks = []
+        # Por cada semana en el rango
+        for week_ in range(1, 54):
+            # Obtenemos el numero de semana a dos digitos
+            no_week = str(week_).zfill(2)
+
+            # Por cada semana en la serie de datos
+            for d in dat['time_series_data']:
+                # Buscamos el numero de semana en la lista de datos "Week01"
+                wsearch = f'Week{no_week}'
+                # Si la semana a buscar por cada año esta en la llave "2018 Week01", "2019 Week01", "2020 Week01"
+                if wsearch in list(d.keys())[0]:
+
+                    # Buscamos el indice de la semana en la lista de registros
+                    index = search_list_of_dict_k(wsearch,records_of_weeks)
+                    # Si ya esta la semana en los registros
+                    if index != None:
+                        # Solo le agregamos los valores de esa semana, sin importar el año
+                        records_of_weeks[index][wsearch].append(list(d.values())[0])
+                    else:
+                        # Sino agregamos un diccionario con el nombre de la semana sin el año
+                        # Y agregamos los valores de esa semana, sin importar el año
+                        records_of_weeks.append({wsearch:[list(d.values())[0]]})
+
+        # Creamos la llave estadistica para agregale los valores estadisticos
+        dat['statistics'] = []
+
+        # Por cada registro en la lista de registros de semanas
+        for rec_wek in records_of_weeks:
+            # Obtenemos el nombre de la lista y los valores de la lista, que estan dentro del diccionario
+            list_name = list(rec_wek.keys())[0]
+            list_values = list(rec_wek.values())[0]
+
+            # Preparamos la variables sobre los cuales obtendremos los calculos
+            estimated_values = []
+            reserved_values = []
+            available_values = []
+            sold_values = []
+
+            # Por cada año en las lista de valores
+            for item in list_values:
+                # Agregamos dicho valor en formato float a cada lista respectivamente
+                estimated_values.append(float(item['estimated']))
+                reserved_values.append(float(item['reserved']))
+                available_values.append(float(item['available']))
+                sold_values.append(float(item['sold']))
+
+            # Agregamos el nombre de la lista en el apartado de estadisticas
+            dat['statistics'].append({
+                # Le damos el nombre de la semana "Week01"
+                list_name: {
+                    # Agregamos cada columna de estimacioens
+                    # Obtenemos por medio de la funcion max() el valor maximo en la lista
+                    # Obtenemos por medio de la funcion min() el valor minimo en la lista
+                    # Obtenemos el promedio por medio de la funcion stadistics.mean()
+                    #   que obtiene la media aritmetica de la libreria estadisticas
+                    'estimated': {
+                        'max': max(estimated_values),
+                        'avg': stdic.mean(estimated_values),
+                        'min': min(estimated_values)
+                    },
+                    'reserved': {
+                        'max': max(reserved_values),
+                        'avg': stdic.mean(reserved_values),
+                        'min': min(reserved_values)
+                    },
+                    'available': {
+                        'max': max(available_values),
+                        'avg': stdic.mean(available_values),
+                        'min': min(available_values)
+                    },
+                    'sold': {
+                        'max': max(sold_values),
+                        'avg': stdic.mean(sold_values),
+                        'min': min(sold_values)
+                    },
+                }
+            })
+
+    return data
 
 
 
 
 def dicToJSON(nomArchivo, diccionario):
     with open(str(nomArchivo+'.json'), 'w') as f:
-        f.write(json.dumps(diccionario, indent=2, default=str))
+        f.write(json.dumps(diccionario, indent=4, default=str))
