@@ -1,0 +1,35 @@
+{
+ "content": null,
+ "creation": "2021-10-28 16:10:04.685027",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2021-10-28 16:10:32.013495",
+ "modified_by": "Administrator",
+ "module": "Revelare",
+ "name": "historical-volume-an",
+ "owner": "Administrator",
+ "page_name": "Historical Volume Analysis",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Administrator"
+  },
+  {
+   "role": "Revelare-L1"
+  },
+  {
+   "role": "Revelare-L3"
+  },
+  {
+   "role": "Revelare-L4"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Historical Volume Analysis"
+}
