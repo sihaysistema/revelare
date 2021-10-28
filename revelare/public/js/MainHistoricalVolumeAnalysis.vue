@@ -1,11 +1,23 @@
 <template>
   <div class="container">
     <h3>Semanal</h3>
+    <button type="button" class="btn btn-primary mb-3" @click="getData()">
+      {{ __("Get Data") }}
+    </button>
+    <code class="mb-4">
+      {{ datosBackend }}
+    </code>
     <div id="chart"></div>
   </div>
 </template>
 
 <script>
+// TODO:
+// {
+//  "is_sales_item": 1, // check
+//  "company": "Fogliasana S.A.", // select
+//  "year": "2021", // select (default current year)
+// }
 export default {
   name: "MainHistoricalVolumeAnalysis",
   data() {
@@ -109,6 +121,7 @@ export default {
           },
         ], // Valores default para graficas
       },
+      datosBackend: {},
     };
   },
   mounted() {
@@ -125,6 +138,29 @@ export default {
       // COLORES: 0: datos de año en curso, 1: max, 2: promedio, 3: min
       colors: ["#004C99", "#FF0000", "#FF0000", "#FF0000"],
     });
+  },
+  methods: {
+    getData() {
+      let _this = this;
+
+      frappe.call({
+        args: {
+          filters: {
+            company: "Fogliasana S.A.",
+            year: "2021",
+          },
+        },
+        freeze: true,
+        method:
+          "revelare.revelare.report.historical_weekly_item_amounts.historical_weekly_item_amounts.get_data_",
+        async: true,
+        callback: function (data) {
+          _this.datosBackend = data.message;
+
+          console.log(data.message);
+        },
+      });
+    },
   },
 };
 </script>

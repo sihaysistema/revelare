@@ -62,6 +62,8 @@ def get_columns(filters):
     ]
     return columns
 
+
+@frappe.whitelist()
 def get_data_(filters):
     """Genera JSON en la caperta /sites/ llamado data.json
 
@@ -71,6 +73,7 @@ def get_data_(filters):
     Returns:
         [type]: [description]
     """
+    filters = frappe._dict(json.loads(filters))
 
     flt = frappe._dict({
             "from_date": "",
