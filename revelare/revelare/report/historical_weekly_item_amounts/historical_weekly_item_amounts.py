@@ -594,7 +594,24 @@ def add_stadistics(data):
 
     return data
 
+def add_values_of_char(data, flt):
+    year = '2021'
 
+    for d in data:
+        year_select = []
+        for item in d['time_series_data']:
+            name = list(item.keys())[0]
+            if year in name:
+                year_select.append(item)
+        d['year_select'] = year_select
+
+    for d in data:
+        d['labels'] = []
+        d['values'] = []
+        for item in d['year_select']:
+            d['labels'].append(list(item.keys())[0])
+            d['values'].append(list(item.values())[0]['estimated'])
+    return data
 
 
 def dicToJSON(nomArchivo, diccionario):
