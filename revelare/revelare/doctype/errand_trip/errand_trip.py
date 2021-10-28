@@ -57,24 +57,27 @@ def fetch_address(address =''):
 
     address_doc = ''
 
-    if address != '':
+    if address != '' and address != None:
         # if 'factura_electronica' frappe.get_installed_apps():
         filt_addres = {'name':address}
         fieldnames_addres = ['address_line1','address_line2','city','county', 'state', 'country', 'pincode', 'shs_latitude', 'shs_longitude']
         ad = frappe.db.get_value('Address', filters=filt_addres, fieldname=fieldnames_addres, as_dict=1)
         string_address = f'{ad["address_line1"]}\n{ad["address_line2"]}\n{ad["city"]}\n{ad["county"]}\n{ad["state"]}\n{ad["country"]}'
-    return {'string_address': string_address, 'latitude':ad['shs_latitude'], 'longitude':ad['shs_longitude']}
+        return {'string_address': string_address, 'latitude':ad['shs_latitude'], 'longitude':ad['shs_longitude']}
+    else:
+        return {'string_address':'', 'latitude':'','longitude':''}
 
 @frappe.whitelist()
 def fetch_contact(contact=''):
     contact_doc = ''
 
-    if contact != '':
+    if contact != '' and contact != None:
         filt_contact = {'name':contact}
         fieldnames_contact = ['mobile_no','email_id']
         contact = frappe.db.get_value('Contact', filters=filt_contact, fieldname=fieldnames_contact, as_dict=1)
         string_contact = f'{contact["mobile_no"]}\n{contact["email_id"]}'
-    return string_contact
+        return string_contact
+    else: return ''
 
 @frappe.whitelist()
 def get_data(driver=''):
