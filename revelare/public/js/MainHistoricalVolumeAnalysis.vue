@@ -12,9 +12,9 @@
 </template>
 
 <script>
-// TODO:
+// TODO: En el dropdown codigo:nombre item
 // {
-//  "is_sales_item": 1, // check
+//  "is_sales_item": 1, // check si es 1 mostrar "item" dropdown
 //  "company": "Fogliasana S.A.", // select
 //  "year": "2021", // select (default current year)
 // }
