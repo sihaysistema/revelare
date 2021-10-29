@@ -1,23 +1,96 @@
 <template>
-  <div class="container">
+  <div>
+    <div class="project-nav">
+      <div class="card-action card-tabs mr-auto">
+        <ul class="nav nav-tabs align-items-center">
+          <!-- Check -->
+          <li class="nav-item">
+            <div class="form-check mr-2">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                value=""
+                id="isSalesItem"
+                v-model="is_sales_item"
+                @change="getItems"
+              />
+              <label class="form-check-label" for="isSalesItem">
+                {{ __("Is Sales Item?") }}
+              </label>
+            </div>
+          </li>
+
+          <!-- Items -->
+          <li class="nav-item" v-if="is_sales_item">
+            <select class="custom-select mr-1" id="item" v-model="itemSelected">
+              <option selected></option>
+              <option
+                v-for="itemOK in itemSelect"
+                :key="itemOK.name"
+                :value="itemOK.name"
+              >
+                <span class="align-top">{{ itemOK.name }}</span>
+                :
+                <span class="text-muted align-bottom">{{
+                  itemOK.item_name
+                }}</span>
+              </option>
+            </select>
+          </li>
+
+          <!-- Selección de company-->
+          <li class="nav-item">
+            <select
+              class="custom-select mr-1"
+              id="compa"
+              v-model="companySelected"
+            >
+              <option selected>{{ companies[0] }}</option>
+              <option
+                v-for="companyOk in companies.slice(1, companies.length)"
+                :key="companyOk"
+                :value="companyOk"
+              >
+                {{ companyOk }}
+              </option>
+            </select>
+          </li>
+
+          <!-- Selección de año -->
+          <li class="nav-item">
+            <select class="custom-select mr-1" id="year" v-model="yearSelected">
+              <option selected>{{ fiscalYears[0] }}</option>
+              <option
+                v-for="fiscal_year in fiscalYears.slice(1, fiscalYears.length)"
+                :key="fiscal_year"
+                :value="fiscal_year"
+              >
+                {{ fiscal_year }}
+              </option>
+            </select>
+          </li>
+
+          <li class="nav-item">
+            <button type="button" class="btn btn-primary" @click="getData()">
+              {{ __("Get Data") }}
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- DIVISION -->
+
     <h3>Semanal</h3>
-    <button type="button" class="btn btn-primary mb-3" @click="getData()">
-      {{ __("Get Data") }}
-    </button>
-    <code class="mb-4">
+    <div id="chart"></div>
+
+    <code class="mt-4">
       {{ datosBackend }}
     </code>
-    <div id="chart"></div>
   </div>
 </template>
 
 <script>
-// TODO: En el dropdown codigo:nombre item
-// {
-//  "is_sales_item": 1, // check si es 1 mostrar "item" dropdown
-//  "company": "Fogliasana S.A.", // select
-//  "year": "2021", // select (default current year)
-// }
 export default {
   name: "MainHistoricalVolumeAnalysis",
   data() {
@@ -122,15 +195,40 @@ export default {
         ], // Valores default para graficas
       },
       datosBackend: {},
+      is_sales_item: false,
+      companies: [],
+      fiscalYears: [],
+      itemSelect: [],
+      companySelected: "",
+      yearSelected: "",
+      itemSelected: "",
     };
   },
   mounted() {
     // _this.$forceUpdate();
 
+    let _this = this;
+
+    frappe.call({
+      freeze: true,
+      freeze_message: __("Obteniendo datos..."),
+      method: "revelare.api.get_data_to_select",
+      async: true,
+      callback: function (data) {
+        _this.companies = data.message[0];
+        _this.companySelected = data.message[0][0];
+
+        _this.fiscalYears = data.message[1];
+        _this.yearSelected = data.message[1][0];
+
+        console.log(data.message);
+      },
+    });
+
     new frappe.Chart("#chart", {
       data: this.dd,
       type: "line",
-      height: 300,
+      height: 350,
       animate: 1,
       lineOptions: {
         hideDots: 1, // default: 0
@@ -142,15 +240,20 @@ export default {
   methods: {
     getData() {
       let _this = this;
+      const filters = {
+        company: this.companySelected,
+        item: this.itemSelected,
+        year: this.yearSelected,
+      };
+
+      console.log(filters);
 
       frappe.call({
         args: {
-          filters: {
-            company: "Fogliasana S.A.",
-            year: "2021",
-          },
+          filters,
         },
         freeze: true,
+        freeze_message: __("Obteniendo datos..."),
         method:
           "revelare.revelare.report.historical_weekly_item_amounts.historical_weekly_item_amounts.get_data_",
         async: true,
@@ -161,9 +264,43 @@ export default {
         },
       });
     },
+    getItems(e) {
+      // Si se marca el checkbox
+      if (e.target.checked) {
+        console.log("Obteniendo items...");
+        let _this = this;
+
+        frappe.call({
+          freeze: true,
+          freeze_message: __("Obteniendo items..."),
+          method: "revelare.api.get_items",
+          async: true,
+          callback: function (data) {
+            _this.itemSelect = data.message;
+
+            console.log(data.message);
+          },
+        });
+      } else {
+        this.itemSelected = "";
+      }
+    },
   },
 };
 </script>
 
 <style scoped>
+.custom-select {
+  width: auto !important;
+  border: none !important;
+  font-size: 11pt !important;
+}
+.custom-select option {
+  font-size: 11pt !important;
+}
+
+.project-nav {
+  display: inline-block;
+  vertical-align: middle;
+}
 </style>

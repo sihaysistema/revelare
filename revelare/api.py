@@ -188,3 +188,18 @@ def change_status_errand_trip(name):
         return frappe.get_traceback()
 
 # ------------- END ERRAND TRIP SECTION ------------- #
+
+
+# DATOS PARA PAGE HISTORIAL VOLUMEN ANALYSIS
+@frappe.whitelist()
+def get_data_to_select():
+    companies = frappe.db.get_list('Company', pluck='name')
+    fiscal_years = frappe.db.get_list('Fiscal Year', pluck='name')
+
+    return companies, fiscal_years
+
+@frappe.whitelist()
+def get_items():
+    return frappe.db.get_list('Item', filters={
+        'is_sales_item': 1
+    }, fields=['name', 'item_name']) or []
