@@ -464,15 +464,18 @@ def process_data(estimated_materials_with_attributes, material_and_sales_items, 
 
                         # Populate the row
                         # Llenamos la fila con los resultados anteriores
+                        dicToJSON('ms_item',ms_item)
                         sales_item_row = {
-                            "A": sales_item_route,
-                            "B": str(ms_item['sales_item_name']),
-                            "C": pos_qty,
-                            "D": _(possible_uom),
-                            "repeat":items_sold_draft,
-                            "E": sold_quantity,
-                            "F": str(adjusted_quantity),
-                            "G": ""
+                            "A" : sales_item_route,
+                            "B" : str(ms_item['sales_item_name']),
+                            "C" : pos_qty,
+                            "D" : _(possible_uom),
+                            "repeat" : items_sold_draft,
+                            "E" : sold_quantity,
+                            "F" : str(adjusted_quantity),
+                            "G" : "",
+                            "H" : str(ms_item['sales_item_code']),
+                            "J" : str(ms_item['sales_item_name'])
                         }
                         data.append(sales_item_row)
 
