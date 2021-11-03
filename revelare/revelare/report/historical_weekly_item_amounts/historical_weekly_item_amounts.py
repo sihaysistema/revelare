@@ -73,7 +73,10 @@ def get_data_(filters):
     Returns:
         [type]: [description]
     """
-    filters = frappe._dict(json.loads(filters))
+    try:
+        filters = frappe._dict(json.loads(filters))
+    except:
+        filters = filters
 
     flt = frappe._dict({
             "from_date": "",
@@ -83,7 +86,7 @@ def get_data_(filters):
     # Obtener fechas y rango por numero de semana
     data_of_date = get_range_of_date(filters)
     # Obtenemos las estimaciones en reporte y las ordenes de venta
-    estimations = estimations_reports(flt, data_of_date)
+    estimations = estimations_reports(flt, data_of_date, filters)
 
     # Formatemos los obtenidos
     list_of_items = formating_data(estimations, data_of_date)
@@ -93,7 +96,7 @@ def get_data_(filters):
     dicToJSON('data',list_of_items)
     return list_of_items
 
-def estimations_reports(flt, data_of_date):
+def estimations_reports(flt, data_of_date, filters):
     """Funcion que obtiene los estimado desde el reporte de "Sales Item Availability
 
     Args:
@@ -116,7 +119,7 @@ def estimations_reports(flt, data_of_date):
             flt.year = week['year']
 
             # Obtenemos la data del reporte en el rango de fechas
-            rep = prepair_data_of_report(flt)
+            rep = prepair_data_of_report(flt, filters)
             # Obtenemo las ventas en el rango de fechas
             sold_ = sold(flt)
             # Si hay data, entonce la agregamos la lista de diccionarios
@@ -127,7 +130,7 @@ def estimations_reports(flt, data_of_date):
 
     return reports
 
-def prepair_data_of_report(flt):
+def prepair_data_of_report(flt, filters):
     """Funcion que prepara la data del reporte
 
     Args:
@@ -140,20 +143,77 @@ def prepair_data_of_report(flt):
     rep = get_data(flt, False)
     # Creamos la lista de los items base del reporte
     items_in_report = []
-    # Si hay data en el reporte
+    # Si hay data el reporte
     if rep != [{}]:
-        # Por cada fila del reporte
-        for row in rep:
-            # Buscamos si la columna B es digito, dicho digito obtiene el total de estimaciónes para el item base
-            if is_digit(row.get('B','')):
-                # Si es digito, obtenemos las demas columnas de esa fila y la agregamos a los items del reporte
-                items_in_report.append(
-                    {
-                        'item_name_estimate':row['A'], 'estimated':row['B'],
-                        'uom':row['C'], 'reserved':row['repeat'], 'sold':row['E'],
-                        'available':row['F'], 'item_name_base':row['J'], 'item_code_base':row['H'],
-                        'year':flt.year, 'from_date':flt.from_date
-                    })
+
+        # Si no esta marcado el cheque de item de venta
+        if filters.is_sales_item == 0 or filters.is_sales_item == None:
+            # Por cada fila del reporte
+            for row in rep:
+
+                # Buscamos si la columna B es digito, dicho digito obtiene el total de estimaciónes para el item base
+                # Con el valor verdadero de la setencia, sabemos que esa es una columna con item base de estimación
+                if is_digit(row.get('B','')):
+                    # Si es digito, obtenemos las demas columnas de esa fila y la agregamos a los items del reporte
+                    items_in_report.append(
+                        {
+                            'item_name_estimate':row['A'],
+                            'estimated':row['B'],
+                            'uom':row['C'],
+                            'reserved':row['repeat'],
+                            'sold':row['E'],
+                            'available':row['F'],
+                            'item_name_base':row['J'],
+                            'item_code_base':row['H'],
+                            'year':flt.year,
+                            'from_date':flt.from_date
+                        })
+
+        # Si esta marcado el cheque de item de venta
+        elif filters.is_sales_item == 1:
+
+            # Por cada fila del reporte
+            for row in rep:
+
+                # Buscamos si la columna C es digito, dicho digito tiene el total posible para vender con los items base postulados
+                # Buscamos si la columna "Repeat" es digito, dicho digito tiene el valor de los autorepetidos.
+                # Con los dos valores positivos sabemos que esa es una columna de un item de venta
+                if is_digit(row.get('C','')) and is_digit(row.get('repeat', '')):
+                    # Si es digito, obtenemos las demas columnas de esa fila y la agregamos a los items del reporte
+
+                    if filters.item_selected != None:
+                    # Si seleccionamos un item de venta
+
+                        if row['A'] == filters.item_selected:
+                        # Al recorrer el reporte buscamos el item de venta para agregar lo al reporte
+
+                            items_in_report.append(
+                                {
+                                    'item_name_estimate':row['A'],
+                                    'estimated':row['C'],
+                                    'uom':row['D'],
+                                    'reserved':row['repeat'],
+                                    'sold':row['E'],
+                                    'available':row['F'],
+                                    'item_name_base':row['B'],
+                                    'item_code_base':row['A'],
+                                    'year':flt.year,
+                                    'from_date':flt.from_date
+                                })
+                    else:
+                        items_in_report.append(
+                            {
+                                'item_name_estimate':row['A'],
+                                'estimated':row['C'],
+                                'uom':row['D'],
+                                'reserved':row['repeat'],
+                                'sold':row['E'],
+                                'available':row['F'],
+                                'item_name_base':row['B'],
+                                'item_code_base':row['A'],
+                                'year':flt.year,
+                                'from_date':flt.from_date
+                            })
 
     return items_in_report
 

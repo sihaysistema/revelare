@@ -464,7 +464,6 @@ def process_data(estimated_materials_with_attributes, material_and_sales_items, 
 
                         # Populate the row
                         # Llenamos la fila con los resultados anteriores
-                        dicToJSON('ms_item',ms_item)
                         sales_item_row = {
                             "A" : sales_item_route,
                             "B" : str(ms_item['sales_item_name']),
