@@ -494,5 +494,37 @@
   "parenttype": null,
   "source_text": "Target Warehouse",
   "translated_text": "Bodega de Destino"
+ },
+ {
+  "context": null,
+  "contributed": 0,
+  "contribution_docname": null,
+  "contribution_status": "",
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2021-11-05 15:19:58.518596",
+  "name": "78d89793bb",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_text": "Allocated",
+  "translated_text": "Asignado"
+ },
+ {
+  "context": null,
+  "contributed": 0,
+  "contribution_docname": null,
+  "contribution_status": "",
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "es",
+  "modified": "2021-11-05 15:21:01.257557",
+  "name": "b647ecfed7",
+  "parent": null,
+  "parentfield": null,
+  "parenttype": null,
+  "source_text": "Outstanding",
+  "translated_text": "Pendiente"
  }
 ]

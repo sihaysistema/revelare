@@ -21,7 +21,27 @@ frappe.query_reports["Historical Weekly Item Amounts"] = {
         options: year_list,
         default: "2021",
         reqd: 0
-    }
-
+    },
+    {
+      fieldname: "is_sales_item",
+      label: __("Is Sales Item"),
+      fieldtype: "Check",
+      reqd: 0
+    },
+    {
+      fieldname: "item_selected",
+      label: __("Item Selected"),
+      fieldtype: "Link",
+      options: "Item",
+      reqd: 0,
+      get_query: function () {
+        return {
+            "doctype": "Item",
+            "filters": {
+                "is_sales_item": 1,
+            }
+        }
+      },
+    },
   ]
 };
