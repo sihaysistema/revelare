@@ -72,7 +72,7 @@ def total_sales_items(filters):
         date_doc = 'posting_date'
     elif filters.sales_from == 'Sales Invoice':
         date_doc = 'due_date'
-
+    """
     filt = [['docstatus','=',1],[date_doc,'>=',filters.from_date],[date_doc,'<=',filters.to_date]]
     fieldnames = ['name']
     get_list_doctypes = frappe.db.get_list(doctype, filters=filt, fields=fieldnames) or []
@@ -83,7 +83,7 @@ def total_sales_items(filters):
         filt = [['parent','=',doc['name']]]
         fieldnames = ['parent','item_code', 'delivery_date', 'SUM(stock_qty) AS stock_qty','stock_uom']
         items = frappe.db.get_list(doctype, filters=filt, fields=fieldnames, group_by='item_code')
-        data = data + items
+        data = data + items"""
 
     # Hemos dejado de utilizar este query y lo omologamos al codigo anterior
     result = frappe.db.sql(
