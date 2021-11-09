@@ -329,6 +329,21 @@ def total_sales_items_draft(filters):
         # Para Sales Invoice sera due_date
         date_doc = 'due_date'
 
+    # Hemos dejado de utilizar este query y lo omologamos al codigo anterior
+    data = frappe.db.sql(
+        f"""
+    SELECT soi.item_code, soi.delivery_date,
+	         SUM(soi.stock_qty) as stock_qty, soi.stock_uom
+    FROM `tabSales Order Item` as soi
+    WHERE soi.parent IN
+      (SELECT so.name FROM `tabSales Order` AS so
+        WHERE so.docstatus=0 AND auto_repeat != ''
+        AND (delivery_date BETWEEN '{filters.from_date}' AND '{filters.to_date}'))
+    GROUP BY soi.item_code;
+    """, as_dict=True
+    )
+
+    """
     # filtros: Docstatus=Draft(0), fecha_pedido entre filtros de fecha, autorepeat: Que no este vacío.
     filt = [['docstatus','=',0],[date_doc,'>=',filters.from_date],[date_doc,'<=',filters.to_date],['auto_repeat','!=',' ']]
     # Campos: name, fecha_pedido
@@ -344,6 +359,7 @@ def total_sales_items_draft(filters):
             i[date_doc] = sales[date_doc]
 
         data += items
+    """
 
     # Comentar hasta aquí
     data1 = future_documents(filters)
@@ -365,9 +381,13 @@ def future_documents(filters):
         start_date = datetime.strptime(filters.from_date, "%Y-%m-%d").date()
         sales_from = filters.sales_from
 
+        """
         filt = [['status','=','Active'],['end_date','>=',filters.from_date], ['reference_doctype','=',sales_from]]
         fieldnames = ['name', 'start_date', 'end_date','reference_document', 'reference_doctype']
         l_doctypes = frappe.db.get_list('Auto Repeat', filters=filt, fields=fieldnames) or []
+        """
+        l_doctypes = frappe.db.get_values('Auto Repeat', filters={'status' : 'Active', 'end_date': ['>=',filters.from_date],'reference_doctype': 'sales_from'},
+                                           fieldname=['name', 'start_date', 'end_date','reference_document', 'reference_doctype'], as_dict=True)
 
         data = []
         for doc in l_doctypes:
@@ -386,10 +406,14 @@ def future_documents(filters):
                 for value in v:
                     date_now = datetime.strptime(nowdate(),"%Y-%m-%d").date()
 
+                    """
                     doctype_i = f'{value["reference_doctype"]} Item'
                     filt = [['parent','=',value['reference_document']]]
                     fieldnames = ['parent','item_code', 'delivery_date', 'SUM(stock_qty) AS stock_qty','stock_uom']
                     items = frappe.db.get_list(doctype_i, filters=filt, fields=fieldnames, group_by='item_code')
+                    """
+                    items = frappe.db.get_values(doctype_i, filters={'parent' : value["reference_document"]},
+                                           fieldname=['parent','item_code', 'delivery_date', 'SUM(stock_qty) AS stock_qty','stock_uom'], as_dict=True)
 
                     start_date_to_use = None
 
