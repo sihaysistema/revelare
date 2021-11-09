@@ -83,21 +83,31 @@ def total_sales_items(filters):
         filt = [['parent','=',doc['name']]]
         fieldnames = ['parent','item_code', 'delivery_date', 'SUM(stock_qty) AS stock_qty','stock_uom']
         items = frappe.db.get_list(doctype, filters=filt, fields=fieldnames, group_by='item_code')
-        data = data + items"""
+        data = data + items
+    """
 
     # Hemos dejado de utilizar este query y lo omologamos al codigo anterior
     result = frappe.db.sql(
         f"""
+        SELECT soi.item_code, so.{date_doc},
+                SUM(soi.stock_qty) as stock_qty, soi.stock_uom
+        FROM `tab{doctype} Item` as soi, `tab{doctype}` as so
+        WHERE so.docstatus=1 AND so.name = soi.parent AND (so.{date_doc}
+        BETWEEN '{filters.from_date}' AND '{filters.to_date}')
+        GROUP BY soi.item_code;
+        """, as_dict=True)
+
+    # Como estaba
+    """
     SELECT soi.item_code, soi.delivery_date,
-	         SUM(soi.stock_qty) as stock_qty, soi.stock_uom
+         SUM(soi.stock_qty) as stock_qty, soi.stock_uom
     FROM `tabSales Order Item` as soi
     WHERE soi.parent IN
       (SELECT so.name FROM `tabSales Order` AS so
         WHERE so.docstatus=1
         AND (delivery_date BETWEEN '{filters.from_date}' AND '{filters.to_date}'))
     GROUP BY soi.item_code;
-    """, as_dict=True
-    )
+    """
 
     return result
 
@@ -332,14 +342,12 @@ def total_sales_items_draft(filters):
     # Hemos dejado de utilizar este query y lo omologamos al codigo anterior
     data = frappe.db.sql(
         f"""
-    SELECT soi.item_code, soi.delivery_date,
-	         SUM(soi.stock_qty) as stock_qty, soi.stock_uom
-    FROM `tabSales Order Item` as soi
-    WHERE soi.parent IN
-      (SELECT so.name FROM `tabSales Order` AS so
-        WHERE so.docstatus=0 AND auto_repeat != ''
-        AND (delivery_date BETWEEN '{filters.from_date}' AND '{filters.to_date}'))
-    GROUP BY soi.item_code;
+        SELECT soi.item_code, so.{date_doc},
+                SUM(soi.stock_qty) as stock_qty, soi.stock_uom
+        FROM `tab{doctype} Item` as soi, `tab{doctype}` as so
+        WHERE so.docstatus=0 AND so.name = soi.parent AND (so.{date_doc}
+        BETWEEN '{filters.from_date}' AND '{filters.to_date}')
+        GROUP BY soi.item_code;
     """, as_dict=True
     )
 
