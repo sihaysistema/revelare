@@ -171,9 +171,26 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Statistics",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Historical Volume Analysis",
+   "link_to": "historical-volume-an",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2021-10-06 14:59:25.819506",
+ "modified": "2021-10-29 12:30:27.322078",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Revelare",

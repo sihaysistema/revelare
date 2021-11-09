@@ -77,7 +77,9 @@ def fill_fixtures():
                     "Configuration",
                     "Pound",
                     "Sales Estimates",
-                    "Target Warehouse"
+                    "Target Warehouse",
+                    "Allocated",
+                    "Outstanding"
                 ]
             ]
         ]
