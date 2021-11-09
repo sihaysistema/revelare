@@ -99,7 +99,7 @@ def total_sales_items(filters):
     """, as_dict=True
     )
 
-    return data
+    return result
 
 
 def item_availability_estimates_range(filters):
