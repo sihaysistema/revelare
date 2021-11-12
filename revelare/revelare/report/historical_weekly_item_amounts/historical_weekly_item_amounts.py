@@ -93,6 +93,7 @@ def get_data_(filters):
 
     #Agregando estadisticas
     list_of_items = add_stadistics(list_of_items)
+    list_of_items = add_values_of_char(list_of_items, flt)
     dicToJSON('data',list_of_items)
     return list_of_items
 
@@ -121,7 +122,7 @@ def estimations_reports(flt, data_of_date, filters):
             # Obtenemos la data del reporte en el rango de fechas
             rep = prepair_data_of_report(flt, filters)
             # Obtenemo las ventas en el rango de fechas
-            sold_ = sold(flt)
+            sold_ = sold(flt, filters)
             # Si hay data, entonce la agregamos la lista de diccionarios
             if rep != []:
                 reports.append(rep)
@@ -183,10 +184,8 @@ def prepair_data_of_report(flt, filters):
 
                     if filters.item_selected != None:
                     # Si seleccionamos un item de venta
-
                         if row['A'] == filters.item_selected:
                         # Al recorrer el reporte buscamos el item de venta para agregar lo al reporte
-
                             items_in_report.append(
                                 {
                                     'item_name_estimate':row['A'],
@@ -217,7 +216,7 @@ def prepair_data_of_report(flt, filters):
 
     return items_in_report
 
-def sold(flt):
+def sold(flt, filters):
     """ Funcion que obtiene las ordenes de venta, formateadas para ser agregadas a la lista de items
 
     Args:
@@ -244,63 +243,157 @@ def sold(flt):
         }]
         """
         dic_sold = []
-        for i_s in items_sales:
-            index = search_list_of_dict_k(i_s['estimation_name'], dic_sold)
-            if index != None:
-                dic_sold[index][i_s['estimation_name']].append(i_s)
-            else:
-                dic_sold.append({i_s['estimation_name']:[i_s]})
+        if filters.is_sales_item == None:
+            for i_s in items_sales:
+                index = search_list_of_dict_k(i_s['estimation_name'], dic_sold)
+                if index != None:
+                    dic_sold[index][i_s['estimation_name']].append(i_s)
+                else:
+                    dic_sold.append({i_s['estimation_name']:[i_s]})
 
-        #---Realizaremos la conversion
-        for dic_s in dic_sold:
-            for item in list(dic_s.values()):
-                # accedemos hasta los items de venta que tienen el mismo item base en comun
-                for i in item:
+            #---Realizaremos la conversion
+            for dic_s in dic_sold:
+                for item in list(dic_s.values()):
+                    # accedemos hasta los items de venta que tienen el mismo item base en comun
+                    for i in item:
 
-                    # Revisamos si uno de los items de venta esta entre los items vendidos esa semana
-                    index = search_list_of_dict_v(i['item'],'item_code',sums_items_sales)
+                        # Revisamos si uno de los items de venta esta entre los items vendidos esa semana
+                        index = search_list_of_dict_v(i['item'],'item_code',sums_items_sales)
 
-                    # Si esta entonces le generamos la conversión
+                        # Si esta entonces le generamos la conversión
+                        if index != None:
+                            # Formula para obtener la conversion: ((cantidad consumida por unidad a crear) * (factor de conversion) * (cantidad vendida en esa semana))
+                            # Ej:
+                            # Item base: Lechuga lista para consechar en libras
+                            # Item de venta: Lechuga en bolsa de 8OZ
+                            # Cantidad vendida: 15 unidades
+                            # Factor de conversion de onzas a libras es 0.0625
+                            # venta convertida = (8 *0.0625 * 15) = 7.5
+                            sum_item = sums_items_sales[index]['sum_item']
+                            i['conversion_sold'] = (i['qty_consumed_per_units'] * i['conversion_factor'] * sum_item)
+
+            # Total de ventas  por item base
+            solds_totals = []
+            # Por cada item base se genera un nuevo diccionario
+            for dic_s in dic_sold:
+
+                # Obtenemos los campos que necesitaremos agregar a cada suma
+                item_name_estimate = list(dic_s.keys())[0]
+                item_code_base = dic_s[item_name_estimate][0]['item_code_base']
+                item_name_base = dic_s[item_name_estimate][0]['item_name_base']
+                uom = dic_s[item_name_estimate][0]['uom']
+
+
+                # Suma que generaremos para cada item
+                sum_items_sold = 0
+                # Por cada item base se obtienen los items de venta de dicho item base
+                for item in dic_s[item_name_estimate]:
+                    # Si existe venta convertida la sumamos
+                    if item.get('conversion_sold','') != '':
+                        sum_items_sold += item['conversion_sold']
+
+                # Si la suma es mayor que 0 generamos el nuevo diccionario
+                if  sum_items_sold > 0:
+                    solds_totals.append({
+                        'item_name_estimate': item_name_estimate,
+                        'sold':sum_items_sold,
+                        'item_code_base':item_code_base,
+                        'item_name_base':item_name_base,
+                        'year':flt.year, 'from_date':flt.from_date,
+                        'uom':uom})
+
+        elif filters.is_sales_item == 1:
+
+                for i_s in items_sales:
+                    index = search_list_of_dict_k(i_s['estimation_name'], dic_sold)
                     if index != None:
-                        # Formula para obtener la conversion: ((cantidad consumida por unidad a crear) * (factor de conversion) * (cantidad vendida en esa semana))
-                        # Ej:
-                        # Item base: Lechuga lista para consechar en libras
-                        # Item de venta: Lechuga en bolsa de 8OZ
-                        # Cantidad vendida: 15 unidades
-                        # Factor de conversion de onzas a libras es 0.0625
-                        # venta convertida = (8 *0.0625 * 15) = 7.5
-                        sum_item = sums_items_sales[index]['sum_item']
-                        i['conversion_sold'] = (i['qty_consumed_per_units'] * i['conversion_factor'] * sum_item)
+                        dic_sold[index][i_s['estimation_name']].append(i_s)
+                    else:
+                        dic_sold.append({i_s['estimation_name']:[i_s]})
 
-        # Total de ventas  por item base
-        solds_totals = []
-        # Por cada item base se genera un nuevo diccionario
-        for dic_s in dic_sold:
+                #---Realizaremos la conversion
+                for dic_s in dic_sold:
+                    for item in list(dic_s.values()):
+                        # accedemos hasta los items de venta que tienen el mismo item base en comun
+                        for i in item:
 
-            # Obtenemos los campos que necesitaremos agregar a cada suma
-            item_name_estimate = list(dic_s.keys())[0]
-            item_code_base = dic_s[item_name_estimate][0]['item_code_base']
-            item_name_base = dic_s[item_name_estimate][0]['item_name_base']
-            uom = dic_s[item_name_estimate][0]['uom']
+                            # Revisamos si uno de los items de venta esta entre los items vendidos esa semana
+                            index = search_list_of_dict_v(i['item'],'item_code',sums_items_sales)
+
+                            # Si esta entonces le generamos la conversión
+                            if index != None:
+                                # Formula para obtener la conversion: ((cantidad consumida por unidad a crear) * (factor de conversion) * (cantidad vendida en esa semana))
+                                # Ej:
+                                # Item base: Lechuga lista para consechar en libras
+                                # Item de venta: Lechuga en bolsa de 8OZ
+                                # Cantidad vendida: 15 unidades
+                                # Factor de conversion de onzas a libras es 0.0625
+                                # venta convertida = (8 *0.0625 * 15) = 7.5
+                                sum_item = sums_items_sales[index]['sum_item']
+                                i['conversion_sold'] = (i['qty_consumed_per_units'] * i['conversion_factor'] * sum_item)
+
+                # Total de ventas  por item base
+                solds_totals = []
+                if filters.item_selected == None:
+                    # Por cada item base se genera un nuevo diccionario
+                    for dic_s in dic_sold:
+
+                        # Obtenemos los campos que necesitaremos agregar a cada suma
+                        item_name_estimate = list(dic_s.keys())[0]
+                        item_code_base = dic_s[item_name_estimate][0]['item_code_base']
+                        item_name_base = dic_s[item_name_estimate][0]['item_name_base']
+                        uom = dic_s[item_name_estimate][0]['uom']
 
 
-            # Suma que generaremos para cada item
-            sum_items_sold = 0
-            # Por cada item base se obtienen los items de venta de dicho item base
-            for item in dic_s[item_name_estimate]:
-                # Si existe venta convertida la sumamos
-                if item.get('conversion_sold','') != '':
-                    sum_items_sold += item['conversion_sold']
+                        # Suma que generaremos para cada item
+                        sum_items_sold = 0
+                        # Por cada item base se obtienen los items de venta de dicho item base
+                        for item in dic_s[item_name_estimate]:
+                            # Si existe venta convertida la sumamos
+                            if item.get('conversion_sold','') != '':
+                                sum_items_sold += item['conversion_sold']
 
-            # Si la suma es mayor que 0 generamos el nuevo diccionario
-            if  sum_items_sold > 0:
-                solds_totals.append({
-                    'item_name_estimate': item_name_estimate,
-                    'sold':sum_items_sold,
-                    'item_code_base':item_code_base,
-                    'item_name_base':item_name_base,
-                    'year':flt.year, 'from_date':flt.from_date,
-                    'uom':uom})
+                        # Si la suma es mayor que 0 generamos el nuevo diccionario
+                        if  sum_items_sold > 0:
+                            solds_totals.append({
+                                'item_name_estimate': item_name_estimate,
+                                'sold':sum_items_sold,
+                                'item_code_base':item_code_base,
+                                'item_name_base':item_name_base,
+                                'year':flt.year, 'from_date':flt.from_date,
+                                'uom':uom})
+
+                elif filters.item_selected != None:
+                    # Por cada item base se genera un nuevo diccionario
+                    for dic_s in dic_sold:
+                        with open("log.txt",'a',encoding = 'utf-8') as f:
+                            f.write(f"{dic_s}\n")
+                            f.close()
+                        # Obtenemos los campos que necesitaremos agregar a cada suma
+                        item_name_estimate = list(dic_s.keys())[0]
+                        item_code_base = dic_s[item_name_estimate][0]['item']
+                        item_name_base = dic_s[item_name_estimate][0]['item_name']
+                        uom = dic_s[item_name_estimate][0]['uom']
+
+
+                        # Suma que generaremos para cada item
+                        sum_items_sold = 0
+                        # Por cada item base se obtienen los items de venta de dicho item base
+                        for item in dic_s[item_name_estimate]:
+                            # Si existe venta convertida la sumamos
+                            if item.get('conversion_sold','') != '':
+                                sum_items_sold += item['conversion_sold']
+
+                        # Si la suma es mayor que 0 generamos el nuevo diccionario
+                        if  sum_items_sold > 0:
+                            solds_totals.append({
+                                'item_name_estimate': item_name_estimate,
+                                'sold':sum_items_sold,
+                                'item_code_base':item_code_base,
+                                'item_name_base':item_name_base,
+                                'year':flt.year, 'from_date':flt.from_date,
+                                'uom':uom})
+
     return solds_totals
 
 def get_sums_sales_items_qty(flt):
@@ -573,6 +666,10 @@ def add_stadistics(data):
     Returns:
         [type]: [description]
     """
+    # fiscal_years = frappe.db.get_list('Fiscal Year', pluck='name')[0]
+
+    fiscal_years = '2021'
+
     # Por cada item en la data
     for dat in data:
         # Creamos la lista de registros por semana
@@ -589,16 +686,18 @@ def add_stadistics(data):
                 # Si la semana a buscar por cada año esta en la llave "2018 Week01", "2019 Week01", "2020 Week01"
                 if wsearch in list(d.keys())[0]:
 
-                    # Buscamos el indice de la semana en la lista de registros
-                    index = search_list_of_dict_k(wsearch,records_of_weeks)
-                    # Si ya esta la semana en los registros
-                    if index != None:
-                        # Solo le agregamos los valores de esa semana, sin importar el año
-                        records_of_weeks[index][wsearch].append(list(d.values())[0])
-                    else:
-                        # Sino agregamos un diccionario con el nombre de la semana sin el año
-                        # Y agregamos los valores de esa semana, sin importar el año
-                        records_of_weeks.append({wsearch:[list(d.values())[0]]})
+                    # fiscal_years not in list(d.keys())[0]
+                    if fiscal_years not in list(d.keys())[0]:
+                        # Buscamos el indice de la semana en la lista de registros
+                        index = search_list_of_dict_k(wsearch,records_of_weeks)
+                        # Si ya esta la semana en los registros
+                        if index != None:
+                            # Solo le agregamos los valores de esa semana, sin importar el año
+                            records_of_weeks[index][wsearch].append(list(d.values())[0])
+                        else:
+                            # Sino agregamos un diccionario con el nombre de la semana sin el año
+                            # Y agregamos los valores de esa semana, sin importar el año
+                            records_of_weeks.append({wsearch:[list(d.values())[0]]})
 
         # Creamos la llave estadistica para agregale los valores estadisticos
         dat['statistics'] = []
@@ -658,22 +757,37 @@ def add_stadistics(data):
     return data
 
 def add_values_of_char(data, flt):
+    dicToJSON('data_', data)
     year = '2021'
 
-    for d in data:
+    for dat in data:
         year_select = []
-        for item in d['time_series_data']:
+        for item in dat['time_series_data']:
             name = list(item.keys())[0]
             if year in name:
                 year_select.append(item)
-        d['year_select'] = year_select
+        dat['year_select'] = year_select
 
-    for d in data:
-        d['labels'] = []
-        d['values'] = []
-        for item in d['year_select']:
-            d['labels'].append(list(item.keys())[0])
-            d['values'].append(list(item.values())[0]['estimated'])
+    for dat in data:
+        dat['labels'] = []
+        dat['values'] = []
+        for item in dat['year_select']:
+            dat['labels'].append(list(item.keys())[0])
+            dat['values'].append(list(item.values())[0]['estimated'])
+
+    type_of_char = 'estimated'
+    for dat in data:
+        dat['value1'] = []
+        dat['value2'] = []
+        dat['value3'] = []
+
+        for item in dat['statistics']:
+            stadistic = list(item.values())[0]
+            data_selec = stadistic[type_of_char]
+            dat['value1'].append(data_selec['max'])
+            dat['value2'].append(data_selec['avg'])
+            dat['value3'].append(data_selec['min'])
+
     return data
 
 
