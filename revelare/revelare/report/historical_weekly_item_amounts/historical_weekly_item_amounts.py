@@ -77,6 +77,7 @@ def get_data_(filters):
         filters = frappe._dict(json.loads(filters))
     except:
         filters = filters
+    dicToJSON('filters', filters)
 
     flt = frappe._dict({
             "from_date": "",
@@ -92,8 +93,8 @@ def get_data_(filters):
     list_of_items = formating_data(estimations, data_of_date)
 
     #Agregando estadisticas
-    list_of_items = add_stadistics(list_of_items)
-    list_of_items = add_values_of_char(list_of_items, flt)
+    list_of_items = add_stadistics(list_of_items, filters)
+    list_of_items = add_values_of_char(list_of_items, filters)
     dicToJSON('data',list_of_items)
     return list_of_items
 
@@ -366,9 +367,6 @@ def sold(flt, filters):
                 elif filters.item_selected != None:
                     # Por cada item base se genera un nuevo diccionario
                     for dic_s in dic_sold:
-                        with open("log.txt",'a',encoding = 'utf-8') as f:
-                            f.write(f"{dic_s}\n")
-                            f.close()
                         # Obtenemos los campos que necesitaremos agregar a cada suma
                         item_name_estimate = list(dic_s.keys())[0]
                         item_code_base = dic_s[item_name_estimate][0]['item']
@@ -657,7 +655,7 @@ def formating_data(estimations, data_of_date):
                         })
     return list_of_items
 
-def add_stadistics(data):
+def add_stadistics(data, filters):
     """Agregamos las estadisticas por semana por cada item base
 
     Args:
@@ -668,12 +666,13 @@ def add_stadistics(data):
     """
     # fiscal_years = frappe.db.get_list('Fiscal Year', pluck='name')[0]
 
-    fiscal_years = '2021'
+    fiscal_year = '2021'
 
     # Por cada item en la data
     for dat in data:
         # Creamos la lista de registros por semana
         records_of_weeks = []
+        order_of_week = []
         # Por cada semana en el rango
         for week_ in range(1, 54):
             # Obtenemos el numero de semana a dos digitos
@@ -681,23 +680,35 @@ def add_stadistics(data):
 
             # Por cada semana en la serie de datos
             for d in dat['time_series_data']:
-                # Buscamos el numero de semana en la lista de datos "Week01"
                 wsearch = f'Week{no_week}'
-                # Si la semana a buscar por cada año esta en la llave "2018 Week01", "2019 Week01", "2020 Week01"
-                if wsearch in list(d.keys())[0]:
 
-                    # fiscal_years not in list(d.keys())[0]
-                    if fiscal_years not in list(d.keys())[0]:
+                if fiscal_year in list(d.keys())[0]:
+                    # Si la semana a buscar por cada año esta en la llave "2018 Week01", "2019 Week01", "2020 Week01"
+                    if wsearch in list(d.keys())[0]:
+                        index_1 = search_list_of_dict_k(wsearch,order_of_week)
+
+                        if index_1 != None:
+                            # Solo le agregamos los valores de esa semana, del año seleccionado
+                            order_of_week[index_2][wsearch].append(list(d.values())[0])
+                        else:
+
+                            order_of_week.append({wsearch:list(d.values())[0]})
+
+                elif fiscal_year not in list(d.keys())[0]:
+                    if wsearch in list(d.keys())[0]:
+
                         # Buscamos el indice de la semana en la lista de registros
-                        index = search_list_of_dict_k(wsearch,records_of_weeks)
+                        index_2 = search_list_of_dict_k(wsearch,records_of_weeks)
                         # Si ya esta la semana en los registros
-                        if index != None:
+                        if index_2 != None:
                             # Solo le agregamos los valores de esa semana, sin importar el año
-                            records_of_weeks[index][wsearch].append(list(d.values())[0])
+                            records_of_weeks[index_2][wsearch].append(list(d.values())[0])
                         else:
                             # Sino agregamos un diccionario con el nombre de la semana sin el año
                             # Y agregamos los valores de esa semana, sin importar el año
                             records_of_weeks.append({wsearch:[list(d.values())[0]]})
+
+        dat['year_curren'] = order_of_week
 
         # Creamos la llave estadistica para agregale los valores estadisticos
         dat['statistics'] = []
@@ -756,37 +767,34 @@ def add_stadistics(data):
 
     return data
 
-def add_values_of_char(data, flt):
-    dicToJSON('data_', data)
+def add_values_of_char(data,filters):
     year = '2021'
-
-    for dat in data:
-        year_select = []
-        for item in dat['time_series_data']:
-            name = list(item.keys())[0]
-            if year in name:
-                year_select.append(item)
-        dat['year_select'] = year_select
+    # type_of_char = 'estimated'
+    type_of_char = 'available'
 
     for dat in data:
         dat['labels'] = []
         dat['values'] = []
-        for item in dat['year_select']:
-            dat['labels'].append(list(item.keys())[0])
-            dat['values'].append(list(item.values())[0]['estimated'])
 
-    type_of_char = 'estimated'
-    for dat in data:
         dat['value1'] = []
         dat['value2'] = []
         dat['value3'] = []
 
+        for item in dat['year_curren']:
+
+            dat['labels'].append(list(item.keys())[0])
+            dat['values'].append(list(item.values())[0][type_of_char])
+
+        dat['labels'].sort()
+
         for item in dat['statistics']:
             stadistic = list(item.values())[0]
             data_selec = stadistic[type_of_char]
-            dat['value1'].append(data_selec['max'])
-            dat['value2'].append(data_selec['avg'])
-            dat['value3'].append(data_selec['min'])
+
+            if dat['statistics'].index(item)+1 < len(dat['year_curren']):
+                dat['value1'].append(data_selec['max'])
+                dat['value2'].append(data_selec['avg'])
+                dat['value3'].append(data_selec['min'])
 
     return data
 
