@@ -77,7 +77,7 @@ def get_data_(filters):
         filters = frappe._dict(json.loads(filters))
     except:
         filters = filters
-    dicToJSON('filters', filters)
+    dicToJSON('filters',filters)
 
     flt = frappe._dict({
             "from_date": "",
@@ -88,7 +88,6 @@ def get_data_(filters):
     data_of_date = get_range_of_date(filters)
     # Obtenemos las estimaciones en reporte y las ordenes de venta
     estimations = estimations_reports(flt, data_of_date, filters)
-
     # Formatemos los obtenidos
     list_of_items = formating_data(estimations, data_of_date)
 
@@ -201,19 +200,19 @@ def prepair_data_of_report(flt, filters):
                                     'from_date':flt.from_date
                                 })
                     else:
-                        items_in_report.append(
-                            {
-                                'item_name_estimate':row['A'],
-                                'estimated':row['C'],
-                                'uom':row['D'],
-                                'reserved':row['repeat'],
-                                'sold':row['E'],
-                                'available':row['F'],
-                                'item_name_base':row['B'],
-                                'item_code_base':row['A'],
-                                'year':flt.year,
-                                'from_date':flt.from_date
-                            })
+                            items_in_report.append(
+                                {
+                                    'item_name_estimate':row['A'],
+                                    'estimated':row['C'],
+                                    'uom':row['D'],
+                                    'reserved':row['repeat'],
+                                    'sold':row['E'],
+                                    'available':row['F'],
+                                    'item_name_base':row['B'],
+                                    'item_code_base':row['A'],
+                                    'year':flt.year,
+                                    'from_date':flt.from_date
+                                })
 
     return items_in_report
 
@@ -306,11 +305,11 @@ def sold(flt, filters):
         elif filters.is_sales_item == 1:
 
                 for i_s in items_sales:
-                    index = search_list_of_dict_k(i_s['estimation_name'], dic_sold)
+                    index = search_list_of_dict_k(i_s['item'], dic_sold)
                     if index != None:
-                        dic_sold[index][i_s['estimation_name']].append(i_s)
+                        dic_sold[index][i_s['item']].append(i_s)
                     else:
-                        dic_sold.append({i_s['estimation_name']:[i_s]})
+                        dic_sold.append({i_s['item']:[i_s]})
 
                 #---Realizaremos la conversion
                 for dic_s in dic_sold:
@@ -338,7 +337,6 @@ def sold(flt, filters):
                 if filters.item_selected == None:
                     # Por cada item base se genera un nuevo diccionario
                     for dic_s in dic_sold:
-
                         # Obtenemos los campos que necesitaremos agregar a cada suma
                         item_name_estimate = list(dic_s.keys())[0]
                         item_code_base = dic_s[item_name_estimate][0]['item_code_base']
@@ -384,13 +382,15 @@ def sold(flt, filters):
 
                         # Si la suma es mayor que 0 generamos el nuevo diccionario
                         if  sum_items_sold > 0:
-                            solds_totals.append({
-                                'item_name_estimate': item_name_estimate,
-                                'sold':sum_items_sold,
-                                'item_code_base':item_code_base,
-                                'item_name_base':item_name_base,
-                                'year':flt.year, 'from_date':flt.from_date,
-                                'uom':uom})
+                            if filters.item_selected == item_name_estimate:
+
+                                solds_totals.append({
+                                    'item_name_estimate': item_name_estimate,
+                                    'sold':sum_items_sold,
+                                    'item_code_base':item_code_base,
+                                    'item_name_base':item_name_base,
+                                    'year':flt.year, 'from_date':flt.from_date,
+                                    'uom':uom})
 
     return solds_totals
 
@@ -540,16 +540,23 @@ def obtain_sales_orders_in_range(flts):
     doctype = flts.sales_from
 
     # Obtenemos las ordenes de venta entre el rango de fechas.
-    flts_ = [['docstatus','=',1],[date_doc,'>=',flts.from_date],[date_doc,'<=',flts.to_date]]
-    fieldname = ['name',date_doc]
-    sales_orders = frappe.db.get_list(f"{doctype}", filters=flts_, fields =fieldname) or []
+    # flts_ = [['docstatus','=',1],[date_doc,'>=',flts.from_date],[date_doc,'<=',flts.to_date]]
+    # fieldname = ['name',date_doc]
+    # sales_orders = frappe.db.get_list(f"{doctype}", filters=flts_, fields =fieldname) or []
+
+    filt = {'docstatus' : 1, date_doc : ['>=',flts.from_date], date_doc : ['<=',flts.to_date]}
+    fieldnames = ['name',date_doc]
+    sales_orders = frappe.db.get_values(f"{doctype}", filters=filt, fieldname=fieldnames, as_dict=1) or []
 
     # Obtenemos los items de cada orden de venta
     so_items = []
     for so in sales_orders:
-        flts1 = [['parent','=',so['name']]]
+        # flts1 = [['parent','=',so['name']]]
+        # fieldname1 = ['item_code','item_name','qty','amount','stock_uom']
+        # sales_orders_items = frappe.db.get_list(f"{doctype} Item", filters=flts1, fields =fieldname1) or []
+        flts1 = {'parent' : so['name']}
         fieldname1 = ['item_code','item_name','qty','amount','stock_uom']
-        sales_orders_items = frappe.db.get_list(f"{doctype} Item", filters=flts1, fields =fieldname1) or []
+        sales_orders_items = frappe.db.get_values(f"{doctype} Item", filters=flts1, fieldname=fieldname1, as_dict=1) or []
         if sales_orders_items != []:
             for s in sales_orders_items:
                 s[date_doc] = so[date_doc]
@@ -666,7 +673,7 @@ def add_stadistics(data, filters):
     """
     # fiscal_years = frappe.db.get_list('Fiscal Year', pluck='name')[0]
 
-    fiscal_year = '2021'
+    fiscal_year = filters.year_selected
 
     # Por cada item en la data
     for dat in data:
@@ -689,10 +696,10 @@ def add_stadistics(data, filters):
 
                         if index_1 != None:
                             # Solo le agregamos los valores de esa semana, del año seleccionado
-                            order_of_week[index_2][wsearch].append(list(d.values())[0])
+                            order_of_week[index_1][wsearch].append(list(d.values())[0])
                         else:
 
-                            order_of_week.append({wsearch:list(d.values())[0]})
+                            order_of_week.append({wsearch:[list(d.values())[0]]})
 
                 elif fiscal_year not in list(d.keys())[0]:
                     if wsearch in list(d.keys())[0]:
@@ -783,7 +790,12 @@ def add_values_of_char(data,filters):
         for item in dat['year_curren']:
 
             dat['labels'].append(list(item.keys())[0])
-            dat['values'].append(list(item.values())[0][type_of_char])
+            # dat['values'].append(list(item.values())[0][type_of_char])
+            sum_curren = 0
+            for val in list(item.values())[0]:
+                sum_curren += float(val[type_of_char])
+
+            dat['values'].append(sum_curren)
 
         dat['labels'].sort()
 

@@ -246,11 +246,11 @@ export default {
         company: this.companySelected,
         item_selected: this.itemSelected,
         is_sales_item: is_item_s,
-        // year: this.yearSelected,
+        year_selected: this.yearSelected,
         year: "2017",
       };
 
-      console.log(filters);
+      console.log(`${JSON.parse(filters)}`);
 
       frappe.call({
         args: {
@@ -281,8 +281,8 @@ export default {
             // COLORES: 0: datos de año en curso, 1: max, 2: promedio, 3: min
             colors: ["#004C99", "#FF0000", "#FF0000", "#FF0000"],
           });
-          console.log(_this.dd.datasets);
-          console.log(data.message);
+          //console.log(_this.dd.datasets);
+          //console.log(data.message);
           _this.$forceUpdate();
         },
       });
