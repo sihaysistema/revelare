@@ -84,9 +84,9 @@
     <h3>Semanal</h3>
     <div id="chart"></div>
 
-    <code class="mt-4">
+    <!-- <code class="mt-4">
       {{ datosBackend }}
-    </code>
+    </code> -->
   </div>
 </template>
 
@@ -240,13 +240,17 @@ export default {
   methods: {
     getData() {
       let _this = this;
+      let is_item_s = this.is_sales_item ? 1 : 0;
+
       const filters = {
         company: this.companySelected,
-        item: this.itemSelected,
-        year: this.yearSelected,
+        item_selected: this.itemSelected,
+        is_sales_item: is_item_s,
+        year_selected: this.yearSelected,
+        year: "2017",
       };
 
-      console.log(filters);
+      console.log(`${JSON.parse(filters)}`);
 
       frappe.call({
         args: {
@@ -260,7 +264,26 @@ export default {
         callback: function (data) {
           _this.datosBackend = data.message;
 
-          console.log(data.message);
+          _this.dd.labels = data.message[0].labels;
+          _this.dd.datasets[0].values = data.message[0].values;
+          _this.dd.datasets[1].values = data.message[0].value1;
+          _this.dd.datasets[2].values = data.message[0].value2;
+          _this.dd.datasets[3].values = data.message[0].value3;
+
+          new frappe.Chart("#chart", {
+            data: _this.dd,
+            type: "line",
+            height: 350,
+            animate: 1,
+            lineOptions: {
+              hideDots: 1, // default: 0
+            },
+            // COLORES: 0: datos de año en curso, 1: max, 2: promedio, 3: min
+            colors: ["#004C99", "#FF0000", "#FF0000", "#FF0000"],
+          });
+          //console.log(_this.dd.datasets);
+          //console.log(data.message);
+          _this.$forceUpdate();
         },
       });
     },
