@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import calendar
 import json
+import math
 import statistics as stdic
 from datetime import date, datetime, time, timedelta
 
@@ -15,8 +16,17 @@ from revelare.revelare.report.historical_weekly_item_amounts.utils import (get_r
                                                                            list_of_ranges_date, search_list_of_dict_k,
                                                                            search_list_of_dict_v, search_week_in_range)
 from revelare.revelare.report.sales_item_availability.sales_item_availability import get_data
-from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import (find_conversion_factor,
-                                                                                              total_sales_items)
+from revelare.revelare.report.sales_item_availability.sales_item_availability_queries import (estimation_item_attributes,
+                                                                                              find_bom_items, find_boms,
+                                                                                              find_conversion_factor,
+                                                                                              find_sales_items,
+                                                                                              find_sales_order_items,
+                                                                                              find_sales_orders,
+                                                                                              item_availability_estimates_range,
+                                                                                              periods_estimated_items,
+                                                                                              total_item_availability_estimates,
+                                                                                              total_sales_items,
+                                                                                              total_sales_items_draft)
 
 
 def execute(filters=None):
@@ -82,7 +92,8 @@ def get_data_(filters):
     flt = frappe._dict({
             "from_date": "",
             "to_date": "",
-            "sales_from": "Sales Order"
+            "sales_from": "Sales Order",
+            "item_selected": filters.item_selected
             })
     # Obtener fechas y rango por numero de semana
     data_of_date = get_range_of_date(filters)
@@ -141,7 +152,10 @@ def prepair_data_of_report(flt, filters):
         [type]: [description]
     """
     # Llamamos la funcion get_data del reporte sales_item_availability
-    rep = get_data(flt, False)
+    # rep = get_data(flt, False)
+    rep = get_data_for_item(flt) or [{}]
+
+
     # Creamos la lista de los items base del reporte
     items_in_report = []
     # Si hay data el reporte
@@ -810,6 +824,540 @@ def add_values_of_char(data,filters):
 
     return data
 
+## --------Reporte por Item
+def get_data_for_item(filters):
+    if filters.is_sales_item != None:
+        if filters.item_selected != None:
+            is_item_sales_total_avaiability(filters, filters.item_selected)
+        else:
+            list_of_item = list_of_item_sales(filters)
+            # with open("log.txt",'a',encoding = 'utf-8') as f:
+            #     f.write(f"{list_of_item}\n")
+            #     f.close()
+            for item in list_of_item:
+
+                name_item = item['item_code']
+                is_item_sales_total_avaiability(filters, name_item)
+            # with open("log.txt",'a',encoding = 'utf-8') as f:
+            #     f.write(f"{list_of_item}\n")
+            #     f.close()
+
+    elif filters.is_sales_item == None:
+        estimated_materials_with_attributes = total_item_availability_estimate_attributes(filters)
+
+        bom_items_list = []
+        for material in estimated_materials_with_attributes:
+            material_doctype_name = material['name']
+            bom_items = find_bom_items(filters, material_doctype_name)
+            bom_items_list.extend(bom_items)
+
+        material_and_sales_items = []
+        included_items = set()
+        for bom_item in bom_items_list:
+            bom_name = bom_item['parent']
+            boms = find_boms(filters, bom_name)
+
+            if len(boms):
+                bom_item['sales_item_code'] = boms[0]['item']
+                bom_item['sales_item_qty'] = boms[0]['quantity']
+                bom_item['sales_item_uom'] = boms[0]['uom']
+                bom_item['sales_item_name'] = boms[0]['item_name']
+                bom_item['conversion_factor'] = find_conversion_factor(estimated_materials_with_attributes[0]['amount_uom'], bom_item['stock_uom'])
+                bom_item.pop("parent")
+
+                if not boms[0]['item_name'] in included_items:
+                    included_items.add(boms[0]['item_name'])
+                    material_and_sales_items.append(bom_item)
+
+        matching_sales_order_items = total_sales_items(filters)
+
+        matching_SO_items_draft = total_sales_items_draft(filters)
+
+        material_and_sales_items = sorted(material_and_sales_items, key=lambda x: x['sales_item_code'])
+
+        sales_item_codes = [item['item_code'] for item in matching_sales_order_items]
+
+        items_SO_draft = [item['item_code'] for item in matching_SO_items_draft]
+
+        # with open("log.txt",'a',encoding = 'utf-8') as f:
+        #     f.write(f"estimated_materials_with_attributes:{estimated_materials_with_attributes}\nmatching_sales_order_items:{matching_sales_order_items}\nmatching_SO_items_draft:{matching_SO_items_draft}\nmaterial_and_sales_items:{material_and_sales_items}\nsales_item_codes:{sales_item_codes}\nitems_SO_draft:{items_SO_draft}\n\n")
+        #     f.close()
+
+        data = process_data(estimated_materials_with_attributes, material_and_sales_items,
+                        sales_item_codes, matching_sales_order_items, items_SO_draft, matching_SO_items_draft)
+        with open("log.txt",'a',encoding = 'utf-8') as f:
+            f.write(f"data{data}\n\n")
+            f.close()
+    return data
+
+## -------Queries
+def total_item_availability_estimate_attributes(filters):
+    """
+    Returns a list of dictionaries that contain the item availability estimate
+    name, estimation name, estimation uom, stock uom, total amount, amount uom
+    """
+    result = frappe.db.sql(f"""
+    SELECT name, estimation_name, estimation_uom, stock_uom,
+                 estimate.item_name, estimate.amount, estimate.amount_uom
+    FROM `tabItem`
+    INNER JOIN
+      (SELECT ei.item_code, ei.item_name, SUM(ei.amount) as amount, ei.amount_uom
+       FROM `tabItem Availability Estimate` as iae
+       INNER JOIN `tabEstimated Item` as ei
+       ON iae.name = ei.parent
+       WHERE iae.docstatus = 1
+       AND ei.docstatus = 1
+       AND ei.item_code = '{filters.item_selected}'
+       AND (iae.start_date AND iae.end_date BETWEEN '{filters.from_date}' AND '{filters.to_date}')
+       GROUP BY ei.item_code) as estimate
+       WHERE name=estimate.item_code;
+    """, as_dict=True)
+    return result
+
+def is_item_sales_total_avaiability(filters, name_item=''):
+    #boms_in_items = frappe.db.get_value('BOM', filters={'item':filters.item}, filname=[], as_dict=True)
+    #'start_date': ['>=',filters.from_date], 'start_date': ['<=',filters.to_date]
+
+    if name_item != '':
+        base_item = []
+
+        boms_of_sales_item = frappe.db.get_value('BOM', filters={'item':name_item}, fieldname=['name'], as_dict=True)
+
+        if boms_of_sales_item != None:
+            item_of_bom = frappe.db.get_values('BOM Item', filters={'parent':boms_of_sales_item['name']}, fieldname=['item_code', 'item_name'], as_dict=True)
+
+            if item_of_bom:
+                item_ok = {}
+
+                with open("log.txt",'a',encoding = 'utf-8') as f:
+                    for item in item_of_bom:
+                        item_configure = frappe.db.get_value('Item', filters={'name':item['item_code'], 'include_in_estimations':1, 'is_sales_item':0}, fieldname=['name', 'include_in_estimations','is_sales_item', 'is_purchase_item'], as_dict=True)
+                        if item_configure:
+                            flt_estimated = {'item_code':item_configure['name']}
+                            fnm_estimated = ['item_code', 'item_name', 'amount', 'amount_uom', 'parent']
+                            item_availability_estimate_i = frappe.db.get_values('Estimated Item', filters=flt_estimated, fieldname=fnm_estimated, as_dict=True)
+                            # f.write(f"item_availability_estimate_i: {item_availability_estimate_i}\n")
+
+                            for item in item_availability_estimate_i:
+                                flt_i_estimated = {'name':item['parent'], 'start_date':['>=',filters.from_date], 'end_date':['<=', filters.to_date], 'docstatus':1}
+                                fnm_i_estimated = ['name']
+
+                                doct_in_range = frappe.db.get_values('Item Availability Estimate', filters=flt_i_estimated, fieldname=fnm_i_estimated, as_dict=True) or []
+                                if doct_in_range != []:
+                                    """
+                                    if len(doct_in_range) > 0:
+                                        msg_validate = f'There are more than one validated doctype, please check the following documents: '
+                                        for doc in doct_in_range:
+                                            one_string = '<a target="_blank" href="/app/item-availability-estimate/'
+                                            two_string = '">'
+                                            three_string = '</a>'
+                                            msg_validate += f"{one_string}{doc['name']}{two_string}{doc['name']}{three_string} \n"
+                                        frappe.msgprint(_(msg_validate))
+                                    """
+                                    base_item.append(item)
+                    # f.write(f"base_item: {base_item[0]}\n")
+                    # base_item ya tenemos el monto
+                    sale_item = frappe.db.get_value('Item', filters={'name':filters.item_selected}, fieldname=['item_code' , 'stock_uom'], as_dict=True)
+                    # f.write(f"sale_item: {sale_item}\n")
+                    item_ok['conversion_factor'] = find_conversion_factor(base_item[0]['amount_uom'], sale_item['stock_uom'])
+                    # bom_item['conversion_factor'] = find_conversion_factor(estimated_materials_with_attributes[0]['amount_uom'], bom_item['stock_uom'])
+                    # f.write(f"item_ok: {item_ok}\n")
+                    # f.write(f"-------\n")
+                    f.close()
+
+        # item_of_bom = frappe.db.get_values('BOM Item', filters={'parent':})
+    else:
+        boms_of_sales_item = frappe.db.get_value('BOM', filters={'item':name_item}, fieldname=['name'], as_dict=True)
+
+        if boms_of_sales_item != None:
+
+            item_of_bom = frappe.db.get_values('BOM Item', filters={'parent':boms_of_sales_item['name']}, fieldname=['item_code', 'item_name'], as_dict=True)
+
+            if item_of_bom:
+
+                with open("log.txt",'a',encoding = 'utf-8') as f:
+                    for item in item_of_bom:
+
+                        item_configure = frappe.db.get_values('Item', filters={'name':item['item_code'], 'include_in_estimations':1, 'is_sales_item':0}, fieldname=['name', 'include_in_estimations','is_sales_item', 'is_purchase_item'], as_dict=True)
+
+                        if item_configure:
+                            f.write(f"item_of_bom: {item_configure}\n")
+                    f.write(f"-------\n")
+                    f.close()
+
+    """
+    with open("log.txt",'a',encoding = 'utf-8') as f:
+        f.write(f"{}\n")
+        f.close()
+    """
+    result = []
+    return result
+
+def find_conversion_factor(from_uom, to_uom):
+    """Function that returns the item code and item name for sales items only.
+
+    Args:
+        from_uom: Unit that user wishes to convert from, i.e. Kilogram
+        to_uom: Unit that the user wishes to convert to, i.e. Gram
+    Returns: A list containing the following object:
+        {
+            name: the individual ID name for the conversion factor
+            from_uom: the name of the origin UOM
+            to_uom: the name of the target UOM
+            value: the amount by which origin amount must be multiplied to obtain target amount.
+        }
+        Updated: returns the value of the 'value' key only.
+    """
+
+    ## Validar si la dos UOM son iguales, no se hace conversion y se retorna 1,
+    #  Si no se encuentra la conversion se muestra un mensaje que diga,
+    # "Unit conversion factor for {from_uom} uom to {to_uom} uom not found, creating a new one, please make sure to specify the correct conversion factor."
+    # Agregar un link, que cree un nuevo doctype de conversion, ya con los datos cargados que faltan.
+
+    if from_uom == to_uom:
+        return [{
+            'from_uom':from_uom,
+            'to_uom': to_uom,
+            'value': 1
+        }]
+    else:
+        result = frappe.db.sql(
+            f"""
+            SELECT from_uom, to_uom, value FROM `tabUOM Conversion Factor` WHERE from_uom='{from_uom}' AND to_uom='{to_uom}';
+            """, as_dict=True
+        )
+
+        if result:
+            return result
+        else:
+            frappe.msgprint(f'Unit conversion factor for {from_uom} uom to {to_uom} uom not found, creating a new one, please make sure to specify the correct conversion factor.')
+
+            return [{
+            'from_uom':from_uom,
+            'to_uom': to_uom,
+            'value': 0
+            }]
+
+def list_of_item_sales(filters):
+    list_of_items = frappe.db.get_values('Item', filters={'is_sales_item':1 ,'include_in_estimations':1}, fieldname=['item_name', 'item_code'], as_dict=True)
+    return list_of_items
+
+def total_sales_items(filters):
+
+    doctype = filters.sales_from
+    type_of_report = filters.sales_from
+
+    date_doc = ''
+    if filters.sales_from == 'Sales Order':
+        date_doc = 'transaction_date'
+    elif filters.sales_from == 'Delivery Note':
+        date_doc = 'posting_date'
+    elif filters.sales_from == 'Sales Invoice':
+        date_doc = 'posting_date'
+    """
+    filt = [['docstatus','=',1],[date_doc,'>=',filters.from_date],[date_doc,'<=',filters.to_date]]
+    fieldnames = ['name']
+    get_list_doctypes = frappe.db.get_list(doctype, filters=filt, fields=fieldnames) or []
+
+    data = []
+    for doc in get_list_doctypes:
+        doctype = f'{type_of_report} Item'
+        filt = [['parent','=',doc['name']]]
+        fieldnames = ['parent','item_code', 'delivery_date', 'SUM(stock_qty) AS stock_qty','stock_uom']
+        items = frappe.db.get_list(doctype, filters=filt, fields=fieldnames, group_by='item_code')
+        data = data + items
+    """
+
+    # Hemos dejado de utilizar este query y lo omologamos al codigo anterior
+    result = frappe.db.sql(
+        f"""
+        SELECT soi.item_code, so.{date_doc},
+                SUM(soi.stock_qty) as stock_qty, soi.stock_uom
+        FROM `tab{doctype} Item` as soi, `tab{doctype}` as so
+        WHERE so.docstatus=1 AND so.name = soi.parent AND (so.{date_doc}
+        BETWEEN '{filters.from_date}' AND '{filters.to_date}')
+        GROUP BY soi.item_code;
+        """, as_dict=True)
+
+    # Como estaba
+    """
+    SELECT soi.item_code, soi.delivery_date,
+         SUM(soi.stock_qty) as stock_qty, soi.stock_uom
+    FROM `tabSales Order Item` as soi
+    WHERE soi.parent IN
+      (SELECT so.name FROM `tabSales Order` AS so
+        WHERE so.docstatus=1
+        AND (delivery_date BETWEEN '{filters.from_date}' AND '{filters.to_date}'))
+    GROUP BY soi.item_code;
+    """
+
+    return result
+
+def process_data(estimated_materials_with_attributes, material_and_sales_items, sales_item_codes, matching_sales_order_items, items_SO_draft, matching_SO_items_draft):
+    """Función para limiar la data del html"""
+
+    empty_row = {}
+    data = [empty_row]
+    for available_material in estimated_materials_with_attributes:
+        # en: We build and add the "grouping row"
+        # ES: Construimos y agregamos la fila de agrupamiento
+        estimation_name = available_material['estimation_name']
+        uom_name = available_material["amount_uom"]
+        material_amount = available_material['amount']
+        item_code = available_material['name']
+        item_name = available_material['item_name']
+
+        #material_amount_html = html_wrap(
+        #    str(material_amount), qty_plenty1_strong)
+        row_header = {
+            "A": estimation_name,
+            "B": material_amount,
+            "C": _(f"{uom_name}"),
+            "D": _(f"Total {uom_name} Sold"),
+            "E": "",
+            "F": "",
+            "G": "",
+            "H": item_code,
+            "J":item_name
+        }
+
+        # We add bold style to the subtitles for the headers.
+        # Agregamos negrita a los encabezados
+        col_a = _("Code")
+        col_b = _("Name")
+        col_c = _("Possible")
+        col_d = _("UOM")
+        col_e = _("Sold")
+        col_f = _("Available")
+        reserved = _("Reserved")
+
+        row_sub_header = {
+            "A": col_a,
+            "B": col_b,
+            "C": col_c,
+            "D": col_d,
+            "repeat":reserved,
+            "E": col_e,
+            "F": col_f,
+            "G": ""
+        }
+
+        explanation_f = _("Possible - Total Sold")
+
+
+        row_explanation = {
+            "A": "",
+            "B": "",
+            "C": "",
+            "D": "",
+            "E": "",
+            "F": explanation_f,
+            "G": ""
+        }
+
+        # Declare the columns where we will place the total sold data
+        # Declaremos los columnas en donde vamos a colocar la data del total vendido
+        total_sold_column = "E"
+        total_difference_column = "F"
+
+        # Set the header and subheader values
+        # Indicar el valor del encabezado y los hijos
+        data.append(row_header)
+        header_idx = len(data) - 1  # track the header index for updates later;
+                                    # ES: Rastrear el indice del Header para ser actualizado despues
+        data.append(row_sub_header)
+        data.append(row_explanation)
+
+        # Initialize the total sold items in the target uom
+        # Inicializar los items de venta totales en la unidad de medida objetivo
+
+        # total_target_uom_sold = 0
+
+        # Sum the sales order items and deduct from total available
+        # Sumamos los items de la orden de venta (notas de entrega o facturas de venta) y los deducimos del total disponible
+        item_deductions = {}
+        total_uom_sold = 0
+        total_uom_sold_draft = 0
+
+        # with open("log.txt",'a',encoding = 'utf-8') as f:
+        #     f.write(f"available_material: {available_material}")
+        #     f.close()
+
+        for ms_item in material_and_sales_items:
+            if ms_item['item_code'] == available_material['name']:
+                # Reset variables
+                # Reiniciamos variables
+                item_code = ""
+                items_sold = 0
+                items_sold_draft = 0
+                target_uom_sold = 0
+
+                # Total all units sold per sales item
+                # Totalizamos todas las unidades vendidas por cada item de venta
+                item_code = ms_item['sales_item_code']
+                if item_code in sales_item_codes:
+                    # sum the stock qty for all sales order items
+                    # Sumamos la cantidad de stock para todos los items de las ordenes de venta
+                    order_qtys = [item['stock_qty'] for item in matching_sales_order_items if item['item_code'] == ms_item['sales_item_code']]
+                    items_sold = math.floor(sum(order_qtys))
+
+                else:
+                    items_sold = 0
+
+                # Totalizamos todas las unidades reservadad en el auto repeat por cada item de venta
+                if item_code in items_SO_draft:
+                    # Sumamos la cantidad de stock para todos los items de las ordenes de venta en borrador
+                    order_qtys_draft = [item['stock_qty'] for item in matching_SO_items_draft if item['item_code'] == ms_item['sales_item_code']]
+                    items_sold_draft = math.floor(sum(order_qtys_draft))
+                else:
+                    items_sold_draft = 0
+
+                # with open("log.txt",'a',encoding = 'utf-8') as f:
+                #     f.write(f"items_sold_draft: {items_sold_draft} -> items_sold:{items_sold}\n\n")
+                #     f.close()
+                # Convert the items sold an amt in the target UOM
+                # Convertimos los items vendidos a su cantidad en la unidad de medida objetivo
+                conversion = ms_item['conversion_factor'][0]['value']
+
+                target_uom_sold = (items_sold * ms_item['stock_qty']) / conversion
+
+                # Agregamos la parte apartada a los totales
+                target_uom_sold_draft = (items_sold_draft * ms_item['stock_qty']) / conversion
+
+                # Add sold qty to item_deductions for later use
+                # Agregamos la cantidad vendida a las deducciones de los items para posterior uso
+                total_uom_sold += target_uom_sold
+
+                total_uom_sold_draft += target_uom_sold_draft
+
+                # item_deductions[item_code] = target_uom_sold
+        # We now cross-check, convert and structure our row output.
+        # Ahora hacemos un chequeo cruzado, convertimos y estructuramos nuestras filas.
+        for ms_item in material_and_sales_items:
+            if ms_item['item_code'] == available_material['name']:
+                if ms_item['stock_uom'] != available_material['amount_uom']:
+
+                    # Reinitialize variables
+                    # Reiniciamos las variables
+                    item_code = ""
+
+                    # find conversion factor , from unit is available material amount_uom - INSERT QUERY CALL HERE
+                    # Encontramos el factor de conversion, la unidad "from" es igual a la unidad de medida de material disponible - Insertar llamada al query desde aquí
+                    conversion_factor = find_conversion_factor(available_material['amount_uom'], ms_item['stock_uom'])
+                    conversion_factor_reversed = find_conversion_factor(ms_item['stock_uom'], available_material['amount_uom'])
+
+                    # Warn the user if a conversion factor doesn't exist for
+                    # the ms_item
+
+                    # Alertamos al usuario si el factor de conversion no existe para el ms_item
+                    if not conversion_factor:
+                        frappe.msgprint("A UOM conversion factor is required to convert " + str(available_material['amount_uom']) + " to " + str(ms_item['stock_uom'])+ "; Item:"+str(ms_item['item_code']))
+
+                    elif not conversion_factor_reversed:
+                        frappe.msgprint("A UOM conversion factor is required to convert " + str(ms_item['stock_uom']) + " to " + str(available_material['amount_uom']))
+
+                    else:
+                        # Convert available_material uom to ms_item uom, by multiplying available material amount by conversion factor found
+                        # Convertimos la unidad de medida available_material a la unidad de medida ms_item al multiplicar la cantidad de material disponible por el factor de conversión encontrado.
+                        av_mat_amt_converted = float(available_material['amount']) * float(conversion_factor[0]['value'])
+                        # Now, we divide the av_mat_amt_converted by the stock_qty to obtain possible quantity
+                        # Ahora, dividimos la cantidad de material disponible "av_mat_amt_converted", convertido por la vantidad stock para obtener la cantidad posible
+
+                        # Adjusted quantity takes into account aldready sold uom counts
+                        # La cantidad ajustada toma en cuenta la contabilización de las unidades de medida que ya se vendieron
+                        adjusted_amt = float(available_material['amount']) - total_uom_sold - total_uom_sold_draft
+                        # adjusted_amt = float(available_material['amount'])
+
+                        adjusted_quantity = math.floor((adjusted_amt * float(conversion_factor[0]['value'])) / ms_item['stock_qty'])
+
+                        # Possible quantity is the original converted material amount
+                        # without deducting sales
+                        # La cantidad posible es la cantidad de material originalmente convertida sin deducir las ventas
+                        possible_quantity = av_mat_amt_converted / ms_item['stock_qty']
+                        possible_uom = _(ms_item['sales_item_uom'])
+
+                        # Add HTML and CSS styles to certain fields
+                        # Agregamo html y css algunos campos
+                        pos_qty = str(math.floor(possible_quantity))
+                        # quantity_sales_item_html = html_wrap(pos_qty, qty_plenty1_strong)
+
+                        # Build the item code url
+                        # Construimos la url del codigo de item
+                        item_code = ms_item['sales_item_code']
+                        # sales_item_route = f"{item_link_open}/{item_code}'" + item_link_style + item_link_open_end + str(ms_item['sales_item_code']) + item_link_close
+                        sales_item_route = str(ms_item['sales_item_code'])
+
+                        # Calculate the amount sold
+                        # Calculamos la cantidad vendida
+                        if ms_item['sales_item_code'] in sales_item_codes:
+                            # sum the stock qty for all sales order items
+                            # Sumamos la cantidad stock para todos los items de las ordenes de venta
+                            order_qtys = [item['stock_qty'] for item in matching_sales_order_items if item['item_code'] == ms_item['sales_item_code']]
+                            sold_quantity = math.floor(sum(order_qtys))
+                        else:
+                            sold_quantity = 0
+
+                        if ms_item['sales_item_code'] in items_SO_draft:
+                            # Sumamos la cantidad stock para todos los items de las ordenes de venta en borrador
+                            order_qtys_draft = [item['stock_qty'] for item in matching_SO_items_draft if item['item_code'] == ms_item['sales_item_code']]
+                            items_sold_draft = math.floor(sum(order_qtys_draft))
+                        else:
+                            items_sold_draft = 0
+
+                        # Add HTML to the sold quantity
+                        # Agregamos html a la cantidad vendida
+                        # quantity_sold_html = html_wrap(str(sold_quantity), qty_sold1_strong)
+
+                        # Calculate the difference of possible and sold items
+                        # Calculamos la diferencia de items posibles menos vendidos
+                        # TODO: agregar la reserva
+                        available_quantity = int(possible_quantity - sold_quantity - items_sold_draft)
+
+                        # available_quantity_html = html_wrap(str(adjusted_quantity), qty_plenty1_strong)
+
+                        # Populate the row
+                        # Llenamos la fila con los resultados anteriores
+                        sales_item_row = {
+                            "A" : sales_item_route,
+                            "B" : str(ms_item['sales_item_name']),
+                            "C" : pos_qty,
+                            "D" : _(possible_uom),
+                            "repeat" : items_sold_draft,
+                            "E" : sold_quantity,
+                            "F" : str(adjusted_quantity),
+                            "G" : "",
+                            "H" : str(ms_item['sales_item_code']),
+                            "J" : str(ms_item['sales_item_name'])
+                        }
+                        data.append(sales_item_row)
+
+                else:
+                    print('Units are the same, no need for conversion.')
+            else:
+                pass
+
+        # Add the target uom total to the header
+        # Agregamos el total de la unidad de medida objetivo al encabezado
+        data[header_idx][total_sold_column] = str(total_uom_sold)
+        data[header_idx]['repeat'] = str(total_uom_sold_draft)
+
+        # Add the target uom total difference to the header
+        # Agregamos la diferencia total de la unidad de medida objetivo al encabezado
+        total_uom_diff = str(material_amount - total_uom_sold - total_uom_sold_draft)
+        data[header_idx][total_difference_column] = total_uom_diff
+
+        # We add an empty row after a set of products for easier reading.
+        # Agregamos una fila vacía luego de un set de productos para facilitar la lectura
+        data.append(empty_row)
+
+        if len(data) > 1:
+            val_a = _("Report generated at")
+            val_b = _(f'{datetime.now().strftime("%H:%M:%S")}')
+            val_c = _(f'{datetime.now().strftime("%d/%m/%Y")}')
+
+            data[0] = {'A' :val_a, 'B' :val_b, 'C' :val_c}
+
+    return data
 
 def dicToJSON(nomArchivo, diccionario):
     with open(str(nomArchivo+'.json'), 'w') as f:
