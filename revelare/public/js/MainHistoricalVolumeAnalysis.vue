@@ -79,10 +79,22 @@
       </div>
     </div>
 
-    <!-- DIVISION -->
-
-    <h3>Semanal</h3>
-    <div id="chart"></div>
+    <div class="container mt-4">
+      <!-- DIVISION -->
+      <div v-for="item in configured_item" :key="item.name" class="">
+        <h3>{{ item.item_code }}:{{ item.item_name }}</h3>
+        <div :id="`chart-${item.name}`"></div>
+      </div>
+      <div class="d-flex justify-content-center">
+        <button
+          type="button"
+          class="btn btn-primary alihtcenter"
+          @click="get_configured_item()"
+        >
+          {{ __("Get Data Items") }}
+        </button>
+      </div>
+    </div>
 
     <!-- <code class="mt-4">
       {{ datosBackend }}
@@ -202,12 +214,31 @@ export default {
       companySelected: "",
       yearSelected: "",
       itemSelected: "",
+      configured_item: [],
+      counter: 4,
     };
   },
   mounted() {
     // _this.$forceUpdate();
 
     let _this = this;
+
+    // Obtenemos los items configurados
+    frappe.call({
+      args: {
+        qty: this.counter,
+      },
+      freeze: true,
+      freeze_message: __("Obteniendo items configurados..."),
+      method:
+        "revelare.revelare.report.historical_weekly_item_amounts.queries.get_configured_item",
+      async: true,
+      callback: function (data) {
+        console.log(data.message);
+        _this.configured_item = data.message;
+      },
+    });
+    this.get_report();
 
     frappe.call({
       freeze: true,
@@ -225,32 +256,37 @@ export default {
       },
     });
 
-    new frappe.Chart("#chart", {
-      data: this.dd,
-      type: "line",
-      height: 350,
-      animate: 1,
-      lineOptions: {
-        hideDots: 1, // default: 0
-      },
-      // COLORES: 0: datos de año en curso, 1: max, 2: promedio, 3: min
-      colors: ["#004C99", "#FF0000", "#FF0000", "#FF0000"],
-    });
+    // new frappe.Chart("#chart", {
+    //   data: this.dd,
+    //   type: "line",
+    //   height: 350,
+    //   animate: 1,
+    //   lineOptions: {
+    //     hideDots: 1, // default: 0
+    //   },
+    //   // COLORES: 0: datos de año en curso, 1: max, 2: promedio, 3: min
+    //   colors: ["#004C99", "#FF0000", "#FF0000", "#FF0000"],
+    // });
+  },
+  updated() {
+    //this.get_report();
+    console.log("Estamos actualizando");
   },
   methods: {
     getData() {
       let _this = this;
       let is_item_s = this.is_sales_item ? 1 : 0;
+      let item_selec = this.itemSelected || "CULTIVO-0001";
 
       const filters = {
         company: this.companySelected,
-        item_selected: this.itemSelected,
+        item_selected: item_selec,
         is_sales_item: is_item_s,
         year_selected: this.yearSelected,
         year: "2017",
       };
 
-      console.log(`${JSON.parse(filters)}`);
+      //console.log(`${JSON.parse(filters)}`);
 
       frappe.call({
         args: {
@@ -259,11 +295,10 @@ export default {
         freeze: true,
         freeze_message: __("Obteniendo datos..."),
         method:
-          "revelare.revelare.report.historical_weekly_item_amounts.historical_weekly_item_amounts.get_data_",
+          "revelare.revelare.report.sales_item_availability_por_item.sales_item_availability_por_item.get_data",
         async: true,
         callback: function (data) {
           _this.datosBackend = data.message;
-
           _this.dd.labels = data.message[0].labels;
           _this.dd.datasets[0].values = data.message[0].values;
           _this.dd.datasets[1].values = data.message[0].value1;
@@ -306,6 +341,180 @@ export default {
         });
       } else {
         this.itemSelected = "";
+      }
+    },
+    get_configured_item() {
+      let _this = this;
+      this.counter += 4;
+      // Obtenemos los items configurados
+      frappe.call({
+        args: {
+          qty: this.counter,
+        },
+        freeze: true,
+        freeze_message: __("Obteniendo items configurados..."),
+        method:
+          "revelare.revelare.report.historical_weekly_item_amounts.queries.get_configured_item",
+        async: true,
+        callback: function (data) {
+          _this.configured_item = [];
+          _this.configured_item = data.message;
+        },
+      });
+
+      this.get_report();
+    },
+    get_report() {
+      if (this.configured_item.length > 0) {
+        this.configured_item.forEach((element) => {
+          console.log(element);
+          var data_ = {
+            labels: [
+              __("1"),
+              __("2"),
+              __("3"),
+              __("4"),
+              __("5"),
+              __("6"),
+              __("7"),
+              __("8"),
+              __("9"),
+              __("10"),
+              __("11"),
+              __("12"),
+              __("13"),
+              __("14"),
+              __("15"),
+              __("16"),
+              __("17"),
+              __("18"),
+              __("19"),
+              __("20"),
+              __("21"),
+              __("22"),
+              __("23"),
+              __("24"),
+              __("25"),
+              __("26"),
+              __("27"),
+              __("28"),
+              __("29"),
+              __("30"),
+              __("31"),
+              __("32"),
+              __("33"),
+              __("34"),
+              __("35"),
+              __("36"),
+              __("37"),
+              __("38"),
+              __("39"),
+              __("40"),
+              __("41"),
+              __("42"),
+              __("43"),
+              __("44"),
+              __("45"),
+              __("46"),
+              __("47"),
+              __("48"),
+              __("49"),
+              __("50"),
+              __("51"),
+              __("52"),
+              __("53"),
+            ],
+            datasets: [
+              // DATASET #0: VALOR DE AÑO EN CURSO
+              {
+                name: "Current",
+                values: [
+                  11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
+                  26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+                  41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55,
+                  56, 57, 58, 59, 60, 61, 62, 63,
+                ],
+              },
+              // DATASET #1: VALOR MAX
+              {
+                name: "Maximum",
+                values: [
+                  16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+                  31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
+                  46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60,
+                  61, 62, 63, 64, 65, 66, 67, 68,
+                ],
+              },
+              // DATASET #2: VALOR PROMEDIO
+              {
+                name: "Average",
+                values: [
+                  6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+                  22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,
+                  37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
+                  52, 53, 54, 55, 56, 57, 58,
+                ],
+              },
+              // DATASET #3: VALOR MIN
+              {
+                name: "Minimum",
+                values: [
+                  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+                  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33,
+                  34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
+                  49, 50, 51, 52, 53,
+                ],
+              },
+            ], // Valores default para graficas
+            title: "",
+          };
+
+          let _this = this;
+          let is_item_s = 0;
+          let item_selec = element.item_code;
+
+          const filters = {
+            company: this.companySelected,
+            item_selected: item_selec,
+            is_sales_item: is_item_s,
+            year_selected: this.yearSelected,
+            year: "2017",
+          };
+
+          frappe.call({
+            args: {
+              filters,
+            },
+            freeze: true,
+            freeze_message: __("Obteniendo datos..."),
+            method:
+              "revelare.revelare.report.historical_weekly_item_amounts.historical_weekly_item_amounts.get_data",
+            //async: true,
+            callback: function (data) {
+              console.log(data.message[0].labels);
+              //_this.datosBackend = data.message;
+              data_.labels = data.message[0].labels;
+              data_.datasets[0].values = data.message[0].values;
+              data_.datasets[1].values = data.message[0].value1;
+              data_.datasets[2].values = data.message[0].value2;
+              data_.datasets[3].values = data.message[0].value3;
+              new frappe.Chart(`#chart-${element.name}`, {
+                data: data_,
+                title: `${data.message[0].UOM}`,
+                type: "line",
+                height: 350,
+                animate: 1,
+                lineOptions: {
+                  hideDots: 1, // default: 0
+                },
+                // COLORES: 0: datos de año en curso, 1: max, 2: promedio, 3: min
+                colors: ["#004C99", "#FF0000", "#FF0000", "#FF0000"],
+              });
+
+              _this.$forceUpdate();
+            },
+          });
+        });
       }
     },
   },
