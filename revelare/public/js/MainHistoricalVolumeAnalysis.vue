@@ -88,10 +88,10 @@
       <div class="d-flex justify-content-center">
         <button
           type="button"
-          class="btn btn-primary alihtcenter"
+          class="btn btn-primary alihtcenter mt-3 mb-4"
           @click="get_configured_item()"
         >
-          {{ __("Get Data Items") }}
+          {{ __("Get More Data Items") }}
         </button>
       </div>
     </div>
@@ -232,9 +232,10 @@ export default {
       freeze_message: __("Obteniendo items configurados..."),
       method:
         "revelare.revelare.report.historical_weekly_item_amounts.queries.get_configured_item",
-      async: true,
+      async: false,
       callback: function (data) {
         console.log(data.message);
+        _this.configured_item = [];
         _this.configured_item = data.message;
       },
     });
@@ -346,6 +347,9 @@ export default {
     get_configured_item() {
       let _this = this;
       this.counter += 4;
+
+      // M: se refresca la data
+      this.$forceUpdate();
       // Obtenemos los items configurados
       frappe.call({
         args: {
@@ -355,19 +359,21 @@ export default {
         freeze_message: __("Obteniendo items configurados..."),
         method:
           "revelare.revelare.report.historical_weekly_item_amounts.queries.get_configured_item",
-        async: true,
+        async: false, // M: se pone en falso, ya que si se deja en true no corre serialmente con el flujo de ejecucion por eso no se obtiene la data correcta
         callback: function (data) {
           _this.configured_item = [];
           _this.configured_item = data.message;
+          _this.$forceUpdate();
         },
       });
 
       this.get_report();
     },
     get_report() {
+      this.$forceUpdate();
       if (this.configured_item.length > 0) {
         this.configured_item.forEach((element) => {
-          console.log(element);
+          console.log(element.item_code);
           var data_ = {
             labels: [
               __("1"),
@@ -473,7 +479,8 @@ export default {
           let is_item_s = 0;
           let item_selec = element.item_code;
 
-          const filters = {
+          // M: Se cambio de const a var (por alguna razon con const no me funciono)
+          var filters = {
             company: this.companySelected,
             item_selected: item_selec,
             is_sales_item: is_item_s,
