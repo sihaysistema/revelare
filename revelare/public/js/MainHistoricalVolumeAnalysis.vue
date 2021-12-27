@@ -81,7 +81,7 @@
 
     <div class="container mt-4">
       <!-- DIVISION -->
-      <div v-for="item in configured_item" :key="item.name" class="">
+      <div v-for="item in configured_item" :key="item.name">
         <h3>{{ item.item_code }}:{{ item.item_name }}</h3>
         <div :id="`chart-${item.name}`"></div>
       </div>
@@ -204,7 +204,7 @@ export default {
               52, 53,
             ],
           },
-        ], // Valores default para graficas
+        ], // Valores default para graficas,
       },
       datosBackend: {},
       is_sales_item: false,
@@ -216,11 +216,12 @@ export default {
       itemSelected: "",
       configured_item: [],
       counter: 4,
+      len_items: 0,
     };
   },
   mounted() {
     // _this.$forceUpdate();
-
+    this.get_len_items();
     let _this = this;
 
     // Obtenemos los items configurados
@@ -228,7 +229,7 @@ export default {
       args: {
         qty: this.counter,
       },
-      freeze: true,
+      freeze: false,
       freeze_message: __("Obteniendo items configurados..."),
       method:
         "revelare.revelare.report.historical_weekly_item_amounts.queries.get_configured_item",
@@ -240,38 +241,6 @@ export default {
       },
     });
     this.get_report();
-
-    frappe.call({
-      freeze: true,
-      freeze_message: __("Obteniendo datos..."),
-      method: "revelare.api.get_data_to_select",
-      async: true,
-      callback: function (data) {
-        _this.companies = data.message[0];
-        _this.companySelected = data.message[0][0];
-
-        _this.fiscalYears = data.message[1];
-        _this.yearSelected = data.message[1][0];
-
-        console.log(data.message);
-      },
-    });
-
-    // new frappe.Chart("#chart", {
-    //   data: this.dd,
-    //   type: "line",
-    //   height: 350,
-    //   animate: 1,
-    //   lineOptions: {
-    //     hideDots: 1, // default: 0
-    //   },
-    //   // COLORES: 0: datos de año en curso, 1: max, 2: promedio, 3: min
-    //   colors: ["#004C99", "#FF0000", "#FF0000", "#FF0000"],
-    // });
-  },
-  updated() {
-    //this.get_report();
-    console.log("Estamos actualizando");
   },
   methods: {
     getData() {
@@ -370,10 +339,9 @@ export default {
       this.get_report();
     },
     get_report() {
-      this.$forceUpdate();
+      let _this = this;
       if (this.configured_item.length > 0) {
         this.configured_item.forEach((element) => {
-          console.log(element.item_code);
           var data_ = {
             labels: [
               __("1"),
@@ -475,11 +443,9 @@ export default {
             title: "",
           };
 
-          let _this = this;
           let is_item_s = 0;
           let item_selec = element.item_code;
 
-          // M: Se cambio de const a var (por alguna razon con const no me funciono)
           var filters = {
             company: this.companySelected,
             item_selected: item_selec,
@@ -496,15 +462,16 @@ export default {
             freeze_message: __("Obteniendo datos..."),
             method:
               "revelare.revelare.report.historical_weekly_item_amounts.historical_weekly_item_amounts.get_data",
-            //async: true,
+            async: true,
             callback: function (data) {
-              console.log(data.message[0].labels);
+              //   console.log(data.message[0].labels);
               //_this.datosBackend = data.message;
               data_.labels = data.message[0].labels;
               data_.datasets[0].values = data.message[0].values;
               data_.datasets[1].values = data.message[0].value1;
               data_.datasets[2].values = data.message[0].value2;
               data_.datasets[3].values = data.message[0].value3;
+              _this.add = true;
               new frappe.Chart(`#chart-${element.name}`, {
                 data: data_,
                 title: `${data.message[0].UOM}`,
@@ -521,8 +488,25 @@ export default {
               _this.$forceUpdate();
             },
           });
-        });
+        }
       }
+    },
+    get_len_items() {
+      let _this = this;
+      frappe.call({
+        args: {
+          //   filters,
+        },
+        freeze: true,
+        async: false,
+        freeze_message: __("Obteniendo datos..."),
+        method:
+          "revelare.revelare.report.historical_weekly_item_amounts.queries.get_qty_element",
+        callback: function (data) {
+          console.log(data.message);
+          _this.len_items = data.message;
+        },
+      });
     },
   },
 };
