@@ -28,7 +28,7 @@ def get_qty_element():
     fldname = ['name','item_code','item_name']
     result = frappe.db.get_values('Item', filters=flts, fieldname=fldname,as_dict=True)
 
-    return len(result)
+    return {'qty': len(result),'items':result}
 
 def boms_item(filters):
     result = frappe.db.sql(f'''

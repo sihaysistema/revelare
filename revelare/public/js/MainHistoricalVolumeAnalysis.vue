@@ -215,38 +215,23 @@ export default {
       yearSelected: "",
       itemSelected: "",
       configured_item: [],
-      counter: 4,
       len_items: 0,
+      items: [],
+      start_item: 0,
+      end_item: 4,
     };
   },
   mounted() {
-    // _this.$forceUpdate();
-    this.get_len_items();
     let _this = this;
 
     // Obtenemos los items configurados
-    frappe.call({
-      args: {
-        qty: this.counter,
-      },
-      freeze: false,
-      freeze_message: __("Obteniendo items configurados..."),
-      method:
-        "revelare.revelare.report.historical_weekly_item_amounts.queries.get_configured_item",
-      async: false,
-      callback: function (data) {
-        console.log(data.message);
-        _this.configured_item = [];
-        _this.configured_item = data.message;
-      },
-    });
-    this.get_report();
+    this.get_configured_item();
   },
   methods: {
     getData() {
       let _this = this;
       let is_item_s = this.is_sales_item ? 1 : 0;
-      let item_selec = this.itemSelected || "CULTIVO-0001";
+      let item_selec = this.itemSelected;
 
       const filters = {
         company: this.companySelected,
@@ -264,9 +249,8 @@ export default {
         },
         freeze: true,
         freeze_message: __("Obteniendo datos..."),
-        method:
-          "revelare.revelare.report.sales_item_availability_por_item.sales_item_availability_por_item.get_data",
-        async: true,
+        method:"revelare.revelare.report.historical_weekly_item_amounts.historical_weekly_item_amounts.get_data",
+        async: false,
         callback: function (data) {
           _this.datosBackend = data.message;
           _this.dd.labels = data.message[0].labels;
@@ -315,11 +299,28 @@ export default {
     },
     get_configured_item() {
       let _this = this;
-      this.counter += 4;
+      // R: Obtenemos el numero tal de items, y  la lista de los items a buscar
+      this.get_len_items();
+      // R: Si existen items para agregar al reporte iteramos
+      if (this.len_items > 0){
+            // R: Agregue dos variables para ir recorriendo el array solo para esos items que hagan falta
+            for(let i = this.start_item; i <= this.end_item; i++){
+                // R: Cuando el aumento de las variables llegue a ser mayor o igual que el tamaño de la lista de items, no ejecutamos nada
+                if (i >= this.len_items){
+                    break
+                }
 
-      // M: se refresca la data
-      this.$forceUpdate();
+                // R: Obtenemos el reporte por cada item que le pasemos por medio de la funció*n
+                this.get_report(this.items[i].name);
+            }
+            // R: Aumentamos las variables que recorren la lista de items
+            this.start_item += 5;
+            this.end_item = this.start_item + 4;
+            this.$forceUpdate();
+      }
+
       // Obtenemos los items configurados
+      /*
       frappe.call({
         args: {
           qty: this.counter,
@@ -334,15 +335,14 @@ export default {
           _this.configured_item = data.message;
           _this.$forceUpdate();
         },
-      });
+      });*/
 
-      this.get_report();
+      //this.get_report();
     },
-    get_report() {
+    get_report(item) {
       let _this = this;
-      if (this.configured_item.length > 0) {
-        this.configured_item.forEach((element) => {
-          var data_ = {
+
+      var data_ = {
             labels: [
               __("1"),
               __("2"),
@@ -441,55 +441,49 @@ export default {
               },
             ], // Valores default para graficas
             title: "",
-          };
+     };
 
-          let is_item_s = 0;
-          let item_selec = element.item_code;
+      let is_item_s = 0;
 
-          var filters = {
-            company: this.companySelected,
-            item_selected: item_selec,
-            is_sales_item: is_item_s,
-            year_selected: this.yearSelected,
-            year: "2017",
-          };
+      var filters = {
+      company: this.companySelected,
+      item_selected: item,
+      is_sales_item: is_item_s,
+      year_selected: this.yearSelected,
+      year: "2017",
+      };
 
-          frappe.call({
-            args: {
-              filters,
-            },
-            freeze: true,
-            freeze_message: __("Obteniendo datos..."),
-            method:
-              "revelare.revelare.report.historical_weekly_item_amounts.historical_weekly_item_amounts.get_data",
-            async: true,
-            callback: function (data) {
-              //   console.log(data.message[0].labels);
-              //_this.datosBackend = data.message;
-              data_.labels = data.message[0].labels;
-              data_.datasets[0].values = data.message[0].values;
-              data_.datasets[1].values = data.message[0].value1;
-              data_.datasets[2].values = data.message[0].value2;
-              data_.datasets[3].values = data.message[0].value3;
-              _this.add = true;
-              new frappe.Chart(`#chart-${element.name}`, {
-                data: data_,
-                title: `${data.message[0].UOM}`,
-                type: "line",
-                height: 350,
-                animate: 1,
-                lineOptions: {
-                  hideDots: 1, // default: 0
-                },
-                // COLORES: 0: datos de año en curso, 1: max, 2: promedio, 3: min
-                colors: ["#004C99", "#FF0000", "#FF0000", "#FF0000"],
-              });
+    frappe.call({
+    args: {
+        filters,
+    },
+    freeze: true,
+    freeze_message: __("Obteniendo datos..."),
+    method:"revelare.revelare.report.historical_weekly_item_amounts.historical_weekly_item_amounts.get_data",
+    async: false,
+    callback: function (data) {
+        data_.labels = data.message[0].labels;
+        data_.datasets[0].values = data.message[0].values;
+        data_.datasets[1].values = data.message[0].value1;
+        data_.datasets[2].values = data.message[0].value2;
+        data_.datasets[3].values = data.message[0].value3;
+        new frappe.Chart( `#chart-${element.name}`, {
+        data: data_,
+        title: `${data.message[0].UOM}`,
+        type: "line",
+        height: 350,
+        animate: 1,
+        lineOptions: {
+            hideDots: 1, // default: 0
+        },
+        // COLORES: 0: datos de año en curso, 1: max, 2: promedio, 3: min
+        colors: ["#004C99", "#FF0000", "#FF0000", "#FF0000"],
+        });
 
-              _this.$forceUpdate();
-            },
-          });
-        }
-      }
+        _this.$forceUpdate();
+    }
+    });
+
     },
     get_len_items() {
       let _this = this;
@@ -503,8 +497,10 @@ export default {
         method:
           "revelare.revelare.report.historical_weekly_item_amounts.queries.get_qty_element",
         callback: function (data) {
-          console.log(data.message);
-          _this.len_items = data.message;
+          _this.len_items = data.message.qty;
+          _this.items = data.message.items;
+          //_this.items = _this.items.json()
+          //console.log(_this.items)
         },
       });
     },
