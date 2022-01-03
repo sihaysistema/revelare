@@ -46,7 +46,8 @@ frappe.query_reports["Historical Weekly Item Amounts"] = {
         return {
             "doctype": "Item",
             "filters": {
-                "is_sales_item": 1,
+                "is_sales_item": 0,
+                "include_in_estimations":1
             }
         }
       },
