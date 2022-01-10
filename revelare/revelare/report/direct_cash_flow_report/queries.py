@@ -21,9 +21,7 @@ def get_categories():
         delimitado en el árbol de flujo de caja directo
     """
     return frappe.db.sql("""
-        SELECT name,
-        parent_direct_cash_flow_component,
-        lft, rgt, cash_effect,is_group
+        SELECT name, parent_direct_cash_flow_component, cash_effect,is_group
         FROM `tabDirect Cash Flow Component`
         ORDER BY lft
         """, as_dict=True)
@@ -42,16 +40,22 @@ def get_list_journal_entries(from_date, to_date):
         Lista de diccionarios: Lista de diccionarios, con nombre y fecha de la poliza.
     """
     list_journal_entries = frappe.db.sql(f'''
-                        SELECT JE.name AS url_name, JE.posting_date
-                        FROM `tabJournal Entry` AS JE
-                        INNER JOIN `tabJournal Entry Account` AS JEC
-                        ON JEC.parent = JE.name AND JE.docstatus = 1 AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
-                        WHERE JEC.account_type = 'Bank' OR JEC.account_type = 'Cash' GROUP BY JEC.name;
-                        ''', as_dict=True)
+        SELECT JE.name AS `url_name`, JEC.account AS `lb_name`, JE.docstatus, JE.posting_date,
+        JEC.inflow_component, JEC.outflow_component, JEC.debit, JEC.credit, JEC.account_type,
+        CASE
+        WHEN JEC.debit > 0 THEN JEC.debit
+        WHEN JEC.credit > 0 THEN JEC.credit
+        END AS amount
+        FROM mariodb.`tabJournal Entry` AS JE
+        INNER JOIN mariodb.`tabJournal Entry Account` AS JEC ON JE.name = JEC.parent
+        WHERE JE.docstatus = 1
+        AND (JE.posting_date BETWEEN '{from_date}' AND '{to_date}')
+        AND (JEC.account_type = 'Bank' OR JEC.account_type = 'Cash')
+    ''', as_dict=True)
     return list_journal_entries
 
 
-def get_accounts_for_journal_entries(journal, posting_date):
+def get_accounts_for_journal_entries(journal):
     """
     Función: Obtiene las cuentas que integran la poliza,
     recibida por parametro.
@@ -64,16 +68,18 @@ def get_accounts_for_journal_entries(journal, posting_date):
         Lista de diccionarios: Lista de diccionarios de las cuentas por cada poliza
     """
     accounts = frappe.db.sql(f'''
-                SELECT account AS lb_name, inflow_component,
-                outflow_component, debit, credit, account_type
-                FROM `tabJournal Entry Account` WHERE parent = '{journal}';
+        SELECT account AS lb_name, inflow_component,
+        outflow_component, debit, credit, account_type,
+        CASE
+        WHEN debit > 0 AND (inflow_component != '' OR inflow_component != null)
+            THEN debit
+        WHEN credit > 0 AND (outflow_component != '' OR outflow_component != null)
+            THEN credit
+        END AS amount
+        FROM `tabJournal Entry Account` WHERE parent = '{journal}'
+        AND ( (inflow_component IS NOT NULL OR inflow_component != '')
+            OR (outflow_component IS NOT NULL OR outflow_component != '') )
                 ''', as_dict=True)
-    for c in accounts:
-        c['posting_date']= str(posting_date)
-        if c['debit'] > 0 and c['inflow_component'] != None:
-            c['amount'] =  c['debit']
-        elif c['credit'] > 0 and c['outflow_component'] != None:
-            c['amount'] =  c['credit']
     return accounts
 
 
@@ -96,14 +102,13 @@ def get_categories_child():
     return list_childs
 
 def get_query_payment_entry(from_date, to_date):
-    payments = []
     payments = frappe.db.sql(f'''
         SELECT paid_to AS lb_name, paid_from, paid_to, posting_date,
         inflow_component, outflow_component, paid_amount AS amount, payment_type
         FROM `tabPayment Entry` WHERE posting_date
         BETWEEN '{from_date}' AND '{to_date}' AND docstatus = 1 AND payment_type != 'Internal Transfer'
     ''', as_dict=True)
-
-    for pay in payments:
-        pay['posting_date'] = str(pay['posting_date'])
+    if payments != []:
+        for pay in payments:
+            pay['posting_date'] = str(pay['posting_date'])
     return payments

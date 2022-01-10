@@ -8,6 +8,7 @@ import json
 from datetime import date, datetime, time, timedelta
 
 import frappe
+from dateutil.relativedelta import relativedelta
 from frappe import _, _dict, scrub
 from frappe.utils import cint, flt, getdate
 
@@ -24,7 +25,6 @@ def get_period_date_ranges(filters):
         con la fecha inicial y la fecha final del rango de fechas seleccionado.
     """
 
-    from dateutil.relativedelta import relativedelta
     from_date, to_date = getdate(filters.from_date), getdate(filters.to_date)
 
     increment = {
@@ -77,3 +77,72 @@ def get_period(posting_date, filters):
         period = str(year[2])
 
     return period
+
+
+#********* Estas funciones ya no las utilizamos por que ahora nos guíamos por medio de la longitud del la lista. ******
+def all_cash_or_bank_accounts(journal_flatten):
+    """
+    Función: Verifica si, la poliza recibida por parametro,
+    tiene solo una cuenta de tipo efectivo(Cash) o banco(Bank)
+
+    Args:
+        journal_flatten ([type]): [description]
+
+    Returns:
+        Boolean: Verdadero o Falso
+    """
+    for journal_f in journal_flatten:
+        if journal_f['account_type'] != 'Bank' and journal_f['account_type'] != 'Cash':
+            return False
+    return True
+
+def there_is_only_one_cash_flow_account(journal_flatten):
+    """
+    Función: Verifica si, la poliza recibida por parametro,
+    tiene solo cuentas de tipo efectivo(Cash) o banco(Bank)
+
+    Args:
+        journal_flatten ([type]): [description]
+
+    Returns:
+        Boolean: Verdadero o Falso
+    """
+    if len(journal_flatten) < 3:
+        count = 0
+        for journal_f in journal_flatten:
+            if journal_f['account_type'] == 'Bank' or journal_f['account_type'] == 'Cash':
+                count += 1
+        if count == 1:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+def there_are_different_accounts(journal_flatten):
+    """
+    Función: Verifica si, la poliza recibida por parametro,
+    tiene más de tres cuentas una cuenta y entre ellas exista
+    una cuenta distinta a efectivo(Cash) o banco(Bank)
+
+    Args:
+        journal_flatten ([type]): [description]
+
+    Returns:
+        Boolean: Verdadero o Falso
+    """
+    if len(journal_flatten) > 2:
+        count_cash = 0
+        count_dif = 0
+        for journal_f in journal_flatten:
+            if journal_f['account_type'] == 'Bank' or journal_f['account_type'] == 'Cash':
+                count_cash += 1
+            elif journal_f['account_type'] != 'Bank' or journal_f['account_type'] != 'Cash':
+                count_dif += 1
+
+        if count_cash > count_dif and count_dif != 0: # si hay mas cuentas que no tengan que ver con dinero
+            return True
+        elif count_cash > 1 and count_dif != 0: # si hay mas cuentas que tienen que ver con dinero
+            return True
+
+    return False

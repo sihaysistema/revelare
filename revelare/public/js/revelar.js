@@ -205,7 +205,7 @@ function validate_cash_flow_component(frm, cdt, cdn, field = "") {
 // Validando customfield de Payment Entry
 frappe.ui.form.on("Payment Entry", {
   setup: function (frm) {
-    cur_frm.set_query("inflow_component", function () {
+    cur_frm.set_query("inflow_component", () => {
       return {
         filters: {
           is_group: 0,
@@ -213,7 +213,7 @@ frappe.ui.form.on("Payment Entry", {
         },
       };
     });
-    cur_frm.set_query("outflow_component", function () {
+    cur_frm.set_query("outflow_component", () => {
       return {
         filters: {
           is_group: 0,
@@ -250,6 +250,9 @@ const validate_paymentEntry = (frm) => {
     console.log("Es Una entrada");
   } else {
     // Al ser transferencia, deshabilitamos los dos campos
+    let cb = frappe.meta.get_docfield("payment Entry", "cash_flow", frm.doc.name);
+    cb.hidden = 1;
+
     let df = frappe.meta.get_docfield("Payment Entry", "outflow_component", frm.doc.name);
     df.hidden = 1;
 
