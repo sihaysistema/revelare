@@ -33,7 +33,7 @@
 */
 
 // UOM Conversion Detail TABLA HIJA DE Item
-frappe.ui.form.on('UOM Conversion Detail', {
+frappe.ui.form.on("UOM Conversion Detail", {
   // Ejecuta la funcion cuando exista una interaccion con 'revelare_default_uom_sales_analytics_2'
   revelare_default_uom_sales_analytics_2: function (frm, cdt, cdn) {
     let check = 0;
@@ -41,42 +41,42 @@ frappe.ui.form.on('UOM Conversion Detail', {
     // estemos trabajando, esto para obtener datos exactos.
     frm.doc.uoms.forEach((uom_row_i, index_i) => {
       if (uom_row_i.name == cdn) {
-        (uom_row_i.revelare_default_uom_sales_analytics_2) ? frm.enable_save() : console.log('unckecked');
+        uom_row_i.revelare_default_uom_sales_analytics_2 ? frm.enable_save() : console.log("unckecked");
         // FORMA 2! RECOMENDADA ES5 > :)
         // Unicamente va permitir que exista un elemento seleccionado
         frm.doc.uoms.forEach((uom_row, indice) => {
           if (uom_row.revelare_default_uom_sales_analytics_2) {
             check++;
             if (check > 1) {
-              frappe.msgprint('Solamente debe haber un elemento seleccionado');
+              frappe.msgprint("Solamente debe haber un elemento seleccionado");
               frm.doc.uoms[index_i].revelare_default_uom_sales_analytics_2 = 0;
-              refresh_field('uoms');
+              refresh_field("uoms");
               // console.log(uom_row_i.revelare_default_uom_sales_analytics_2)
             }
           }
         });
       }
     });
-  }
+  },
 });
 
 // Validando CustomField Journal Entry Account
-frappe.ui.form.on('Journal Entry', {
+frappe.ui.form.on("Journal Entry", {
   setup: function (frm) {
     cur_frm.set_query("inflow_component", "accounts", function () {
       return {
-        "filters": {
-          "is_group": 0,
-          "cash_effect": "Inflow"
-        }
+        filters: {
+          is_group: 0,
+          cash_effect: "Inflow",
+        },
       };
     });
     cur_frm.set_query("outflow_component", "accounts", function () {
       return {
-        "filters": {
-          "is_group": 0,
-          "cash_effect": "Outflow"
-        }
+        filters: {
+          is_group: 0,
+          cash_effect: "Outflow",
+        },
       };
     });
   },
@@ -90,44 +90,44 @@ frappe.ui.form.on('Journal Entry', {
 });
 
 // Funcionalidad sobre tabla hija en Journal Entry
-frappe.ui.form.on('Journal Entry Account', {
+frappe.ui.form.on("Journal Entry Account", {
   account: function (frm, cdt, cdn) {
     validate_cash_flow_component(frm, cdt, cdn);
-    console.log('trigger account');
+    console.log("trigger account");
   },
   party_type: function (frm, cdt, cdn) {
     let row = frappe.get_doc(cdt, cdn);
-    if (row.party_type == 'Customer') {
+    if (row.party_type == "Customer") {
       // Dandode el valor al campo respecto a Party Type
-      cur_frm.set_value(row.inflow_component, 'Receipts from Customers');
+      cur_frm.set_value(row.inflow_component, "Receipts from Customers");
     }
     frm.refresh();
   },
   debit_in_account_currency: function (frm, cdt, cdn) {
-    console.log('trigger debit_in_account_currency');
+    console.log("trigger debit_in_account_currency");
     validate_cash_flow_component(frm, cdt, cdn);
   },
   credit_in_account_currency: function (frm, cdt, cdn) {
-    console.log('trigger credit_in_account_currency');
+    console.log("trigger credit_in_account_currency");
     validate_cash_flow_component(frm, cdt, cdn);
   },
   form_render: function (frm, cdt, cdn) {
-    console.log('trigger form_render');
+    console.log("trigger form_render");
     validate_cash_flow_component(frm, cdt, cdn);
-  }
+  },
 });
 
-function validate_cash_flow_component(frm, cdt, cdn, field = '') {
+function validate_cash_flow_component(frm, cdt, cdn, field = "") {
   //Creamos objeto de la tabla hija
   let row = frappe.get_doc(cdt, cdn);
   // Validamos con un booleano si desde python el tipo de cuenta es 'cash' o 'bank'
   frappe.call({
-    method: 'revelare.data.get_type_account',
+    method: "revelare.data.get_type_account",
     args: {
-      account_name: row.account
+      account_name: row.account,
     },
     callback: (r) => {
-      console.log(r.message)
+      console.log(r.message);
       if (r.message == true) {
         // En el campo debito, si el debito es = 0 y el credito es > 0
         if (row.credit_in_account_currency > 0) {
@@ -143,8 +143,8 @@ function validate_cash_flow_component(frm, cdt, cdn, field = '') {
           df2.read_only = 1;
           df2.hidden = 1;
 
-          row.debit_in_account_currency = 0
-          row.inflow_component = ''
+          row.debit_in_account_currency = 0;
+          row.inflow_component = "";
 
           frm.refresh_field("accounts");
 
@@ -162,11 +162,10 @@ function validate_cash_flow_component(frm, cdt, cdn, field = '') {
           df2.read_only = 1;
           df2.hidden = 1;
 
-          row.credit_in_account_currency = 0
-          row.outflow_component = ''
+          row.credit_in_account_currency = 0;
+          row.outflow_component = "";
 
           frm.refresh_field("accounts");
-
         } else {
           // Ocultamos los dos campos
           let df = frappe.meta.get_docfield("Journal Entry Account", "inflow_component", cdn);
@@ -177,8 +176,8 @@ function validate_cash_flow_component(frm, cdt, cdn, field = '') {
           df2.hidden = 1;
           df.read_only = 1;
 
-          row.inflow_component = ''
-          row.outflow_component = ''
+          row.inflow_component = "";
+          row.outflow_component = "";
 
           frm.refresh_field("accounts");
         }
@@ -194,107 +193,86 @@ function validate_cash_flow_component(frm, cdt, cdn, field = '') {
         df2.hidden = 1;
         df2.read_only = 1;
 
-        row.inflow_component = ''
-        row.outflow_component = ''
+        row.inflow_component = "";
+        row.outflow_component = "";
 
         frm.refresh_field("accounts");
       }
-    }
+    },
   });
 }
-
 
 // Validando customfield de Payment Entry
 frappe.ui.form.on("Payment Entry", {
   setup: function (frm) {
-    cur_frm.set_query("inflow_component", function () {
+    cur_frm.set_query("inflow_component", () => {
       return {
-        "filters": {
-          "is_group": 0,
-          "cash_effect": "Inflow"
-        }
+        filters: {
+          is_group: 0,
+          cash_effect: "Inflow",
+        },
       };
     });
-    cur_frm.set_query("outflow_component", function () {
+    cur_frm.set_query("outflow_component", () => {
       return {
-        "filters": {
-          "is_group": 0,
-          "cash_effect": "Outflow"
-        }
+        filters: {
+          is_group: 0,
+          cash_effect: "Outflow",
+        },
       };
     });
   },
   refresh: function (frm) {
-    // Validamos los campos al momento de que cargue el documento
-    if (cur_frm.doc.payment_type == 'Pay') {
-      // Al ser pago, habilitamos el campo salida de flujo "outflow"
-      let df = frappe.meta.get_docfield("Payment Entry", "outflow_component", frm.doc.name);
-      df.hidden = 0
-
-      // Al ser pago, deshabilitamos el campo entra de flujo "inflow"
-      let df2 = frappe.meta.get_docfield("Payment Entry", "inflow_component", frm.doc.name);
-      df2.hidden = 1
-    } else if (cur_frm.doc.payment_type == 'Receive') {
-      // Al ser pago, deshabilitamos el campo salida de flujo "outflow"
-      let df = frappe.meta.get_docfield("Payment Entry", "outflow_component", frm.doc.name);
-      df.hidden = 1
-
-      // Al ser entrada, habilitamos el campo entra de flujo "inflow"
-      let df2 = frappe.meta.get_docfield("Payment Entry", "inflow_component", frm.doc.name);
-      df2.hidden = 0
-    } else {
-      // Al ser transferencia, deshabilitamos los dos campos
-      let df = frappe.meta.get_docfield("Payment Entry", "outflow_component", frm.doc.name);
-      df.hidden = 1
-
-      let df2 = frappe.meta.get_docfield("Payment Entry", "inflow_component", frm.doc.name);
-      df2.hidden = 1
-    }
+    validate_paymentEntry(frm);
   },
   payment_type: function (frm) {
-    console.log(frm.doc.payment_type)
-    if (cur_frm.doc.payment_type == 'Pay') {
-      // Al ser pago, habilitamos el campo salida de flujo "outflow"
-      let df = frappe.meta.get_docfield("Payment Entry", "outflow_component", frm.doc.name);
-      df.hidden = 0
-
-      // Al ser pago, deshabilitamos el campo entra de flujo "inflow"
-      let df2 = frappe.meta.get_docfield("Payment Entry", "inflow_component", frm.doc.name);
-      df2.hidden = 1
-    } else if (cur_frm.doc.payment_type == 'Receive') {
-      // Al ser pago, deshabilitamos el campo salida de flujo "outflow"
-      let df = frappe.meta.get_docfield("Payment Entry", "outflow_component", frm.doc.name);
-      df.hidden = 1
-
-      // Al ser entrada, habilitamos el campo entra de flujo "inflow"
-      let df2 = frappe.meta.get_docfield("Payment Entry", "inflow_component", frm.doc.name);
-      df2.hidden = 0
-      console.log('Es Una entrada')
-    } else {
-      // Al ser transferencia, deshabilitamos los dos campos
-      let df = frappe.meta.get_docfield("Payment Entry", "outflow_component", frm.doc.name);
-      df.hidden = 1
-
-      let df2 = frappe.meta.get_docfield("Payment Entry", "inflow_component", frm.doc.name);
-      df2.hidden = 1
-
-    }
-  }
+    validate_paymentEntry(frm);
+  },
 });
+
+const validate_paymentEntry = (frm) => {
+  if (cur_frm.doc.payment_type == "Pay") {
+    // Al ser pago, habilitamos el campo salida de flujo "outflow"
+    let df = frappe.meta.get_docfield("Payment Entry", "outflow_component", frm.doc.name);
+    df.hidden = 0;
+
+    // Al ser pago, deshabilitamos el campo entra de flujo "inflow"
+    let df2 = frappe.meta.get_docfield("Payment Entry", "inflow_component", frm.doc.name);
+    df2.hidden = 1;
+  } else if (cur_frm.doc.payment_type == "Receive") {
+    // Al ser pago, deshabilitamos el campo salida de flujo "outflow"
+    let df = frappe.meta.get_docfield("Payment Entry", "outflow_component", frm.doc.name);
+    df.hidden = 1;
+
+    // Al ser entrada, habilitamos el campo entra de flujo "inflow"
+    let df2 = frappe.meta.get_docfield("Payment Entry", "inflow_component", frm.doc.name);
+    df2.hidden = 0;
+    console.log("Es Una entrada");
+  } else {
+    // Al ser transferencia, deshabilitamos los dos campos
+    let cb = frappe.meta.get_docfield("payment Entry", "cash_flow", frm.doc.name);
+    cb.hidden = 1;
+
+    let df = frappe.meta.get_docfield("Payment Entry", "outflow_component", frm.doc.name);
+    df.hidden = 1;
+
+    let df2 = frappe.meta.get_docfield("Payment Entry", "inflow_component", frm.doc.name);
+    df2.hidden = 1;
+  }
+};
 
 // Función para Direct Cash
 function open_detailed_cash_flow_report(name, from_date, to_date) {
   window.open(`#query-report/Cash%20Flow%20Detail?category=${name}&from_date=${from_date}&to_date=${to_date}`);
   return true;
-};
+}
 
 // Función para Detail Cash Flow
 function open_one_tab(name, type) {
-  if (type === 'journal_entry') {
+  if (type === "journal_entry") {
     window.open(`#Form/Journal%20Entry/${name}`);
-  } else if (type === 'payment_entry') {
+  } else if (type === "payment_entry") {
     window.open(`#Form/Payment%20Entry/${name}`);
   }
   return true;
-};
-
+}

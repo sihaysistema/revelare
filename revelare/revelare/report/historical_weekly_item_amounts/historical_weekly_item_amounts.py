@@ -290,7 +290,7 @@ def get_data(filters):
 
             data = add_stadistics(data, filters)
             data = add_values_of_char(data, filters)
-            dicToJSON(f'{filters.item_selected}',data)
+            # dicToJSON(f'{filters.item_selected}',data)
 
         else:
             # item_link_open = "<a href='/app/item/"
