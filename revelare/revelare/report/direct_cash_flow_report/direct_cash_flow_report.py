@@ -101,7 +101,6 @@ def get_data(filters=None):
     if data_by_categories == {}:
         return {'name': _('no se encontraron polizas ni entradas de pago en el año')}
 
-    # Normalizando y uniendo categorias con journal_entry y payment_entry
     data_and_categories = formatting_data(data_by_categories, categories_by_name, filters)
 
     # Agregando datos a las columnas vacías
@@ -113,7 +112,7 @@ def get_data(filters=None):
     # Sumando cuentas hijas
     data = add_values_of_sub_accounts(data)
 
-    data = rename_category(data)
+    data[0]['name']='Total cash flow'
 
     data = insert_link_to_categories(data, filters.from_date,filters.to_date)
 
@@ -203,12 +202,12 @@ def get_journal_entry(start_date, end_date):
     for journal in journal_undefined_categories:
         if journal.get('debit', 0) != 0:
             journal['amount'] = journal.get('debit')
-            journal_entry.setdefault('Uncategorized Receipts', []).append(journal)
+            journal_entry.setdefault('D.1 - Uncategorized Receipts', []).append(journal)
 
 
         elif journal.get('credit', 0) != 0:
             journal['amount'] = journal.get('credit')
-            journal_entry.setdefault('Uncategorized Payments', []).append(journal)
+            journal_entry.setdefault('D.2 - Uncategorized Payments', []).append(journal)
 
     journal_entry = [ {k:v} for k, v in journal_entry.items()]
 
@@ -357,11 +356,11 @@ def get_payment_entry(from_date, to_date):
         for d in payment_undefined_categories:
             if d['payment_type'] == 'Receive':
                 d['lb_name'] = d['paid_to']
-                d['inflow_component'] = 'Uncategorized Receipts'
+                d['inflow_component'] = 'D.1 - Uncategorized Receipts'
 
             elif d['payment_type'] == 'Pay':
                 d['lb_name'] = d['paid_from']
-                d['outflow_component'] = 'Uncategorized Payments'
+                d['outflow_component'] = 'D.2 - Uncategorized Payments'
 
         payment_undefined = {}
         for d in payment_undefined_categories:
@@ -440,7 +439,7 @@ def merging_dictionaries(journal_entry,payment_entry):
     return data
 
 # Calculando totales
-def calculate_values(categories_by_name, data_by_categories, peirod_list=None):
+def __calculate_values(categories_by_name, data_by_categories, peirod_list=None):
     # Function calculate values
     for data_categories in data_by_categories.values():
 
@@ -464,8 +463,7 @@ def calculate_values(categories_by_name, data_by_categories, peirod_list=None):
 
 def formatting_data(data_by_categories, categories_by_name, filters):
     """
-    Función: Normaliza los datos en una sola lista de diccionarios
-    Devuelve los datos con el siguiente formato.
+    Función: Normaliza los datos en una sola lista de diccionarios Devuelve los datos con el siguiente formato.
     {
         'name':'name',
         'posting_date':'posting_date',
@@ -477,9 +475,7 @@ def formatting_data(data_by_categories, categories_by_name, filters):
     }
 
     Args:
-        data_by_categories ([type]): [description]
-        categories_by_name ([type]): [description]
-        filters ([type]): [description]
+        data_by_categories ([type]): [description], categories_by_name ([type]): [description], filters ([type]): [description]
 
     Returns:
         Lista de diccionarios: Lista de diccionarios ordenas con el formato necesario para mostrar
@@ -501,7 +497,6 @@ def formatting_data(data_by_categories, categories_by_name, filters):
                 'amount':values.get('amount')
             })
 
-
     # Agregando data a categorias
     categories_and_data = []
     for name, categori in categories_by_name.items():
@@ -516,6 +511,7 @@ def formatting_data(data_by_categories, categories_by_name, filters):
 
         # Verificamos si hay documentos para agregar le de data
         for items in data:
+
             if items['parent_direct_cash_flow_component'] == name:
 
                 categories_and_data.append({
@@ -528,7 +524,7 @@ def formatting_data(data_by_categories, categories_by_name, filters):
                     'amount' : items['amount']
                     })
 
-    return categories_and_data or []
+    return categories_and_data
 
 def accumulate_values_into_parents(data_and_categories, ranges, filters):
     """
@@ -547,7 +543,6 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
     """
 
     for item in reversed(data_and_categories):
-
         # Sumamos los documentos para en las categorias padre
         if item['is_group'] == '':
 
@@ -564,23 +559,25 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
                         cash_effect = dictionary['cash_effect']
 
                         if dictionary['name'] == component_parent:
-
                             try:
-
                                 # Sumamos o restamos el documento dependiendo del tipo de flujo del padre
-                                if cash_effect == 'Inflow':
+                                if cash_effect == 'Inflow' or (cash_effect == 'Group' and  dictionary["name"] == 'D.1 - Uncategorized Receipts'):
                                     dictionary[period] += item.get(period)
 
-                                elif cash_effect == 'Outflow':
+                                elif cash_effect == 'Outflow' or (cash_effect == 'Group' and  dictionary["name"] == 'D.2 - Uncategorized Payments'):
                                     # haciendo negativo el hijo
                                     item[period] = (item.get(period)*-1)
                                     dictionary[period] += item.get(period)
 
+
+
                             except:
-                                if cash_effect == 'Inflow':
+
+
+                                if cash_effect == 'Inflow' or (cash_effect == 'Group' and  dictionary["name"] == 'D.1 - Uncategorized Receipts'):
                                     dictionary[period] = item.get(period)
 
-                                elif cash_effect == 'Outflow':
+                                elif cash_effect == 'Outflow' or (cash_effect == 'Group' and  dictionary["name"] == 'D.2 - Uncategorized Payments'):
                                     item[period] = (item.get(period)*-1)
                                     dictionary[period] = item.get(period)
 
@@ -595,14 +592,16 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
                     component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component','')
                     amount = item.get(period)
 
-                    # Buscamos en toda la lista, el compoente padre
+                    # Buscamos en toda la lista, el componente padre
                     for dictionary in reversed(data_and_categories):
 
                         # Sumamos la categoria hija en la categoria padre
                         if dictionary['name'] == component_parent:
+
                             dictionary[period] += amount
 
         elif item['is_group'] == 1:
+
             for date_colum in ranges:
                 fecha_dt = datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
                 period = get_period(fecha_dt, filters)
@@ -702,7 +701,7 @@ def adding_columns_to_data(data, ranges, filters):
             period = get_period(fecha_dt, filters)
             period = scrub(period)
             if period_amount == period:
-                d[period] = d.get('amount')
+                d[period] = d.get('amount', 0)
             else:
                 d[period] = 0
 
@@ -773,21 +772,6 @@ def adding_color_to_data(data, ranges, filters):
                 else:
                     row_item[period] = negative_values_strong_1 + \
                         str(row_item[period])+negative_values_strong_2
-    return data
-
-def rename_category(data):
-    """
-    Función: Para renombrar, la primera categoria
-    Company por Total Cash Flow
-
-    Args:
-        data ([type]): [description]
-
-    Returns:
-        Lista de diccionarios: Lista de diccionarios con data a mostrar en el reporte
-        ya procesada.
-    """
-    data[0]['name']='Total cash flow'
     return data
 
 def insert_link_to_categories(data, from_date='', to_date=''):
