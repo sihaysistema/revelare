@@ -58,6 +58,12 @@ def get_columns(filters):
             "fieldtype": "Data",
             "width": 120
         })
+    columns.append({
+        "label": _('Total Amount'),
+        "fieldname":'total_amount',
+        "fieldtype": "Data",
+        "width": 120
+    })
     return columns
 
 def get_data(filters=None):
@@ -113,6 +119,8 @@ def get_data(filters=None):
     data = add_values_of_sub_accounts(data)
 
     data[0]['name']='Total cash flow'
+
+    data = add_total_column(data)
 
     data = insert_link_to_categories(data, filters.from_date,filters.to_date)
 
@@ -705,6 +713,20 @@ def adding_columns_to_data(data, ranges, filters):
             else:
                 d[period] = 0
 
+    return data
+
+def add_total_column(data):
+    # Recorremos la data fila por fila
+    for row in data:
+        total_sum = 0
+        for element in row.items():
+            # leemos las llaves de los diccionarios y comparamos
+            exclude = ['name', 'parent', 'cash_effect', 'is_group', 'indent', 'amount', 'parent_direct_cash_flow_component', 'posting_date']
+            # Eliminamos llaves que no tengan que ver con el rango de tiempo
+            if element[0] not in exclude:
+                # Sumamos cada columna
+                total_sum += float(element[1])
+        row['total_amount'] = total_sum
     return data
 
 def adding_color_to_data(data, ranges, filters):
