@@ -46,8 +46,8 @@ def get_list_journal_entries(from_date, to_date):
         WHEN JEC.debit > 0 THEN JEC.debit
         WHEN JEC.credit > 0 THEN JEC.credit
         END AS amount
-        FROM mariodb.`tabJournal Entry` AS JE
-        INNER JOIN mariodb.`tabJournal Entry Account` AS JEC ON JE.name = JEC.parent
+        FROM `tabJournal Entry` AS JE
+        INNER JOIN `tabJournal Entry Account` AS JEC ON JE.name = JEC.parent
         WHERE JE.docstatus = 1
         AND (JE.posting_date BETWEEN '{from_date}' AND '{to_date}')
         AND (JEC.account_type = 'Bank' OR JEC.account_type = 'Cash')
