@@ -92,8 +92,8 @@ frappe.ui.form.on("Journal Entry", {
 // Funcionalidad sobre tabla hija en Journal Entry
 frappe.ui.form.on("Journal Entry Account", {
   account: function (frm, cdt, cdn) {
-    validate_cash_flow_component(frm, cdt, cdn);
-    console.log("trigger account");
+    validate_cash_flow_component(frm, cdt, cdn, "account");
+    // console.log("trigger account");
   },
   party_type: function (frm, cdt, cdn) {
     let row = frappe.get_doc(cdt, cdn);
@@ -104,20 +104,20 @@ frappe.ui.form.on("Journal Entry Account", {
     frm.refresh();
   },
   debit_in_account_currency: function (frm, cdt, cdn) {
-    console.log("trigger debit_in_account_currency");
-    validate_cash_flow_component(frm, cdt, cdn);
+    // console.log("trigger debit_in_account_currency");
+    validate_cash_flow_component(frm, cdt, cdn, "debit");
   },
   credit_in_account_currency: function (frm, cdt, cdn) {
-    console.log("trigger credit_in_account_currency");
-    validate_cash_flow_component(frm, cdt, cdn);
+    // console.log("trigger credit_in_account_currency");
+    validate_cash_flow_component(frm, cdt, cdn, "credit");
   },
   form_render: function (frm, cdt, cdn) {
-    console.log("trigger form_render");
-    validate_cash_flow_component(frm, cdt, cdn);
+    // console.log("trigger form_render");
+    validate_cash_flow_component(frm, cdt, cdn, "render");
   },
 });
 
-function validate_cash_flow_component(frm, cdt, cdn, field = "") {
+function validate_cash_flow_component(frm, cdt, cdn, string = "") {
   //Creamos objeto de la tabla hija
   let row = frappe.get_doc(cdt, cdn);
   // Validamos con un booleano si desde python el tipo de cuenta es 'cash' o 'bank'
@@ -127,11 +127,10 @@ function validate_cash_flow_component(frm, cdt, cdn, field = "") {
       account_name: row.account,
     },
     callback: (r) => {
-      console.log(r.message);
       if (r.message == true) {
-        // En el campo debito, si el debito es = 0 y el credito es > 0
-        if (row.credit_in_account_currency > 0) {
-          console.log("Se debe mostrar el campo outflow_component");
+        // En el campo debito, si el debito es = 0 y el credito es > 0 y se esta ejecutando desde el campo credit
+        if (row.credit_in_account_currency > 0 && string.toLowerCase() == "credit") {
+          // console.log("Se debe mostrar el campo outflow_component");
 
           // Hacemos visible el campo outflow_component
           let df = frappe.meta.get_docfield("Journal Entry Account", "outflow_component", cdn);
@@ -148,9 +147,9 @@ function validate_cash_flow_component(frm, cdt, cdn, field = "") {
 
           frm.refresh_field("accounts");
 
-          // En el campo debito, si el debito es = 0 y el credito es > 0
-        } else if (row.debit_in_account_currency > 0) {
-          console.log("Se debe mostrar el campo inflow_component");
+          // En el campo debito, si el debito es = 0 y el credito es > 0 y se esta ejecutando desde el campo debit
+        } else if (row.debit_in_account_currency > 0 && string.toLowerCase() == "debit") {
+          // console.log("Se debe mostrar el campo inflow_component");
 
           // Hacemos visible el campo inflow_component
           let df = frappe.meta.get_docfield("Journal Entry Account", "inflow_component", cdn);
@@ -169,12 +168,17 @@ function validate_cash_flow_component(frm, cdt, cdn, field = "") {
         } else {
           // Ocultamos los dos campos
           let df = frappe.meta.get_docfield("Journal Entry Account", "inflow_component", cdn);
-          df.hidden = 1;
-          df.read_only = 1;
+          if (string.toLowerCase() === "render" || string.toLowerCase() === "account") {
+            df.read_only = 0;
+            df.hidden = 0;
+          } else {
+            df.read_only = 1;
+            df.hidden = 1;
+          }
 
           let df2 = frappe.meta.get_docfield("Journal Entry Account", "outflow_component", cdn);
+          df2.read_only = 1;
           df2.hidden = 1;
-          df.read_only = 1;
 
           row.inflow_component = "";
           row.outflow_component = "";
@@ -247,7 +251,7 @@ const validate_paymentEntry = (frm) => {
     // Al ser entrada, habilitamos el campo entra de flujo "inflow"
     let df2 = frappe.meta.get_docfield("Payment Entry", "inflow_component", frm.doc.name);
     df2.hidden = 0;
-    console.log("Es Una entrada");
+    // console.log("Es Una entrada");
   } else {
     // Al ser transferencia, deshabilitamos los dos campos
     let cb = frappe.meta.get_docfield("payment Entry", "cash_flow", frm.doc.name);
@@ -262,10 +266,10 @@ const validate_paymentEntry = (frm) => {
 };
 
 // Función para Direct Cash
-function open_detailed_cash_flow_report(name, from_date, to_date) {
-  window.open(`#query-report/Cash%20Flow%20Detail?category=${name}&from_date=${from_date}&to_date=${to_date}`);
+const open_detailed_cash_flow_report = (name, from_date, to_date) => {
+  window.open(`#app/query-report/Cash%20Flow%20Detail?category=${name}&from_date=${from_date}&to_date=${to_date}`);
   return true;
-}
+};
 
 // Función para Detail Cash Flow
 function open_one_tab(name, type) {

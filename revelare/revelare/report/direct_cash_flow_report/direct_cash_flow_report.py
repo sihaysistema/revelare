@@ -97,30 +97,22 @@ def get_data(filters=None):
     end_date = filters.to_date
 
     journal_entry = get_journal_entry(start_date, end_date)
-
     payment_entry = get_payment_entry(start_date, end_date)
-
 
     # Uniendo journal_entry y payment_entry
     data_by_categories = merging_dictionaries(journal_entry,payment_entry)
-
     if data_by_categories == {}:
         return {'name': _('no se encontraron polizas ni entradas de pago en el año')}
-
     data_and_categories = formatting_data(data_by_categories, categories_by_name, filters)
-
     # Agregando datos a las columnas vacías
     data = adding_columns_to_data(data_and_categories, ranges, filters)
-
     # Sumando la data del reporte
     data = accumulate_values_into_parents(data, ranges, filters)
-
     # Sumando cuentas hijas
     data = add_values_of_sub_accounts(data)
+    data = add_total_column(data)
 
     data[0]['name']='Total cash flow'
-
-    data = add_total_column(data)
 
     data = insert_link_to_categories(data, filters.from_date,filters.to_date)
 
@@ -294,37 +286,6 @@ def individual_journal_entries(from_date, to_date):
 
     return individual_entries
 
-def add_undefined_entries(journal_entry, undefined):
-    """
-    Función: Agrega las polizas de diario sin categoria,
-    a las entras de diario con categoria.
-
-    Args:
-        journal_entry ([type]): [description]
-        undefined ([type]): [description]
-
-    Returns:
-        Lista de diccionarios: Lista de diccionarios, con cuenta de polizas de diario
-        con la categoria definida o indefinida.
-    """
-    journal_entry['Uncategorized Inflows'] = []
-    journal_entry['Uncategorized Outflows'] = []
-    for category in undefined:
-        if category['debit'] > 0:
-            category['amount'] =  category['debit']
-            if (journal_entry.get('Uncategorized Inflows', None) != None):
-                journal_entry['Uncategorized Inflows'].append(category)
-            else:
-                journal_entry['Uncategorized Inflows'] = category
-
-        elif category['credit'] > 0:
-            category['amount'] =  category['credit']
-            if (journal_entry.get('Uncategorized Outflows', None) != None):
-                journal_entry['Uncategorized Outflows'].append(category)
-            else:
-                journal_entry['Uncategorized Outflows'] = category
-    return journal_entry
-
 # ******************** Fin Logica Jounal Entry ********************
 
 # ******************** Inicio Logica Payment Entry ********************
@@ -390,35 +351,6 @@ def get_payment_entry(from_date, to_date):
 
 # ******************** Inicio Logica Process Data ********************
 
-def add_undefined_payments(payment, undefined):
-    """
-    Función: Agrega las cuenta de entras de diario sin categoria,
-    a las cuenta de entras de diario con categoria.
-
-    Args:
-        journal_entry ([type]): [description]
-        undefined ([type]): [description]
-
-    Returns:
-        Lista de diccionarios: Lista de diccionarios, con entras de diario
-        con la categoria definida o indefinida.
-    """
-    payment['Uncategorized Inflows'] = []
-    payment['Uncategorized Outflows'] = []
-    for category in undefined:
-        if category['payment_type'] == 'Receive':
-            if (payment.get('Uncategorized Inflows', None) != None):
-                payment['Uncategorized Inflows'].append(category)
-            else:
-                payment['Uncategorized Inflows'] = category
-
-        elif category['payment_type'] == 'Pay':
-            if (payment.get('Uncategorized Outflows', None) != None):
-                payment['Uncategorized Outflows'].append(category)
-            else:
-                payment['Uncategorized Outflows'] = category
-    return payment
-
 def merging_dictionaries(journal_entry,payment_entry):
     """
     Función: Para unir las lista de diccionaris,
@@ -445,29 +377,6 @@ def merging_dictionaries(journal_entry,payment_entry):
                 data.setdefault(list(category.keys())[0], []).append(element)
 
     return data
-
-# Calculando totales
-def __calculate_values(categories_by_name, data_by_categories, peirod_list=None):
-    # Function calculate values
-    for data_categories in data_by_categories.values():
-
-        for data in data_categories:
-            d = categories_by_name.get(data['direct_cash_flow_component'])
-
-            if 'debit' in data:
-                if data['debit'] > 0.0:
-                    data['amount'] = data['debit']
-                else:
-                    data['amount'] = data['credit']
-
-            elif 'credit' in data:
-                if data['credit'] > 0.0:
-                    data['amount'] = data['credit']
-                else:
-                    data['amount'] = data['debit']
-
-            elif 'paid_amount' in data:
-                data['amount'] = data['paid_amount']
 
 def formatting_data(data_by_categories, categories_by_name, filters):
     """
@@ -730,6 +639,9 @@ def add_total_column(data):
     return data
 
 def adding_color_to_data(data, ranges, filters):
+    # dicToJSON('data', data)
+    # dicToJSON('ranges', ranges)
+    # dicToJSON('filters', filters)
     """Agrega color a los datos al momento de mostrar los en el reporte
     Args:
         data ([list]): {Fila por cada item}
@@ -758,42 +670,34 @@ def adding_color_to_data(data, ranges, filters):
 
     quantity_style_few_1 = "<span style='color: black; background-color: blue; float: right; text-align: right; vertical-align: text-top;'><strong>"
     quantity_style_few_2 = "</strong></span>"
-    item_link_open = "<a href='#Form/Item/"
-    item_link_open_end = "' target='_blank'>"
-    item_link_close = "</a>"
 
     # Obtenemos cada fila de la data
     for row_item in data:
 
-        # Por cada fila le agregara un color dependiendo del valor
-        for date_colum in ranges:
-            fecha_dt = datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
-            period = get_period(fecha_dt, filters)
-            period = scrub(period)
-            row_item[period] = "{:.2f}".format(
-                float(row_item[period]))
-            if float(row_item[period]) > 0:
-                if row_item['is_group'] == '':
-                    row_item[period] = positive_values_1 + \
-                        str(row_item[period])+positive_values_2
-                else:
-                    row_item[period] = positive_values_strong_1 + \
-                        str(row_item[period])+positive_values_strong_2
+        for keys in row_item:
+            # Validamos por cada llave de la fila
+            exclude = ['name', 'posting_date', 'parent_direct_cash_flow_component', 'cash_effect', 'is_group', 'indent', 'amount']
+            # Si no se incluye en la variable de exclusiones
+            if keys not in exclude:
+                # Convertirmos el valor a float de dos desimales
+                row_item[keys] = float("{:.2f}".format(float(row_item[keys])))
 
-            elif float(row_item[period]) == 0:
-                if row_item['is_group'] == '':
-                    row_item[period] = neutral_values_1 + \
-                        str(row_item[period])+neutral_values_2
+                # Por cada fila le agregara un color dependiendo del valor
+                if row_item[keys] > 0:
+                    if row_item['is_group'] == '':
+                        row_item[keys] = positive_values_1 + str(row_item[keys])+positive_values_2
+                    else:
+                        row_item[keys] = positive_values_strong_1 + str(row_item[keys])+positive_values_strong_2
+                elif row_item[keys] == 0:
+                    if row_item['is_group'] == '':
+                        row_item[keys] = neutral_values_1 + str(row_item[keys])+neutral_values_2
+                    else:
+                        row_item[keys] = neutral_values_strong_1 + str(row_item[keys])+neutral_values_strong_2
                 else:
-                    row_item[period] = neutral_values_strong_1 + \
-                        str(row_item[period])+neutral_values_strong_2
-            else:
-                if row_item['is_group'] == '':
-                    row_item[period] = negative_values_1 + \
-                        str(row_item[period])+negative_values_2
-                else:
-                    row_item[period] = negative_values_strong_1 + \
-                        str(row_item[period])+negative_values_strong_2
+                    if row_item['is_group'] == '':
+                        row_item[keys] = negative_values_1 + str(row_item[keys])+negative_values_2
+                    else:
+                        row_item[keys] = negative_values_strong_1 + str(row_item[keys])+negative_values_strong_2
     return data
 
 def insert_link_to_categories(data, from_date='', to_date=''):
@@ -817,7 +721,8 @@ def insert_link_to_categories(data, from_date='', to_date=''):
             three_string = '</a>'
             d['name'] = f"{one_string}'{d['name']}','{from_date}','{to_date}'{two_string}{d['name']}{three_string}"
 
-        if d['name'] == 'Uncategorized Inflows' or d['name'] == 'Uncategorized Outflows':
+        undefined = ['D.2 - Uncategorized Payments', 'D.1 - Uncategorized Receipts']
+        if d['name'] in undefined:
             one_string = '<a target="_blank" onclick="open_detailed_cash_flow_report('
             two_string = ')">'
             three_string = '</a>'
