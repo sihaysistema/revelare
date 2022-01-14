@@ -1,29 +1,28 @@
 {
+ "actions": [],
+ "allow_copy": 1,
  "allow_import": 1,
- "allow_rename": 1,
- "autoname": "field:direct_cash_flow_component_name",
+ "autoname": "format: {component_number} - {direct_cash_flow_component_name}",
  "creation": "2021-01-27 11:00:38.360388",
  "description": "Track separate Income and Expense for product verticals or divisions.",
  "doctype": "DocType",
  "document_type": "Setup",
  "engine": "InnoDB",
  "field_order": [
-  "sb0",
+  "properties",
+  "column_break0",
+  "disabled",
   "direct_cash_flow_component_name",
+  "component_number",
   "parent_direct_cash_flow_component",
   "cb0",
   "cash_effect",
   "is_group",
-  "disabled",
   "lft",
   "rgt",
   "old_parent"
  ],
  "fields": [
-  {
-   "fieldname": "sb0",
-   "fieldtype": "Section Break"
-  },
   {
    "fieldname": "cb0",
    "fieldtype": "Column Break",
@@ -113,15 +112,29 @@
    "oldfieldtype": "Data",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "fieldname": "component_number",
+   "fieldtype": "Data",
+   "label": "Component Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "properties",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break0",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-money",
  "is_tree": 1,
- "modified": "2021-02-02 12:19:04.392176",
+ "links": [],
+ "modified": "2021-12-29 21:46:08.970430",
  "modified_by": "Administrator",
  "module": "Revelare",
  "name": "Direct Cash Flow Component",
- "name_case": "Title Case",
  "nsm_parent_field": "parent_direct_cash_flow_component",
  "owner": "Administrator",
  "permissions": [
@@ -173,5 +186,6 @@
  "search_fields": "parent_direct_cash_flow_component,cash_effect",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
- "sort_order": "ASC"
+ "sort_order": "ASC",
+ "track_changes": 1
 }

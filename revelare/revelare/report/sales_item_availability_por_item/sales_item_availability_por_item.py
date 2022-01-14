@@ -3,23 +3,25 @@
 
 from __future__ import unicode_literals
 
-import calendar
 import json
-import math
-import statistics as stdic
-from datetime import date, datetime, time, timedelta
+from datetime import datetime
 
 import frappe
 import numpy as np
 import pandas as pd
-from frappe import _, _dict, scrub
+from erpnext.accounts.report.utils import convert  # value, from_, to, date
+from frappe import _
+from frappe.utils import cstr, flt, nowdate
+import statistics as stdic
 
-from revelare.revelare.report.historical_weekly_item_amounts.queries import (boms_item, find_conversion_factor, from_data,
-                                                                             get_availability_estimates,
-                                                                             get_sales_order_individual)
-from revelare.revelare.report.historical_weekly_item_amounts.utils import (get_range_of_date, is_digit, is_string,
-                                                                           list_of_ranges_date, search_list_of_dict_k,
-                                                                           search_list_of_dict_v, search_week_in_range)
+from revelare.revelare.report.sales_item_availability_por_item.queries import (boms_item, from_data, get_availability_estimates,
+                                                                               get_sales_order_individual, find_conversion_factor)
+from revelare.revelare.report.sales_item_availability_por_item.utils import get_range_of_date,search_list_of_dict_k
+
+# import frappe
+
+
+
 
 
 def execute(filters=None):
@@ -290,13 +292,13 @@ def get_data(filters):
 
             data = add_stadistics(data, filters)
             data = add_values_of_char(data, filters)
-            # dicToJSON(f'{filters.item_selected}',data)
+            dicToJSON(f'{filters.item_selected}',data)
 
         else:
-            # item_link_open = "<a href='/app/item/"
-            # item_link_open_end = "' target='_blank'>"
-            # item_link_close = "</a>"
-            # frappe.msgprint(_(f'There is no BOM for the following item: {item_link_open}{filters.item_selected}{item_link_open_end}{filters.item_selected}{item_link_close}'))
+            item_link_open = "<a href='/app/item/"
+            item_link_open_end = "' target='_blank'>"
+            item_link_close = "</a>"
+            frappe.msgprint(_(f'There is no BOM for the following item: {item_link_open}{filters.item_selected}{item_link_open_end}{filters.item_selected}{item_link_close}'))
             data = [{
                 "item_code": filters.item_selected,
                 "item_name": filters.item_selected,
