@@ -140,7 +140,14 @@ def fill_fixtures():
                     "C.1.4.3 - Capital Increase",
                     "C.1.4.4 - Stock Repurchases",
                     "C.1.5 - Other Financial Flows",
-                    "","","","",""
+                    "Direct Cash Flow Component",
+                    "Component Name",
+                    "Parent Component",
+                    "Cash Effect",
+                    "Inflow Component",
+                    "Inflow",
+                    "Outflow",
+                    "Outflow Component"
                 ]
             ]
         ]
