@@ -90,7 +90,7 @@ def set_payment_entry(from_date, to_date, category):
     # Para filtrar si un documento esta validado o no, el digito debe estar como string
     # Ej: docstatus '1'
     payments = []
-    if category != 'Uncategorized Outflows' and category != 'Uncategorized Inflows':
+    if category != 'D.2 - Unicategorized Payments' and category != 'D.1 - Uncategorized Receipts':
 
         payments = frappe.db.sql(f'''
             SELECT name as name_url, paid_from, paid_to, posting_date, inflow_component,
@@ -443,22 +443,22 @@ def add_undefined_entries(journal_entry, undefined):
         Lista de diccionarios: Lista de diccionarios, con cuenta de polizas de diario
         con la categoria definida o indefinida.
     """
-    journal_entry['Uncategorized Inflows'] = []
-    journal_entry['Uncategorized Outflows'] = []
+    journal_entry['D.1 - Uncategorized Receipts'] = []
+    journal_entry['D.2 - Uncategorized Payments'] = []
     for category in undefined:
         if category['debit'] > 0:
             category['amount'] =  category['debit']
-            if (journal_entry.get('Uncategorized Inflows', None) != None):
-                journal_entry['Uncategorized Inflows'].append(category)
+            if (journal_entry.get('D.1 - Uncategorized Receipts', None) != None):
+                journal_entry['D.1 - Uncategorized Receipts'].append(category)
             else:
-                journal_entry['Uncategorized Inflows'] = category
+                journal_entry['D.1 - Uncategorized Receipts'] = category
 
         elif category['credit'] > 0:
             category['amount'] =  category['credit']
-            if (journal_entry.get('Uncategorized Outflows', None) != None):
-                journal_entry['Uncategorized Outflows'].append(category)
+            if (journal_entry.get('D.2 - Uncategorized Payments', None) != None):
+                journal_entry['D.2 - Uncategorized Payments'].append(category)
             else:
-                journal_entry['Uncategorized Outflows'] = category
+                journal_entry['D.2 - Uncategorized Payments'] = category
     return journal_entry
 
 # ******************** Fin Logica Jounal Entry ********************
