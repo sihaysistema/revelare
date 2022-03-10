@@ -265,10 +265,13 @@ const validate_paymentEntry = (frm) => {
   }
 };
 
+// -- Inicio --Estas funciones no se agregan al minificado, no sabemos por que.
+/*
 // Función para Direct Cash
 const open_detailed_cash_flow_report = (name, from_date, to_date) => {
-  window.open(`#app/query-report/Cash%20Flow%20Detail?category=${name}&from_date=${from_date}&to_date=${to_date}`);
-  return true;
+  const endpoint = `/app/query-report/Cash%20Flow%20Detail?category=${name}&from_date=${from_date}&to_date=${to_date}`;
+  console.log(`${endpoint}`);
+  window.open(endpoint, "_blank");
 };
 
 // Función para Detail Cash Flow
@@ -279,4 +282,5 @@ function open_one_tab(name, type) {
     window.open(`#Form/Payment%20Entry/${name}`);
   }
   return true;
-}
+}*/
+// -- Fin --Estas funciones no se agregan al minificado, no sabemos por que.

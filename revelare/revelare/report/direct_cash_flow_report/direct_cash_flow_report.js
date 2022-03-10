@@ -60,3 +60,10 @@ function get_end_date() {
   var end = new Date(today_date.getFullYear(), 11, 31);
   return end;
 }
+
+// Función para Direct Cash
+const open_detailed_cash_flow_report = (name, from_date, to_date) => {
+  const endpoint = `/app/query-report/Cash%20Flow%20Detail?category=${name}&from_date=${from_date}&to_date=${to_date}`;
+  //console.log(`${endpoint}`);
+  window.open(endpoint, "_blank");
+};
