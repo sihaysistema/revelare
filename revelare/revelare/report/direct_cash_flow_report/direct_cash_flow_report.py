@@ -716,14 +716,14 @@ def insert_link_to_categories(data, from_date='', to_date=''):
     """
     for d in data:
         if d['is_group'] != 1 and d['is_group'] != '':
-            one_string = '<a target="_blank" onclick="open_detailed_cash_flow_report('
+            one_string = '<a onclick="open_detailed_cash_flow_report('
             two_string = ')">'
             three_string = '</a>'
             d['name'] = f"{one_string}'{d['name']}','{from_date}','{to_date}'{two_string}{d['name']}{three_string}"
 
         undefined = ['D.2 - Uncategorized Payments', 'D.1 - Uncategorized Receipts']
         if d['name'] in undefined:
-            one_string = '<a target="_blank" onclick="open_detailed_cash_flow_report('
+            one_string = '<a onclick="open_detailed_cash_flow_report('
             two_string = ')">'
             three_string = '</a>'
             d['name'] = f"{one_string}'{d['name']}','{from_date}','{to_date}'{two_string}{d['name']}{three_string}"

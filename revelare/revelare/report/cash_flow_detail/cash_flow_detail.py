@@ -15,7 +15,7 @@ def execute(filters=None):
 
 def get_columns(filters):
     '''Retorna las columnas a utilizar en el reporte'''
-    
+
     columns = [
         {
             "label": _("ID"),
@@ -33,11 +33,11 @@ def get_columns(filters):
     return columns
 
 def get_data(filters=None):
-    """Obtiene los datos pasados por la url al momento de instanciar el 
+    """Obtiene los datos pasados por la url al momento de instanciar el
     el reporte
 
     Args:
-        
+
 
     Returns:
         [lista][diccionarios]: [{'name':'Operations','amount':200}]
@@ -68,14 +68,14 @@ def get_data(filters=None):
             })
 
         data = rename_categories(data) # Agregamos link a cada item de la data
-        dicToJSON('data', data)
-        dicToJSON('filters', filters)
+        # dicToJSON('data', data)
+        # dicToJSON('filters', filters)
         data = formating_data_before_print(data, filters.category)
 
     else: # Mostramos el reporte vacío
         data = [{'name_url':'','amount':0}]
 
-    return data 
+    return data
 
 #Obteniendo pagos por categorias
 def set_payment_entry(from_date, to_date, category):
@@ -85,28 +85,28 @@ def set_payment_entry(from_date, to_date, category):
 
     Returns:
         lista de diccionarios: [{cuenta, cagoria, ...},{cuenta, cagoria, ...}]
-    """    
-    
+    """
+
     # Para filtrar si un documento esta validado o no, el digito debe estar como string
     # Ej: docstatus '1'
     payments = []
     if category != 'Uncategorized Outflows' and category != 'Uncategorized Inflows':
 
         payments = frappe.db.sql(f'''
-            SELECT name as name_url, paid_from, paid_to, posting_date, inflow_component, 
+            SELECT name as name_url, paid_from, paid_to, posting_date, inflow_component,
             outflow_component, paid_amount AS amount, payment_type
-            FROM `tabPayment Entry` 
+            FROM `tabPayment Entry`
             WHERE inflow_component = '{category}' OR outflow_component = '{category}' AND payment_type != 'Internal Transfer'
             AND posting_date BETWEEN '{from_date}' AND '{to_date}' AND docstatus = 1 ''', as_dict=True)
-    else: 
+    else:
 
         payments = frappe.db.sql(f'''
-            SELECT name as name_url, paid_from, paid_to, posting_date, inflow_component, 
+            SELECT name as name_url, paid_from, paid_to, posting_date, inflow_component,
             outflow_component, paid_amount AS amount, payment_type
-            FROM `tabPayment Entry` 
+            FROM `tabPayment Entry`
             WHERE inflow_component IS NULL AND outflow_component IS NULL AND payment_type != 'Internal Transfer'
             AND posting_date BETWEEN '{from_date}' AND '{to_date}' AND docstatus = 1 ''', as_dict=True)
-    
+
     for item in payments:
 
         if item['payment_type'] == 'Receive':
@@ -122,7 +122,7 @@ def set_payment_entry(from_date, to_date, category):
 
 def set_journal_entry(from_date, to_date, category):
     """
-    Función: Selecciona todas las journal entry, 
+    Función: Selecciona todas las journal entry,
     dependiendo de la categoria que se envie por parametro
 
     Args:
@@ -132,7 +132,7 @@ def set_journal_entry(from_date, to_date, category):
 
     Returns:
         Lista de diccionarios: Lista de diccionarios para ser formatea al momento de enviar dicho valor al reporte
-    """    
+    """
     journal, undefined = get_journal_entry(from_date, to_date, category)
 
     if category == 'Uncategorized Outflows' or category == 'Uncategorized Inflows':
@@ -169,7 +169,6 @@ def set_journal_entry(from_date, to_date, category):
             journal = journal.get(category, False)
 
             for j in journal:
-                print(j)
                 journal_entry.append({
                     'lb_name': j['lb_name'],
                     'amount': j['amount'],
@@ -177,15 +176,15 @@ def set_journal_entry(from_date, to_date, category):
                     'name_url': j['url_name']
                 })
             return journal_entry
-        
-        else: 
+
+        else:
             return []
 
 
 # es-GT: Obteniendo entradas de diario por categorias
 def get_journal_entry(start_date, end_date, category):
     """
-    Función: Obtiene y procesa las polizas de diario, que tengan que ver con 
+    Función: Obtiene y procesa las polizas de diario, que tengan que ver con
     salidas o entradas de flujo de caja
 
     Args:
@@ -234,7 +233,7 @@ def get_journal_entry(start_date, end_date, category):
                     journal_entry[journal['outflow_component']] = [journal]
 
         #------------ Fin Polizas definidas ------------
-        
+
         df_journal_undefined_categories = df_journal.query("inflow_component == '' and outflow_component == ''")# obtenemos los componenete indefinidos
         journal_undefined_categories = df_journal_undefined_categories.to_dict(orient='records')
 
@@ -242,7 +241,7 @@ def get_journal_entry(start_date, end_date, category):
 
 def get_query_journal_entry(from_date, to_date):
     """
-    Función: Para obtener cuenta de polizas especificás para el reporte, 
+    Función: Para obtener cuenta de polizas especificás para el reporte,
     cuentas que son de tipo efectivo(Cash) o banco(Bank)
 
     Args:
@@ -252,9 +251,9 @@ def get_query_journal_entry(from_date, to_date):
     Returns:
         Lista de diccionarios: Lista de diccionarios, con los elementos formateados
         para mostrar en el reporte
-    """    
+    """
     individual_entries = individual_journal_entries(from_date, to_date)
-    
+
     new_journal_entry = [] # Polizas validas para reporte
     for journal in individual_entries: # por cada poliza
         journal_flatten = [] # Aplanamos el array
@@ -266,7 +265,7 @@ def get_query_journal_entry(from_date, to_date):
 
         if there_is_only_one_cash_flow_account(journal_flatten): # si es caso 1
 
-            for ju in journal_flatten: 
+            for ju in journal_flatten:
                 if ju.get('account_type') == 'Bank' or ju.get('account_type') == 'Cash': # Si es cash o bank
                     new_journal_entry.append(ju) # lo agregamos a la data
 
@@ -275,7 +274,7 @@ def get_query_journal_entry(from_date, to_date):
 
         elif there_are_different_accounts(journal_flatten):
             """
-            El caso 3, se ha analizado la forma de determinar cual fue el flujo de caja 
+            El caso 3, se ha analizado la forma de determinar cual fue el flujo de caja
             realizado en la transacción, pero no es coherente al momento de asignar le la categoria,
             para mostrar en el reporte de flujo de caja directo.
             """
@@ -315,7 +314,7 @@ def individual_journal_entries(from_date, to_date):
 
 def get_list_journal_entries(from_date, to_date):
     """
-    Función: Obtiene el listado de polizas de diario que contengan al menos una 
+    Función: Obtiene el listado de polizas de diario que contengan al menos una
     cuenta de tipo efectivo o banco.
 
     Args:
@@ -324,11 +323,11 @@ def get_list_journal_entries(from_date, to_date):
 
     Returns:
         Lista de diccionarios: Lista de diccionarios, con nombre y fecha de la poliza.
-    """    
+    """
     list_journal_entries = frappe.db.sql(f'''
                         SELECT JE.name AS url_name, JE.posting_date
                         FROM `tabJournal Entry` AS JE
-                        INNER JOIN `tabJournal Entry Account` AS JEC 
+                        INNER JOIN `tabJournal Entry Account` AS JEC
                         ON JEC.parent = JE.name AND JE.docstatus = 1 AND JE.posting_date BETWEEN '{from_date}' AND '{to_date}'
                         WHERE JEC.account_type = 'Bank' OR JEC.account_type = 'Cash' GROUP BY JEC.name;
                         ''', as_dict=True)
@@ -346,10 +345,10 @@ def get_accounts_for_journal_entries(journal, posting_date):
 
     Returns:
         Lista de diccionarios: Lista de diccionarios de las cuentas por cada poliza
-    """    
+    """
     accounts = frappe.db.sql(f'''
-                SELECT account AS lb_name, inflow_component, 
-                outflow_component, debit, credit, account_type 
+                SELECT account AS lb_name, inflow_component,
+                outflow_component, debit, credit, account_type
                 FROM `tabJournal Entry Account` WHERE parent = '{journal}';
                 ''', as_dict=True)
 
@@ -375,7 +374,7 @@ def all_cash_or_bank_accounts(journal_flatten):
 
     Returns:
         Boolean: Verdadero o Falso
-    """    
+    """
     for journal_f in journal_flatten:
         if journal_f['account_type'] != 'Bank' and journal_f['account_type'] != 'Cash':
             return False
@@ -391,7 +390,7 @@ def there_is_only_one_cash_flow_account(journal_flatten):
 
     Returns:
         Boolean: Verdadero o Falso
-    """    
+    """
     if len(journal_flatten) < 3:
         count = 0
         for journal_f in journal_flatten:
@@ -399,9 +398,9 @@ def there_is_only_one_cash_flow_account(journal_flatten):
                 count += 1
         if count == 1:
             return True
-        else: 
+        else:
             return False
-    else: 
+    else:
         return False
 
 def there_are_different_accounts(journal_flatten):
@@ -415,7 +414,7 @@ def there_are_different_accounts(journal_flatten):
 
     Returns:
         Boolean: Verdadero o Falso
-    """    
+    """
     if len(journal_flatten) > 2:
         count_cash = 0
         count_dif = 0
@@ -443,7 +442,7 @@ def add_undefined_entries(journal_entry, undefined):
     Returns:
         Lista de diccionarios: Lista de diccionarios, con cuenta de polizas de diario
         con la categoria definida o indefinida.
-    """    
+    """
     journal_entry['Uncategorized Inflows'] = []
     journal_entry['Uncategorized Outflows'] = []
     for category in undefined:
@@ -451,15 +450,15 @@ def add_undefined_entries(journal_entry, undefined):
             category['amount'] =  category['debit']
             if (journal_entry.get('Uncategorized Inflows', None) != None):
                 journal_entry['Uncategorized Inflows'].append(category)
-            else: 
+            else:
                 journal_entry['Uncategorized Inflows'] = category
-                
+
         elif category['credit'] > 0:
             category['amount'] =  category['credit']
             if (journal_entry.get('Uncategorized Outflows', None) != None):
                 journal_entry['Uncategorized Outflows'].append(category)
             else:
-                journal_entry['Uncategorized Outflows'] = category    
+                journal_entry['Uncategorized Outflows'] = category
     return journal_entry
 
 # ******************** Fin Logica Jounal Entry ********************
@@ -478,7 +477,7 @@ def formating_data_before_print(data, category):
     amount_total = 0 # Sumamos el valor de todos los items
     for d in reversed(data):
         amount_total += d['amount']
-    
+
 
         # --------- Valores Positivos ----------
     positive_values_strong_1 = "<span style='color: #006600; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
@@ -504,7 +503,7 @@ def formating_data_before_print(data, category):
                         'name_url': category,
                         'amount':str(positive_values_strong_1+amount_total+positive_values_strong_2)
                     })
-    elif amount_total < 0:  
+    elif amount_total < 0:
         amount_total = str(amount_total)
         data.insert(0,{ # Insertamos dicha suma en la primera fila del reporte
                         'name_url': category,
