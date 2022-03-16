@@ -5,27 +5,23 @@ from __future__ import unicode_literals
 
 import datetime
 import json
-from datetime import datetime
 
-import frappe
-import numpy as np
+# import frappe
 import pandas as pd
-from erpnext.accounts.utils import get_fiscal_year
 from frappe import _, scrub
-from frappe.utils import cint, flt, getdate
-from revelare.revelare.report.direct_cash_flow_report_copy.queries import (
-    get_accounts_for_journal_entries, get_categories, get_categories_child,
-    get_list_journal_entries, get_query_payment_entry)
-from revelare.revelare.report.direct_cash_flow_report_copy.utils import (
+from revelare.revelare.report.direct_cash_flow_report.queries import (
+    get_categories, get_list_journal_entries, get_query_payment_entry)
+from revelare.revelare.report.direct_cash_flow_report.utils import (
     all_cash_or_bank_accounts, get_period, get_period_date_ranges,
     there_are_different_accounts, there_is_only_one_cash_flow_account)
-from six import itervalues
+# from six import itervalues
 
 
 def execute(filters=None):
     data = get_data(filters)
     columns = get_columns(filters)
     return columns, data
+
 
 def get_columns(filters):
     """
@@ -49,22 +45,23 @@ def get_columns(filters):
 
     # Genera las columnas en base al rango de fechas
     for dummy, end_date in ranges:
-        fecha_dt = datetime.strptime(str(end_date), '%Y-%m-%d')
+        fecha_dt = datetime.datetime.strptime(str(end_date), '%Y-%m-%d')
         period = get_period(fecha_dt, filters)
 
         columns.append({
             "label": _(period),
-            "fieldname":scrub(period),
+            "fieldname": scrub(period),
             "fieldtype": "Data",
             "width": 120
         })
     columns.append({
         "label": _('Total Amount'),
-        "fieldname":'total_amount',
+        "fieldname": 'total_amount',
         "fieldtype": "Data",
         "width": 120
     })
     return columns
+
 
 def get_data(filters=None):
     """Función para obtener y procesar los datos, para el reporte
@@ -100,7 +97,7 @@ def get_data(filters=None):
     payment_entry = get_payment_entry(start_date, end_date)
 
     # Uniendo journal_entry y payment_entry
-    data_by_categories = merging_dictionaries(journal_entry,payment_entry)
+    data_by_categories = merging_dictionaries(journal_entry, payment_entry)
     if data_by_categories == {}:
         return {'name': _('no se encontraron polizas ni entradas de pago en el año')}
     data_and_categories = formatting_data(data_by_categories, categories_by_name, filters)
@@ -112,9 +109,9 @@ def get_data(filters=None):
     data = add_values_of_sub_accounts(data)
     data = add_total_column(data)
 
-    data[0]['name']='Total cash flow'
+    data[0]['name'] = 'Total cash flow'
 
-    data = insert_link_to_categories(data, filters.from_date,filters.to_date)
+    data = insert_link_to_categories(data, filters.from_date, filters.to_date)
 
     # Agregando color a cada dato
     data = adding_color_to_data(data, ranges, filters)
@@ -122,10 +119,10 @@ def get_data(filters=None):
     # TODO: Cuando se maneje consolidado el flujo de caja se va a indicar el nombre de la compania en esta celda
     # Y se le agregara un totalizador
 
-
     return data
 
 # ******************** Inicio Logica de Rangos de Fecha ********************
+
 
 def filter_categories(categories):
     """
@@ -141,7 +138,6 @@ def filter_categories(categories):
     """
     parent_children_map = {}
     categories_by_name = {}
-    filtered_categories = []
     for d in categories:
         categories_by_name[d['name']] = d
 
@@ -162,6 +158,8 @@ def filter_categories(categories):
 # ******************** Inicio Logica Jounal Entry ********************
 
 # es-GT: Obteniendo entradas de diario por categorias
+
+
 def get_journal_entry(start_date, end_date):
     """
     Función: Obtiene y procesa las polizas de diario, que tengan que ver con
@@ -198,20 +196,19 @@ def get_journal_entry(start_date, end_date):
 
     journal_undefined_categories = df_journal_undefined_categories.to_dict(orient='records')
 
-    journal_undefined = {}
     for journal in journal_undefined_categories:
         if journal.get('debit', 0) != 0:
             journal['amount'] = journal.get('debit')
             journal_entry.setdefault('D.1 - Uncategorized Receipts', []).append(journal)
 
-
         elif journal.get('credit', 0) != 0:
             journal['amount'] = journal.get('credit')
             journal_entry.setdefault('D.2 - Uncategorized Payments', []).append(journal)
 
-    journal_entry = [ {k:v} for k, v in journal_entry.items()]
+    journal_entry = [{k: v} for k, v in journal_entry.items()]
 
     return journal_entry
+
 
 def get_journal_entry_format(from_date, to_date):
     """
@@ -227,17 +224,23 @@ def get_journal_entry_format(from_date, to_date):
         para mostrar en el reporte
     """
     individual_entries = individual_journal_entries(from_date, to_date)
-    new_journal_entry = [] # Polizas validas para reporte
+    # Polizas validas para reporte
+    new_journal_entry = []
     if individual_entries != []:
-        for journal in individual_entries: # por cada poliza
-            journal_flatten = [] # Aplanamos el array
+        # por cada poliza
+        for journal in individual_entries:
+            # Aplanamos el array
+            journal_flatten = []
             journal_ = journal.values()
             for j in journal_:
-
-                for item in j:# Accedemos hasta el diccionario
-                    journal_flatten.append(item)# Agregamos la cuenta a la poliza
-            if there_is_only_one_cash_flow_account(journal_flatten): # si es caso 1
-                new_journal_entry.append(journal_flatten[0]) # lo agregamos a la data
+                # Accedemos hasta el diccionario
+                for item in j:
+                    # Agregamos la cuenta a la poliza
+                    journal_flatten.append(item)
+                    # si es caso 1
+            if there_is_only_one_cash_flow_account(journal_flatten):
+                # lo agregamos a la data
+                new_journal_entry.append(journal_flatten[0])
 
             elif all_cash_or_bank_accounts(journal_flatten):
                 pass
@@ -264,6 +267,7 @@ def get_journal_entry_format(from_date, to_date):
         journal['posting_date'] = journal['posting_date'].strftime('%Y-%m-%d')
     return new_journal_entry
 
+
 def individual_journal_entries(from_date, to_date):
     """
     Función: Genera la homologación de las polizas de ERPNEXT,
@@ -282,7 +286,7 @@ def individual_journal_entries(from_date, to_date):
     for journal in list_journal_entries:
         individual_entries.setdefault(journal['url_name'] or None, []).append(journal)
 
-    individual_entries = [ {k:v} for k, v in individual_entries.items()]
+    individual_entries = [{k: v} for k, v in individual_entries.items()]
 
     return individual_entries
 
@@ -290,13 +294,14 @@ def individual_journal_entries(from_date, to_date):
 
 # ******************** Inicio Logica Payment Entry ********************
 
+
 def get_payment_entry(from_date, to_date):
     payment_entry = get_query_payment_entry(from_date, to_date)
     if payment_entry != []:
         df_payment = pd.DataFrame(json.loads(json.dumps(payment_entry)))
         # obtenemos los componenete indefinidos
         df_payment = df_payment.fillna("")
-        df_payment_undefined_categories = df_payment.query("inflow_component == '' and outflow_component == '' and payment_type != 'Internal Transfer'")
+        df_payment_undefined_categories = df_payment.query("inflow_component =='' and outflow_component =='' and payment_type != 'Internal Transfer'")
         payment_undefined_categories = df_payment_undefined_categories.to_dict(orient='records')
 
         # Obtenemos los componente definidos
@@ -313,7 +318,7 @@ def get_payment_entry(from_date, to_date):
             elif payment['outflow_component'] != '':
                 payments.setdefault(payment['outflow_component'], []).append(payment)
 
-        payments = [ {k:v} for k, v in payments.items()]
+        payments = [{k: v} for k, v in payments.items()]
 
         for d in payments:
             for item in d.values():
@@ -339,7 +344,7 @@ def get_payment_entry(from_date, to_date):
             elif d['outflow_component'] != '':
                 payment_undefined.setdefault(d['outflow_component'], []).append(d)
 
-        payment_undefined = [ {k:v} for k, v in payment_undefined.items()]
+        payment_undefined = [{k: v} for k, v in payment_undefined.items()]
 
     else:
         return [], []
@@ -351,7 +356,8 @@ def get_payment_entry(from_date, to_date):
 
 # ******************** Inicio Logica Process Data ********************
 
-def merging_dictionaries(journal_entry,payment_entry):
+
+def merging_dictionaries(journal_entry, payment_entry):
     """
     Función: Para unir las lista de diccionaris,
     de polizas y entradas de diario.
@@ -365,9 +371,9 @@ def merging_dictionaries(journal_entry,payment_entry):
         Lista de diccionarios: Lista de diccionarios,
         con entras y polizas de pago, en una misma estructura.
     """
-    data= {}
+    data = {}
     if journal_entry != []:
-        for category in  journal_entry:
+        for category in journal_entry:
             for element in list(category.values())[0]:
                 data.setdefault(list(category.keys())[0], []).append(element)
 
@@ -377,6 +383,7 @@ def merging_dictionaries(journal_entry,payment_entry):
                 data.setdefault(list(category.keys())[0], []).append(element)
 
     return data
+
 
 def formatting_data(data_by_categories, categories_by_name, filters):
     """
@@ -405,25 +412,25 @@ def formatting_data(data_by_categories, categories_by_name, filters):
         for values in data_categories:
 
             data.append({
-                'name':values['lb_name'],
-                'posting_date':values['posting_date'],
+                'name': values['lb_name'],
+                'posting_date': values['posting_date'],
                 'parent_direct_cash_flow_component': key,
-                'cash_effect':'',
+                'cash_effect': '',
                 'is_group': '',
                 'indent': 0,
-                'amount':values.get('amount')
+                'amount': values.get('amount')
             })
 
     # Agregando data a categorias
     categories_and_data = []
     for name, categori in categories_by_name.items():
         categories_and_data.append({
-            'name' : categori['name'],
+            'name': categori['name'],
             'parent_direct_cash_flow_component': categori['parent_direct_cash_flow_component'],
-            'cash_effect':categori['cash_effect'],
-            'is_group':categori['is_group'],
-            'indent':categori['indent'],
-            'amount' : 0
+            'cash_effect': categori['cash_effect'],
+            'is_group': categori['is_group'],
+            'indent': categori['indent'],
+            'amount': 0
             })
 
         # Verificamos si hay documentos para agregar le de data
@@ -432,16 +439,17 @@ def formatting_data(data_by_categories, categories_by_name, filters):
             if items['parent_direct_cash_flow_component'] == name:
 
                 categories_and_data.append({
-                    'name' : items['name'],
-                    'posting_date' : items['posting_date'],
-                    'parent_direct_cash_flow_component' : categori['name'],
-                    'cash_effect' : items['cash_effect'],
-                    'is_group' : items['is_group'],
-                    'indent' : categori['indent'] + 1,
-                    'amount' : items['amount']
+                    'name': items['name'],
+                    'posting_date': items['posting_date'],
+                    'parent_direct_cash_flow_component': categori['name'],
+                    'cash_effect': items['cash_effect'],
+                    'is_group': items['is_group'],
+                    'indent': categori['indent'] + 1,
+                    'amount': items['amount']
                     })
 
     return categories_and_data
+
 
 def accumulate_values_into_parents(data_and_categories, ranges, filters):
     """
@@ -464,7 +472,7 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
         if item['is_group'] == '':
 
             for date_colum in ranges:
-                fecha_dt = datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
+                fecha_dt = datetime.datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
                 period = get_period(fecha_dt, filters)
                 period = scrub(period)
 
@@ -478,35 +486,32 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
                         if dictionary['name'] == component_parent:
                             try:
                                 # Sumamos o restamos el documento dependiendo del tipo de flujo del padre
-                                if cash_effect == 'Inflow' or (cash_effect == 'Group' and  dictionary["name"] == 'D.1 - Uncategorized Receipts'):
+                                if cash_effect == 'Inflow' or (cash_effect == 'Group' and dictionary["name"] == 'D.1 - Uncategorized Receipts'):
                                     dictionary[period] += item.get(period)
 
-                                elif cash_effect == 'Outflow' or (cash_effect == 'Group' and  dictionary["name"] == 'D.2 - Uncategorized Payments'):
+                                elif cash_effect == 'Outflow' or (cash_effect == 'Group' and dictionary["name"] == 'D.2 - Uncategorized Payments'):
                                     # haciendo negativo el hijo
                                     item[period] = (item.get(period)*-1)
                                     dictionary[period] += item.get(period)
 
-
-
                             except:
 
-
-                                if cash_effect == 'Inflow' or (cash_effect == 'Group' and  dictionary["name"] == 'D.1 - Uncategorized Receipts'):
+                                if cash_effect == 'Inflow' or (cash_effect == 'Group' and dictionary["name"] == 'D.1 - Uncategorized Receipts'):
                                     dictionary[period] = item.get(period)
 
-                                elif cash_effect == 'Outflow' or (cash_effect == 'Group' and  dictionary["name"] == 'D.2 - Uncategorized Payments'):
+                                elif cash_effect == 'Outflow' or (cash_effect == 'Group' and dictionary["name"] == 'D.2 - Uncategorized Payments'):
                                     item[period] = (item.get(period)*-1)
                                     dictionary[period] = item.get(period)
 
         elif item['is_group'] == 0:
 
             for date_colum in ranges:
-                fecha_dt = datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
+                fecha_dt = datetime.datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
                 period = get_period(fecha_dt, filters)
                 period = scrub(period)
 
                 if item.get(period, 0) != 0:
-                    component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component','')
+                    component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component', '')
                     amount = item.get(period)
 
                     # Buscamos en toda la lista, el componente padre
@@ -520,12 +525,12 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
         elif item['is_group'] == 1:
 
             for date_colum in ranges:
-                fecha_dt = datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
+                fecha_dt = datetime.datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
                 period = get_period(fecha_dt, filters)
                 period = scrub(period)
 
                 if item.get(period, 0) != 0:
-                    component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component','')
+                    component_parent = data_and_categories[data_and_categories.index(item)].get('parent_direct_cash_flow_component', '')
                     amount = item.get(period)
 
                     # Buscamos en toda la lista, el compoente padre
@@ -535,8 +540,8 @@ def accumulate_values_into_parents(data_and_categories, ranges, filters):
                         if dictionary['name'] == component_parent:
                             dictionary[period] += amount
 
-
     return data_and_categories
+
 
 def add_values_of_sub_accounts(data):
     """
@@ -564,31 +569,43 @@ def add_values_of_sub_accounts(data):
                 data.pop(d+1)
     return data
     """
-    new_datalist = [] # Creamos una nueva lista
-    for element in data: # Recorremos la lista anterior
-        if len(new_datalist) != 0: # Verificamos si la lista ya tiene algún elemento
-            add = True # Inicialiamos un booleano para validar si agrega
+    # Creamos una nueva lista
+    new_datalist = []
+    # Recorremos la lista anterior
+    for element in data:
+        # Verificamos si la lista ya tiene algún elemento
+        if len(new_datalist) != 0:
+            # Inicialiamos un booleano para validar si agrega
+            add = True
 
-            for new_element in new_datalist: # Recorremos la lista nueva
+            # Recorremos la lista nueva
+            for new_element in new_datalist:
+                # Verificamos que sea la misma cuenta y componente
                 if new_element.get('name', None) == element['name'] and \
-                   new_element.get('parent_direct_cash_flow_component', None) == element['parent_direct_cash_flow_component']: # Verificamos que sea la misma cuenta y componente
+                   new_element.get('parent_direct_cash_flow_component', None) == element['parent_direct_cash_flow_component']:
 
-                    for key, value in new_element.items(): # Recorremos los valores de nuevo elemento
-                        if key != 'name' and key != 'posting_date' and key != 'cash_effect' and key != 'indent' and key  != 'amount' and \
-                           key != 'parent_direct_cash_flow_component' and key != 'is_group': # Eliminamos los valores, que no son numericos
+                    # Recorremos los valores de nuevo elemento
+                    for key, value in new_element.items():
+                        # Eliminamos los valores, que no son numericos
+                        if key != 'name' and key != 'posting_date' and key != 'cash_effect' and key != 'indent' and key != 'amount' and \
+                                key != 'parent_direct_cash_flow_component' and key != 'is_group':
 
-                            new_element[key] = new_element[key] + element[key] # Sumamos el elemento retpetido con el elemento base
+                            # Sumamos el elemento retpetido con el elemento base
+                            new_element[key] = new_element[key] + element[key]
                             # new_element = Elemento base; element = Elemento repetido
 
-                    add = False # Si esta repetido, no se grega
-
-            if add: # Validamos si agregamos
+                    # Si esta repetido, no se grega
+                    add = False
+            # Validamos si agregamos
+            if add:
                 new_datalist.append(element)
 
-        else: # Si la lista esta vacía entonces agreamos el elemento
+        # Si la lista esta vacía entonces agreamos el elemento
+        else:
             new_datalist.append(element)
 
     return new_datalist
+
 
 def adding_columns_to_data(data, ranges, filters):
     """
@@ -608,13 +625,13 @@ def adding_columns_to_data(data, ranges, filters):
     """
     for d in data:
         period_amount = ''
-        if d.get('posting_date', None) != None:
-            fecha_dt = datetime.strptime(str(d.get('posting_date')), '%Y-%m-%d')
+        if d.get('posting_date', None):
+            fecha_dt = datetime.datetime.strptime(str(d.get('posting_date')), '%Y-%m-%d')
             period_amount = get_period(fecha_dt, filters)
             period_amount = scrub(period_amount)
 
         for date_colum in ranges:
-            fecha_dt = datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
+            fecha_dt = datetime.datetime.strptime(str(date_colum[1]), '%Y-%m-%d')
             period = get_period(fecha_dt, filters)
             period = scrub(period)
             if period_amount == period:
@@ -623,6 +640,7 @@ def adding_columns_to_data(data, ranges, filters):
                 d[period] = 0
 
     return data
+
 
 def add_total_column(data):
     # Recorremos la data fila por fila
@@ -638,6 +656,7 @@ def add_total_column(data):
         row['total_amount'] = total_sum
     return data
 
+
 def adding_color_to_data(data, ranges, filters):
     # dicToJSON('data', data)
     # dicToJSON('ranges', ranges)
@@ -651,25 +670,31 @@ def adding_color_to_data(data, ranges, filters):
     """
 
     # --------- Valores Positivos ----------
-    positive_values_strong_1 = "<span style='color: #006600; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    positive_values_strong_1 = """
+                            <span style='color: #006600; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>
+                            """
     positive_values_strong_2 = "</strong></span>"
     positive_values_1 = "<span style='color: #006600; background-color: white; float: right; text-align: right; vertical-align: text-top;'>"
     positive_values_2 = "</span>"
 
     # --------- Valores Negativos ----------
-    negative_values_strong_1 = "<span style='color: #CC0000; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    negative_values_strong_1 = """
+                            <span style='color: #CC0000; background-color: white; float: right; text-align: right; vertical-align: text-top;'><strong>
+                            """
     negative_values_strong_2 = "</strong></span>"
     negative_values_1 = "<span style='color: #CC0000; background-color: white; float: right; text-align: right; vertical-align: text-top;'>"
     negative_values_2 = "</span>"
 
     # --------- Valores nulos ----------
-    neutral_values_strong_1 = "<span style='color: black; background-color: #FFFFFF; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    neutral_values_strong_1 = """
+                            <span style='color: black; background-color: #FFFFFF; float: right; text-align: right; vertical-align: text-top;'><strong>
+                            """
     neutral_values_strong_2 = "</strong></span>"
     neutral_values_1 = "<span style='color: black; background-color: #FFFFFF; float: right; text-align: right; vertical-align: text-top;'>"
     neutral_values_2 = "</span>"
 
-    quantity_style_few_1 = "<span style='color: black; background-color: blue; float: right; text-align: right; vertical-align: text-top;'><strong>"
-    quantity_style_few_2 = "</strong></span>"
+    # quantity_style_few_1 = "<span style='color: black; background-color: blue; float: right; text-align: right; vertical-align: text-top;'><strong>"
+    # quantity_style_few_2 = "</strong></span>"
 
     # Obtenemos cada fila de la data
     for row_item in data:
@@ -699,6 +724,7 @@ def adding_color_to_data(data, ranges, filters):
                     else:
                         row_item[keys] = negative_values_strong_1 + str(row_item[keys])+negative_values_strong_2
     return data
+
 
 def insert_link_to_categories(data, from_date='', to_date=''):
     """

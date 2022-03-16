@@ -3,14 +3,10 @@
 
 from __future__ import unicode_literals
 
-import calendar
-import json
-from datetime import date, datetime, time, timedelta
-
-import frappe
+# import frappe
 from dateutil.relativedelta import relativedelta
-from frappe import _, _dict, scrub
-from frappe.utils import cint, flt, getdate
+from erpnext.accounts.utils import get_fiscal_year
+from frappe.utils import getdate
 
 
 def get_period_date_ranges(filters):
@@ -32,12 +28,13 @@ def get_period_date_ranges(filters):
         "Quarterly": 3,
         "Half-Yearly": 6,
         "Yearly": 12
-    }.get(filters.range,1)
+    }.get(filters.range, 1)
 
     periodic_daterange = []
     for dummy in range(1, 53, increment):
         if filters.range == "Weekly":
-            period_end_date = from_date + relativedelta(days=6)
+            if dummy not in [11, 12]:
+                period_end_date = from_date + relativedelta(days=6)
         else:
             period_end_date = from_date + relativedelta(months=increment, days=-1)
 
@@ -50,6 +47,7 @@ def get_period_date_ranges(filters):
             break
 
     return periodic_daterange
+
 
 def get_period(posting_date, filters):
     """
@@ -71,7 +69,7 @@ def get_period(posting_date, filters):
     elif filters.range == 'Monthly':
         period = str(months[posting_date.month - 1]) + " " + str(posting_date.year)
     elif filters.range == 'Quarterly':
-        period = "Quarter " + str(((posting_date.month-1)//3)+1) +" " + str(posting_date.year)
+        period = "Quarter " + str(((posting_date.month-1)//3)+1) + " " + str(posting_date.year)
     else:
         year = get_fiscal_year(posting_date, company=filters.company)
         period = str(year[2])
@@ -79,7 +77,7 @@ def get_period(posting_date, filters):
     return period
 
 
-#********* Estas funciones ya no las utilizamos por que ahora nos guíamos por medio de la longitud del la lista. ******
+# ********* Estas funciones ya no las utilizamos por que ahora nos guíamos por medio de la longitud del la lista. ******
 def all_cash_or_bank_accounts(journal_flatten):
     """
     Función: Verifica si, la poliza recibida por parametro,
@@ -95,6 +93,7 @@ def all_cash_or_bank_accounts(journal_flatten):
         if journal_f['account_type'] != 'Bank' and journal_f['account_type'] != 'Cash':
             return False
     return True
+
 
 def there_is_only_one_cash_flow_account(journal_flatten):
     """
@@ -119,6 +118,7 @@ def there_is_only_one_cash_flow_account(journal_flatten):
     else:
         return False
 
+
 def there_are_different_accounts(journal_flatten):
     """
     Función: Verifica si, la poliza recibida por parametro,
@@ -140,9 +140,11 @@ def there_are_different_accounts(journal_flatten):
             elif journal_f['account_type'] != 'Bank' or journal_f['account_type'] != 'Cash':
                 count_dif += 1
 
-        if count_cash > count_dif and count_dif != 0: # si hay mas cuentas que no tengan que ver con dinero
+        # si hay mas cuentas que no tengan que ver con dinero
+        if count_cash > count_dif and count_dif != 0:
             return True
-        elif count_cash > 1 and count_dif != 0: # si hay mas cuentas que tienen que ver con dinero
+        # si hay mas cuentas que tienen que ver con dinero
+        elif count_cash > 1 and count_dif != 0:
             return True
 
     return False
