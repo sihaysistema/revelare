@@ -3,13 +3,7 @@
 
 from __future__ import unicode_literals
 
-import json
-from datetime import datetime, timedelta
-
 import frappe
-import numpy as np
-from frappe import _, _dict, scrub
-from frappe.utils import cstr, flt, nowdate
 
 
 def get_categories():
@@ -97,9 +91,10 @@ def get_categories_child():
         SELECT name as components, parent, is_group, cash_effect,
         lft, rgt, direct_cash_flow_component_name
         FROM `tabDirect Cash Flow Component` WHERE is_group = 0
-        ''', as_dict = True)
+        ''', as_dict=True)
 
     return list_childs
+
 
 def get_query_payment_entry(from_date, to_date):
     payments = frappe.db.sql(f'''

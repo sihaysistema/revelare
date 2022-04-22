@@ -1,13 +1,13 @@
 {
     "revelare/js/revelar.min.js": [
-        "public/js/main_navigator_dashboard.js",
-        "public/js/revelar.js",
-        "public/js/mapAddress.js",
-        "public/js/main_historical_volumen_an.js"
+        "frontend/js/main_navigator_dashboard.js",
+        "frontend/js/revelar.js",
+        "frontend/js/mapAddress.js",
+        "frontend/js/main_historical_volumen_an.js"
     ],
     "revelare/css/revelare.min.css": [
-        "public/css/navigator.css",
-        "public/css/leaflet.css",
-        "public/css/esri-leaflet-geocoder.css"
+        "frontend/css/navigator.css",
+        "frontend/css/leaflet.css",
+        "frontend/css/esri-leaflet-geocoder.css"
     ]
 }
