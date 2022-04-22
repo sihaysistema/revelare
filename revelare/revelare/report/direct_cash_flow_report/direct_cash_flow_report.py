@@ -2,9 +2,11 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
+from base64 import encode
 
 import datetime
 import json
+from opcode import opname
 
 # import frappe
 import pandas as pd
@@ -48,12 +50,15 @@ def get_columns(filters):
         fecha_dt = datetime.datetime.strptime(str(end_date), '%Y-%m-%d')
         period = get_period(fecha_dt, filters)
 
-        columns.append({
-            "label": _(period),
-            "fieldname": scrub(period),
-            "fieldtype": "Data",
-            "width": 120
-        })
+        if period[:-5] not in ['Week 11', 'Week 12']:
+
+            columns.append({
+                "label": _(period),
+                "fieldname": scrub(period),
+                "fieldtype": "Data",
+                "width": 120
+            })
+
     columns.append({
         "label": _('Total Amount'),
         "fieldname": 'total_amount',
@@ -82,7 +87,6 @@ def get_data(filters=None):
     if not categories:
         return []
 
-    # Agregando la indentación para mostrar en el reporte
     categories_by_name = filter_categories(categories)
 
     # Obteniendo los datos por categoria hija
@@ -94,6 +98,9 @@ def get_data(filters=None):
     end_date = filters.to_date
 
     journal_entry = get_journal_entry(start_date, end_date)
+    with open('log.txt', 'a', encoding='utf-8') as f:
+        f.write(f'{journal_entry}\n')
+        f.close()
     payment_entry = get_payment_entry(start_date, end_date)
 
     # Uniendo journal_entry y payment_entry

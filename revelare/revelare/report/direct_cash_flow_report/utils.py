@@ -33,8 +33,8 @@ def get_period_date_ranges(filters):
     periodic_daterange = []
     for dummy in range(1, 53, increment):
         if filters.range == "Weekly":
-            if dummy not in [11, 12]:
-                period_end_date = from_date + relativedelta(days=6)
+            # if dummy not in [11, 12]:
+            period_end_date = from_date + relativedelta(days=6)
         else:
             period_end_date = from_date + relativedelta(months=increment, days=-1)
 
