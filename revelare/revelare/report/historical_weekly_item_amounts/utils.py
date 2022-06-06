@@ -3,12 +3,8 @@
 
 from __future__ import unicode_literals
 
-import calendar
-import json
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, timedelta
 
-import frappe
-from frappe import _, _dict, scrub
 
 def get_range_of_date(filters):
     """Funcion que obtiene el rango de fechas dado por el año que se le pase por parametro en el filtro
@@ -33,6 +29,7 @@ def get_range_of_date(filters):
 
     return data
 
+
 def list_of_ranges_date(flt_year):
     """Retorna la lista de semanas dado por el año pasado por parametro
 
@@ -51,7 +48,7 @@ def list_of_ranges_date(flt_year):
     # Buscamos primer semana del año respecto al ISO-8601
     # Nota: El ISO-8601 es un forma que toma en cuenta el primer lunes de cada año, como primer día de la semana en cada año.
     # en el caso del año 2021 el lunes 04 de enero, es el primer día de la semana 1. el dia 03-01-2021, aun es semana 52 del año 2020
-    first_week = date(year,1,1)
+    first_week = date(year, 1, 1)
 
     while True:
         # Obtenemos una tupla
@@ -91,7 +88,7 @@ def list_of_ranges_date(flt_year):
         wk = str(week_[1]).zfill(2)
 
         if year == week_[0]:
-            dic_date.append({'from_date':from_date, 'to_date':to_date, 'wk':wk, 'year':year, 'dic_name':f'{year} Week{wk}'})
+            dic_date.append({'from_date': from_date, 'to_date': to_date, 'wk': wk, 'year': year, 'dic_name': f'{year} Week{wk}'})
         else:
             break
         """
@@ -121,6 +118,7 @@ def list_of_ranges_date(flt_year):
     # Retornamos el rango de fechas
     return dic_date
 
+
 def search_list_of_dict_k(key_search, list_to_search):
     """Funcion que busca una llave en una lista de diccionarios
 
@@ -135,12 +133,13 @@ def search_list_of_dict_k(key_search, list_to_search):
     # Por cada diccionario en la lista
     for item in list_to_search:
         # Si en el objeto existe la llave buscada
-        if item.get(key_search,'') != '':
+        if item.get(key_search, '') != '':
             # Retornamos el indice de dicho objeto
             return list_to_search.index(item)
     else:
         # Si termina el for, retonamos nulo
         return None
+
 
 def search_list_of_dict_v(value_search, key_to_seach, list_to_search):
     """Funcion que busca un valor y una llave en una lista de diccionarios
@@ -156,7 +155,7 @@ def search_list_of_dict_v(value_search, key_to_seach, list_to_search):
     # Por cada objeto en la lista de diccionarios
     for item in list_to_search:
         # Buscamos la llave que nos pasaron el el objeto
-        if item.get(key_to_seach,'') != '':
+        if item.get(key_to_seach, '') != '':
             # Si existe la llave, buscamos el valor que nos pasaron
             if item.get(key_to_seach) == value_search:
                 # Si lo encuentra retornamos el indice de dicho valor
@@ -164,6 +163,7 @@ def search_list_of_dict_v(value_search, key_to_seach, list_to_search):
     # Si no encuentra la lleve o el valor, retorna nulo
     else:
         return None
+
 
 def search_week_in_range(year, from_date, data_of_date):
     """Funcion que busca los indices dentro de la estrutura de rangos de fechas por semana
@@ -192,12 +192,14 @@ def search_week_in_range(year, from_date, data_of_date):
                 index_1 = data_of_date.index(year_range)
     return index_1, index_2
 
+
 def is_digit(value):
     try:
         int(value)
         return True
     except ValueError:
         return False
+
 
 def is_string(value):
     return value.lower().isalpha()

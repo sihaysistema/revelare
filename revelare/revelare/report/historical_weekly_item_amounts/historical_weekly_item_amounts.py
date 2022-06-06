@@ -3,29 +3,25 @@
 
 from __future__ import unicode_literals
 
-import calendar
 import json
-import math
 import statistics as stdic
-from datetime import date, datetime, time, timedelta
+from datetime import datetime
 
 import frappe
-import numpy as np
 import pandas as pd
-from frappe import _, _dict, scrub
+from frappe import _
 
 from revelare.revelare.report.historical_weekly_item_amounts.queries import (boms_item, find_conversion_factor, from_data,
                                                                              get_availability_estimates,
                                                                              get_sales_order_individual)
-from revelare.revelare.report.historical_weekly_item_amounts.utils import (get_range_of_date, is_digit, is_string,
-                                                                           list_of_ranges_date, search_list_of_dict_k,
-                                                                           search_list_of_dict_v, search_week_in_range)
+from revelare.revelare.report.historical_weekly_item_amounts.utils import (get_range_of_date, search_list_of_dict_k)
 
 
 def execute(filters=None):
     columns = get_columns(filters)
     data = get_data(filters)
     return columns, data
+
 
 def get_columns(filters):
     """
@@ -83,16 +79,17 @@ def get_columns(filters):
 
     return columns
 
+
 @frappe.whitelist()
 def get_data(filters):
 
     try:
         filters = frappe._dict(json.loads(filters))
-    except:
+    except Exception:
         filters = filters
 
     data = []
-    if filters.item_selected != None:
+    if filters.item_selected is not None:
 
         result = boms_item(filters)
         if result != []:
@@ -118,19 +115,19 @@ def get_data(filters):
 
             if data_for_item_sales == []:
                 data = [{
-                "item_code": filters.item_selected,
-                "item_name": filters.item_selected,
-                "UOM": "Pound",
-                "labels":["No existen ventas para ese item base"],
-                "values":["No existen ventas para ese item base"],
-                "values1":["No existen ventas para ese item base"],
-                "values2":["No existen ventas para ese item base"],
-                "values3":["No existen ventas para ese item base"]
+                    "item_code": filters.item_selected,
+                    "item_name": filters.item_selected,
+                    "UOM": "Pound",
+                    "labels": ["No existen ventas para ese item base"],
+                    "values": ["No existen ventas para ese item base"],
+                    "values1": ["No existen ventas para ese item base"],
+                    "values2": ["No existen ventas para ese item base"],
+                    "values3": ["No existen ventas para ese item base"]
                 }]
                 return data
 
             # pasamos a Data Frame para prepar los datos a unir
-            data_for_item_sales = sorted(data_for_item_sales, key = lambda i: i['fecha'],reverse=False)
+            data_for_item_sales = sorted(data_for_item_sales, key=lambda i: i['fecha'], reverse=False)
             availability_estimate = get_availability_estimates()
 
             if availability_estimate != []:
@@ -138,37 +135,37 @@ def get_data(filters):
                 #     f.write(f"item:{filters.item_selected} -\n\tavailability_estimate:{availability_estimate} \n-> result:{result}\n\n")
                 #     f.close()
                 # Seeccionamos los datos del item seleccionado
-                df_availability_estimate = pd.DataFrame(json.loads(json.dumps(availability_estimate,indent=4, sort_keys=True, default=str)))
+                df_availability_estimate = pd.DataFrame(json.loads(json.dumps(availability_estimate, indent=4, sort_keys=True, default=str)))
                 df_availability_estimate = df_availability_estimate.fillna('')
                 df_availability = df_availability_estimate.query(str(f'item_code == "{filters.item_selected}"'))
 
                 if df_availability.shape[0] == 0:
                     data = [{
-                    "item_code": filters.item_selected,
-                    "item_name": filters.item_selected,
-                    "UOM": "Pound",
-                    "labels":["No existen estimaciones para este item"],
-                    "values":["No existen estimaciones para este item"],
-                    "values1":["No existen estimaciones para este item"],
-                    "values2":["No existen estimaciones para este item"],
-                    "values3":["No existen estimaciones para este item"]
+                        "item_code": filters.item_selected,
+                        "item_name": filters.item_selected,
+                        "UOM": "Pound",
+                        "labels": ["No existen estimaciones para este item"],
+                        "values": ["No existen estimaciones para este item"],
+                        "values1": ["No existen estimaciones para este item"],
+                        "values2": ["No existen estimaciones para este item"],
+                        "values3": ["No existen estimaciones para este item"]
                     }]
                     return data
 
                 df_result = pd.DataFrame(json.loads(json.dumps(result))).fillna('')
 
-                df_union =pd.merge(df_availability, df_result, left_on='item_code', right_on='item_code')
+                df_union = pd.merge(df_availability, df_result, left_on='item_code', right_on='item_code')
                 union = df_union.to_dict(orient='records')
             else:
                 data = [{
-                "item_code": filters.item_selected,
-                "item_name": filters.item_selected,
-                "UOM": "Pound",
-                "labels":["No existen estimaciones para este item"],
-                "values":["No existen estimaciones para este item"],
-                "values1":["No existen estimaciones para este item"],
-                "values2":["No existen estimaciones para este item"],
-                "values3":["No existen estimaciones para este item"]
+                    "item_code": filters.item_selected,
+                    "item_name": filters.item_selected,
+                    "UOM": "Pound",
+                    "labels": ["No existen estimaciones para este item"],
+                    "values": ["No existen estimaciones para este item"],
+                    "values1": ["No existen estimaciones para este item"],
+                    "values2": ["No existen estimaciones para este item"],
+                    "values3": ["No existen estimaciones para este item"]
                 }]
                 return data
 
@@ -188,19 +185,19 @@ def get_data(filters):
                     if row["item"] == item["item"]:
                         if item['type_date'] >= row['type_date_start'] and item['type_date'] <= row['type_date_end']:
                             new_data.append({
-                                'item':row['item'],
-                                'start_date':row['start_date'],
-                                'end_date':row['end_date'],
-                                'fecha':item['fecha'],
-                                'item_code_base':row['item_code'],
-                                'item_name_base':row['item_name'],
-                                'item_sale_code':item['item'],
-                                'item_sale_name':item['item_name'],
-                                'amount_estiamted':row['amount'],
-                                'uom_estimated':row['amount_uom'],
-                                'total_qty_sales_order':item['Cant SO'],
-                                'total_sales_order':item['total'],
-                                'uom_sales':item['uom']
+                                    'item': row['item'],
+                                    'start_date': row['start_date'],
+                                    'end_date': row['end_date'],
+                                    'fecha': item['fecha'],
+                                    'item_code_base': row['item_code'],
+                                    'item_name_base': row['item_name'],
+                                    'item_sale_code': item['item'],
+                                    'item_sale_name': item['item_name'],
+                                    'amount_estiamted': row['amount'],
+                                    'uom_estimated': row['amount_uom'],
+                                    'total_qty_sales_order': item['Cant SO'],
+                                    'total_sales_order': item['total'],
+                                    'uom_sales': item['uom']
                             })
                             data_for_item_sales.pop(data_for_item_sales.index(item))
                         else:
@@ -217,45 +214,44 @@ def get_data(filters):
                 row['factor_conversion'] = find_conversion_factor(row['uom'], row['uom_estimated'])[0]
                 row['sold'] = row['factor_conversion']['value'] * row['total']
 
-            range_of_date = get_range_of_date(frappe._dict({'year':men_year}))
+            range_of_date = get_range_of_date(frappe._dict({'year': men_year}))
             other_data = []
             while len(data_for_item_sales) > 0:
 
                 for year in range_of_date:
                     for week in year:
                         if data_for_item_sales == []:
-                                break
+                            break
                         row = data_for_item_sales[0]
-                        if row['fecha'] <= datetime.strptime(week['to_date'], '%Y-%m-%d').date() and row['fecha'] >= datetime.strptime(week['from_date'], '%Y-%m-%d').date():
-
+                        if row['fecha'] <= datetime.strptime(week['to_date'], '%Y-%m-%d').date() and row['fecha'] >= datetime.strptime(
+                                week['from_date'], '%Y-%m-%d').date():
 
                             index = search_list_of_dict_k(f'{week["year"]} Week{week["wk"]}', other_data)
                             element = dict(row, **week)
 
-                            if index != None:
+                            if index is not None:
                                 other_data[index][f'{week["year"]} Week{week["wk"]}'].append(element)
                             else:
-                                other_data.append({f'{week["year"]} Week{week["wk"]}':[element]})
+                                other_data.append({f'{week["year"]} Week{week["wk"]}': [element]})
 
                             data_for_item_sales.pop(data_for_item_sales.index(row))
 
-
-            while len(new_data) > 0 :
+            while len(new_data) > 0:
                 for year in range_of_date:
                     for week in year:
                         if new_data == []:
-                                break
+                            break
                         row = new_data[0]
-                        if row['fecha'] <= datetime.strptime(week['to_date'], '%Y-%m-%d').date() and row['fecha'] >= datetime.strptime(week['from_date'], '%Y-%m-%d').date():
+                        if row['fecha'] <= datetime.strptime(week['to_date'], '%Y-%m-%d').date() and row['fecha'] >= datetime.strptime(
+                                week['from_date'], '%Y-%m-%d').date():
 
                             index = search_list_of_dict_k(f'{week["year"]} Week{week["wk"]}', other_data)
                             element = dict(row, **week)
 
-                            if index != None:
+                            if index is not None:
                                 other_data[index][f'{week["year"]} Week{week["wk"]}'].append(element)
                             else:
-                                other_data.append({f'{week["year"]} Week{week["wk"]}':[element]})
-
+                                other_data.append({f'{week["year"]} Week{week["wk"]}': [element]})
 
                             new_data.pop(new_data.index(row))
 
@@ -264,17 +260,16 @@ def get_data(filters):
                 'item_code': mdata['item_code_base'],
                 'item_name': mdata['item_name_base'],
                 'UOM': mdata['uom_estimated'],
-                'time_series_data':[]
+                'time_series_data': []
             })
 
             for element in other_data:
-                #print(list(element.keys()))
                 rdata = list(element.values())[0][0]
-                data[0]['time_series_data'].append({rdata['dic_name']:{
-                    'estimated':rdata.get('estiamted', 0),
-                    'reserved':rdata.get('reserved',0),
-                    'sold':rdata.get('sold',0),
-                    'available':rdata.get('available',0)
+                data[0]['time_series_data'].append({rdata['dic_name']: {
+                    'estimated': rdata.get('estiamted', 0),
+                    'reserved': rdata.get('reserved', 0),
+                    'sold': rdata.get('sold', 0),
+                    'available': rdata.get('available', 0)
                     }
                 })
 
@@ -286,26 +281,24 @@ def get_data(filters):
             for year in range_of_date:
                 for week in year:
                     if not week['dic_name'] in week_list:
-                        data[0]['time_series_data'].append({week['dic_name']:{'estimated':0,'reserved':0,'sold':0,'available':0}})
+                        data[0]['time_series_data'].append({week['dic_name']: {'estimated': 0, 'reserved': 0, 'sold': 0, 'available': 0}})
 
             data = add_stadistics(data, filters)
             data = add_values_of_char(data, filters)
-            # dicToJSON(f'{filters.item_selected}',data)
 
         else:
             # item_link_open = "<a href='/app/item/"
             # item_link_open_end = "' target='_blank'>"
             # item_link_close = "</a>"
-            # frappe.msgprint(_(f'There is no BOM for the following item: {item_link_open}{filters.item_selected}{item_link_open_end}{filters.item_selected}{item_link_close}'))
             data = [{
                 "item_code": filters.item_selected,
                 "item_name": filters.item_selected,
                 "UOM": "Pound",
-                "labels":["No existe BOM configurado"],
-                "values":["No existe BOM configurado"],
-                "values1":["No existe BOM configurado"],
-                "values2":["No existe BOM configurado"],
-                "values3":["No existe BOM configurado"]
+                "labels": ["No existe BOM configurado"],
+                "values": ["No existe BOM configurado"],
+                "values1": ["No existe BOM configurado"],
+                "values2": ["No existe BOM configurado"],
+                "values3": ["No existe BOM configurado"]
             }]
             return data
     return data
@@ -320,9 +313,6 @@ def add_stadistics(data, filters):
     Returns:
         [type]: [description]
     """
-    # fiscal_years = frappe.db.get_list('Fiscal Year', pluck='name')[0]
-
-    # fiscal_year = filters.year_selected
     fiscal_year = frappe.utils.nowdate()[:4]
 
     # Por cada item en la data
@@ -342,28 +332,28 @@ def add_stadistics(data, filters):
                 if fiscal_year in list(d.keys())[0]:
                     # Si la semana a buscar por cada año esta en la llave "2018 Week01", "2019 Week01", "2020 Week01"
                     if wsearch in list(d.keys())[0]:
-                        index_1 = search_list_of_dict_k(wsearch,order_of_week)
+                        index_1 = search_list_of_dict_k(wsearch, order_of_week)
 
-                        if index_1 != None:
+                        if index_1 is not None:
                             # Solo le agregamos los valores de esa semana, del año seleccionado
                             order_of_week[index_1][wsearch].append(list(d.values())[0])
                         else:
 
-                            order_of_week.append({wsearch:[list(d.values())[0]]})
+                            order_of_week.append({wsearch: [list(d.values())[0]]})
 
                 elif fiscal_year not in list(d.keys())[0]:
                     if wsearch in list(d.keys())[0]:
 
                         # Buscamos el indice de la semana en la lista de registros
-                        index_2 = search_list_of_dict_k(wsearch,records_of_weeks)
+                        index_2 = search_list_of_dict_k(wsearch, records_of_weeks)
                         # Si ya esta la semana en los registros
-                        if index_2 != None:
+                        if index_2 is not None:
                             # Solo le agregamos los valores de esa semana, sin importar el año
                             records_of_weeks[index_2][wsearch].append(list(d.values())[0])
                         else:
                             # Sino agregamos un diccionario con el nombre de la semana sin el año
                             # Y agregamos los valores de esa semana, sin importar el año
-                            records_of_weeks.append({wsearch:[list(d.values())[0]]})
+                            records_of_weeks.append({wsearch: [list(d.values())[0]]})
 
         dat['year_curren'] = order_of_week
 
@@ -424,8 +414,9 @@ def add_stadistics(data, filters):
 
     return data
 
-def add_values_of_char(data,filters):
-    year = '2021'
+
+def add_values_of_char(data, filters):
+    # year = '2021'
     # type_of_char = 'estimated'
     type_of_char = 'sold'
 
